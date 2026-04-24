@@ -778,3 +778,92 @@ body {
 .copy-btn svg {
   flex-shrink: 0;
 }
+
+/* ===== CONCEPT / MARKDOWN PAGES ===== */
+.concept-page h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 12px;
+}
+.concept-page h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 32px 0 12px;
+}
+.concept-page h3 {
+  font-size: 17px;
+  font-weight: 600;
+  color: #334155;
+  margin: 24px 0 8px;
+}
+.concept-page p {
+  margin: 10px 0;
+  line-height: 1.7;
+  color: #334155;
+}
+.concept-page ul,
+.concept-page ol {
+  margin: 10px 0 10px 24px;
+  color: #334155;
+}
+.concept-page li {
+  margin: 6px 0;
+  line-height: 1.6;
+}
+.concept-page a {
+  color: #6366f1;
+  text-decoration: none;
+  font-weight: 500;
+}
+.concept-page a:hover {
+  text-decoration: underline;
+}
+.inline-code {
+  background: #f1f5f9;
+  color: #d946ef;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: "SF Mono", "Fira Code", monospace;
+}
+.md-code-block {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 16px 20px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 12px 0;
+  font-size: 13px;
+  line-height: 1.6;
+  font-family: "SF Mono", "Fira Code", monospace;
+}
+.md-code-block code {
+  color: #e2e8f0;
+  font-family: inherit;
+}
+.md-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+}
+.md-table th {
+  background: #f1f5f9;
+  text-align: left;
+  padding: 10px 14px;
+  font-weight: 600;
+  color: #334155;
+  border-bottom: 2px solid #e2e8f0;
+}
+.md-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #475569;
+}
+.md-table tr:hover {
+  background: #f8fafc;
+}

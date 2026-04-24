@@ -1,20 +1,44 @@
 import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
-import gettingStarted from "../data/concepts/getting-started.json";
-import transports from "../data/concepts/transports.json";
-import errorHandling from "../data/concepts/error-handling.json";
-
-const conceptsMap = {
-  "getting-started": gettingStarted,
-  transports: transports,
-  "error-handling": errorHandling,
-};
 
 export default function ConceptPage() {
   const { slug } = useParams();
-  const concept = conceptsMap[slug];
+  const [markdown, setMarkdown] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  if (!concept) {
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${import.meta.env.BASE_URL}docs/${slug}.md`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Not found");
+        return res.text();
+      })
+      .then((text) => {
+        if (!cancelled) {
+          setMarkdown(text);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setError(true);
+          setLoading(false);
+        }
+      });
+    return () => { cancelled = true; };
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="doc-center" style={{ padding: "40px 48px" }}>
+        <p>Loading…</p>
+      </div>
+    );
+  }
+
+  if (error || !markdown) {
     return (
       <div className="doc-center" style={{ padding: "40px 48px" }}>
         <h1>Not Found</h1>
@@ -24,36 +48,25 @@ export default function ConceptPage() {
   }
 
   return (
-    <div className="doc-center" style={{ padding: "40px 48px" }}>
-      <h1>{concept.title}</h1>
-      {concept.description && (
-        <p className="doc-summary">{concept.description}</p>
-      )}
-
-      {concept.sections.map((section, i) => (
-        <section key={i} className="doc-section">
-          <h2>{section.heading}</h2>
-          {section.body && <ReactMarkdown>{section.body}</ReactMarkdown>}
-          {section.content && <p>{section.content}</p>}
-          {section.steps && (
-            <ol className="concept-steps">
-              {section.steps.map((step, j) => (
-                <li key={j}>
-                  {step
-                    .split("`")
-                    .map((part, k) =>
-                      k % 2 === 1 ? (
-                        <code key={k}>{part}</code>
-                      ) : (
-                        <span key={k}>{part}</span>
-                      )
-                    )}
-                </li>
-              ))}
-            </ol>
-          )}
-        </section>
-      ))}
+    <div className="doc-center concept-page" style={{ padding: "40px 48px" }}>
+      <ReactMarkdown
+        components={{
+          code({ inline, className, children, ...props }) {
+            return inline ? (
+              <code className="inline-code" {...props}>{children}</code>
+            ) : (
+              <pre className="md-code-block">
+                <code className={className} {...props}>{children}</code>
+              </pre>
+            );
+          },
+          table({ children }) {
+            return <table className="md-table">{children}</table>;
+          },
+        }}
+      >
+        {markdown}
+      </ReactMarkdown>
     </div>
   );
 }
