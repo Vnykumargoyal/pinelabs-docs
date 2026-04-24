@@ -5,10 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && cp -r public/api dist/api && cp -r public/concepts dist/concepts && cp dist/index.html dist/404.html",
     "lint": "eslint .",
     "preview": "vite preview",
-    "deploy": "vite build && gh-pages -d dist"
+    "deploy": "npm run build && cd dist && rm -rf .git && git init && git checkout -b gh-pages && git add -A && git commit -m deploy && git push --force https://github.com/Vnykumargoyal/pinelabs-docs.git gh-pages"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -18,8 +18,7 @@
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-markdown": "^10.1.0",
-    "react-router-dom": "^6.30.3",
-    "zustand": "^5.0.0"
+    "react-router-dom": "^6.30.3"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -10,7 +10,14 @@ export default function ConceptPage() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`${import.meta.env.BASE_URL}docs/${slug}.md`)
+
+    // Move setLoading and setError to a separate effect that runs when slug changes
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMarkdown(null);
+    setLoading(true);
+    setError(false);
+
+    fetch(`${import.meta.env.BASE_URL}concepts/${slug}.md`)
       .then((res) => {
         if (!res.ok) throw new Error("Not found");
         return res.text();
@@ -27,7 +34,9 @@ export default function ConceptPage() {
           setLoading(false);
         }
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [slug]);
 
   if (loading) {
@@ -51,14 +60,28 @@ export default function ConceptPage() {
     <div className="doc-center concept-page" style={{ padding: "40px 48px" }}>
       <ReactMarkdown
         components={{
-          code({ inline, className, children, ...props }) {
-            return inline ? (
-              <code className="inline-code" {...props}>{children}</code>
-            ) : (
-              <pre className="md-code-block">
-                <code className={className} {...props}>{children}</code>
-              </pre>
+          code({ node, className, children, ...props }) {
+            const isBlock =
+              className ||
+              (node?.position &&
+                node.position.start.line !== node.position.end.line);
+            if (isBlock) {
+              return (
+                <pre className="md-code-block">
+                  <code className={className} {...props}>
+                    {children}
+                  </code>
+                </pre>
+              );
+            }
+            return (
+              <code className="inline-code" {...props}>
+                {children}
+              </code>
             );
+          },
+          pre({ children }) {
+            return <>{children}</>;
           },
           table({ children }) {
             return <table className="md-table">{children}</table>;
