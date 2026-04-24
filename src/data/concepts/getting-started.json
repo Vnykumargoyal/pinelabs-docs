@@ -1,0 +1,19 @@
+{
+  "slug": "getting-started",
+  "title": "Getting Started",
+  "description": "Welcome to the Pine Labs Common SDK. This guide walks you through installation, initialization, and your first transaction.",
+  "sections": [
+    {
+      "heading": "Installation",
+      "content": "Add the SDK dependency for your platform. See the per-language setup guides for details."
+    },
+    {
+      "heading": "Quick Start",
+      "steps": [
+        "Call `init()` once at app startup.",
+        "Use `doTransaction()` to send a payment.",
+        "Use `checkStatus()` to poll results if needed."
+      ]
+    }
+  ]
+}

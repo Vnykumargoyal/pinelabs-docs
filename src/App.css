@@ -1,0 +1,54 @@
+body {
+  margin: 0;
+  font-family: Inter, sans-serif;
+}
+
+.layout {
+  display: flex;
+}
+
+.sidebar {
+  width: 260px;
+  background: #0f172a;
+  color: white;
+  padding: 20px;
+  height: 100vh;
+}
+
+.main {
+  flex: 1;
+  padding: 40px;
+  max-width: 800px;
+}
+
+.rightPanel {
+  width: 400px;
+  background: #0b1020;
+  color: white;
+  padding: 20px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.tabs button {
+  background: none;
+  color: #aaa;
+  border: none;
+  margin-right: 10px;
+}
+
+.tabs .active {
+  color: white;
+  border-bottom: 2px solid #6366f1;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+.form-group input {
+  padding: 6px;
+}

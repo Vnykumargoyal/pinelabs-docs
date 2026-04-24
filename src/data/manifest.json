@@ -1,0 +1,9 @@
+{
+  "bundle_version": "0.1.0",
+  "sdk_version": "0.1.0",
+  "generated_at": "2026-04-23T09:00:00Z",
+  "languages": ["kotlin", "swift", "python", "nodejs", "java", "c", "ruby", "curl", "csharp", "php", "go"],
+  "api_count": 4,
+  "concept_count": 3,
+  "checksum": "sha256:placeholder"
+}

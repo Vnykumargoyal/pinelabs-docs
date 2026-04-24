@@ -1,0 +1,22 @@
+{
+  "slug": "transports",
+  "title": "Transport Layer",
+  "sections": [
+    {
+      "heading": "Overview",
+      "body": "The Pine Labs SDK communicates with payment terminals over **transports** — pluggable communication channels that abstract away the physical or network protocol.\n\nWhen calling `init()`, you supply a `transportPreference` list ranked by priority. The SDK will attempt each transport in order until one connects successfully."
+    },
+    {
+      "heading": "Available Transports",
+      "body": "| Transport | Constant | Platform | Notes |\n|-----------|----------|----------|-------|\n| TCP/IP | `TCP` | All | Default. Requires terminal and POS on same network. |\n| Bluetooth | `BLUETOOTH` | Android, iOS | Pair terminal first via OS settings. |\n| USB | `USB` | Windows, Linux | HID-class connection; no driver needed on most OS. |\n| Cloud | `CLOUD` | All | Routes through Pine Labs cloud relay; higher latency but works across networks. |"
+    },
+    {
+      "heading": "Fallback Behavior",
+      "body": "If the first transport in `transportPreference` fails to connect within 5 seconds, the SDK moves to the next entry. You can observe transport switches via the `onTransportChange` callback if your platform supports listeners.\n\n```\nconfig.transportPreference = [TCP, BLUETOOTH, CLOUD]\n// Tries TCP → if unavailable → Bluetooth → if unavailable → Cloud\n```"
+    },
+    {
+      "heading": "Cloud Result Mode",
+      "body": "When using the `CLOUD` transport, set `cloudResultMode` in `SdkConfig`:\n\n- **`PUSH`** — The SDK keeps a WebSocket open and the cloud pushes the transaction result.\n- **`MANUAL_POLL`** — Your code calls `checkStatus()` to poll for the result.\n\nPush mode is recommended for mobile apps; manual poll suits server-side integrations."
+    }
+  ]
+}

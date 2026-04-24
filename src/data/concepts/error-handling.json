@@ -1,0 +1,22 @@
+{
+  "slug": "error-handling",
+  "title": "Error Handling",
+  "sections": [
+    {
+      "heading": "Overview",
+      "body": "Every SDK method can surface errors through a typed error enum. Each variant carries a `recoverable` flag that tells you whether retrying is meaningful."
+    },
+    {
+      "heading": "Recoverable vs Non-Recoverable",
+      "body": "| Type | Meaning | Action |\n|------|---------|--------|\n| **Recoverable** ↻ | Transient issue (timeout, network blip) | Retry with exponential back-off |\n| **Non-recoverable** ✕ | Permanent issue (invalid config, SDK not initialized) | Fix the root cause before retrying |"
+    },
+    {
+      "heading": "Error Variants",
+      "body": "Common error variants across APIs:\n\n- `NOT_INITIALIZED` — Called an API before `init()`. Non-recoverable.\n- `ALREADY_INITIALIZED` — Called `init()` more than once. Non-recoverable.\n- `TRANSPORT_UNAVAILABLE` — No transport could connect. Recoverable.\n- `TIMEOUT` — Terminal did not respond within the deadline. Recoverable.\n- `INVALID_AMOUNT` — Amount ≤ 0 or exceeds max. Non-recoverable (fix input).\n- `MISSING_FIELD` — A required parameter was null/empty. Non-recoverable.\n- `TERMINAL_BUSY` — Terminal is processing another transaction. Recoverable."
+    },
+    {
+      "heading": "Best Practices",
+      "body": "1. **Always check the `recoverable` flag** before deciding to retry.\n2. Use exponential back-off for recoverable errors (start at 1 s, cap at 30 s).\n3. Log the `variant` string for diagnostics — Pine Labs support may ask for it.\n4. On non-recoverable errors, surface a user-friendly message and do **not** retry automatically."
+    }
+  ]
+}

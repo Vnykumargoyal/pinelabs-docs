@@ -1,0 +1,40 @@
+{
+  "name": "Check Transaction Status",
+  "slug": "check-status",
+  "method": "GET",
+  "endpoint": "/v1/transactions/:event_id/status",
+  "category": "Transactions",
+  "description": "Query the current status of a transaction using its event_id.",
+  "details": "Use this API to recover transaction state after app restart or failure. Does not retry or modify the transaction.",
+  "headerParams": [
+    { "name": "Authorization", "type": "string", "required": true, "description": "Bearer token for authentication" }
+  ],
+  "pathParams": [
+    { "name": "event_id", "type": "string", "required": true, "description": "UUID returned from Create Transaction API." }
+  ],
+  "bodyParams": [],
+  "exampleResponse": {
+    "status": true,
+    "data": {
+      "event_id": "550e8400-e29b-41d4-a716-446655440000",
+      "transaction_status": "SUCCESS",
+      "amount": 10000,
+      "currency": "INR",
+      "auth_code": "A1B2C3",
+      "rrn": "412312345678",
+      "card_masked": "411111******1111",
+      "completed_at": "2026-04-23T10:16:45Z"
+    }
+  },
+  "responses": [
+    { "code": 200, "description": "Transaction status returned successfully." },
+    { "code": 401, "description": "Unauthorized – invalid API key." },
+    { "code": 404, "description": "Transaction not found." },
+    { "code": 503, "description": "Terminal not connected." }
+  ],
+  "codeSamples": {
+    "curl": "curl --location 'https://api.pinelabs.com/v1/transactions/550e8400-e29b-41d4-a716-446655440000/status' \\\n--header 'Authorization: Bearer YOUR_API_KEY'",
+    "node": "const response = await fetch(\n  'https://api.pinelabs.com/v1/transactions/550e8400-e29b-41d4-a716-446655440000/status',\n  {\n    headers: {\n      'Authorization': 'Bearer YOUR_API_KEY'\n    }\n  }\n);\nconst data = await response.json();",
+    "python": "import requests\n\nresponse = requests.get(\n    'https://api.pinelabs.com/v1/transactions/550e8400-e29b-41d4-a716-446655440000/status',\n    headers={\n        'Authorization': 'Bearer YOUR_API_KEY'\n    }\n)\nprint(response.json())"
+  }
+}
