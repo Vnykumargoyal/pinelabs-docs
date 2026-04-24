@@ -4,7 +4,7 @@
     {
       "id": "init",
       "name": "init",
-      "summary": "Initialize the SDK with configuration.",
+      "summary": "Initialize the SDK singleton for the current process.",
       "category": "lifecycle",
       "stability": "stable",
       "since": "0.1.0"
@@ -12,24 +12,8 @@
     {
       "id": "do-transaction",
       "name": "doTransaction",
-      "summary": "Start a transaction on the terminal.",
+      "summary": "Dispatch a Sale transaction to the connected terminal.",
       "category": "transaction",
-      "stability": "stable",
-      "since": "0.1.0"
-    },
-    {
-      "id": "check-status",
-      "name": "checkStatus",
-      "summary": "Poll the status of an in-flight transaction by eventId.",
-      "category": "transaction",
-      "stability": "stable",
-      "since": "0.1.0"
-    },
-    {
-      "id": "customer-create",
-      "name": "Create Customer",
-      "summary": "Create a new customer profile in the Pine Labs payment system.",
-      "category": "customer",
       "stability": "stable",
       "since": "0.1.0"
     }

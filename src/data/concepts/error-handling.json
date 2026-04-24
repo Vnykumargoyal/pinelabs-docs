@@ -4,19 +4,23 @@
   "sections": [
     {
       "heading": "Overview",
-      "body": "Every SDK method can surface errors through a typed error enum. Each variant carries a `recoverable` flag that tells you whether retrying is meaningful."
+      "body": "All errors surface through `TransactionListener.onFailure(error: SdkException)`. The base type is a sealed set — pattern-match on the subclass to handle each variant."
     },
     {
       "heading": "Recoverable vs Non-Recoverable",
-      "body": "| Type | Meaning | Action |\n|------|---------|--------|\n| **Recoverable** ↻ | Transient issue (timeout, network blip) | Retry with exponential back-off |\n| **Non-recoverable** ✕ | Permanent issue (invalid config, SDK not initialized) | Fix the root cause before retrying |"
+      "body": "| Type | Meaning | Action |\n|------|---------|--------|\n| **Recoverable** ↻ | Transient issue (timeout, IPC blip) | Retry after verifying MasterApp is running |\n| **Non-recoverable** ✕ | Permanent issue (invalid input, internal error) | Fix the root cause; do not retry automatically |"
     },
     {
-      "heading": "Error Variants",
-      "body": "Common error variants across APIs:\n\n- `NOT_INITIALIZED` — Called an API before `init()`. Non-recoverable.\n- `ALREADY_INITIALIZED` — Called `init()` more than once. Non-recoverable.\n- `TRANSPORT_UNAVAILABLE` — No transport could connect. Recoverable.\n- `TIMEOUT` — Terminal did not respond within the deadline. Recoverable.\n- `INVALID_AMOUNT` — Amount ≤ 0 or exceeds max. Non-recoverable (fix input).\n- `MISSING_FIELD` — A required parameter was null/empty. Non-recoverable.\n- `TERMINAL_BUSY` — Terminal is processing another transaction. Recoverable."
+      "heading": "SdkException Variants",
+      "body": "| Variant | Fields | Recoverable | Meaning |\n|---------|--------|:-----------:|---------|\n| `NotInitialized` | — | ✕ | `doTransaction` was called before `init`. Not reachable from the Kotlin facade. |\n| `InvalidInput` | `detail: String` | ✕ | Request validation failed (e.g. zero amount, blank reference). |\n| `TransportUnavailable` | `detail: String` | ✓ | MasterApp missing, bind failed, or IPC channel broken. Retry after verifying MasterApp is running. |\n| `Timeout` | `detail: String` | ✓ | No reply within `timeoutSecs`. Retry; consider a longer timeout for slow networks. |\n| `TransactionFailed` | `detail: String`, `terminalResponseCode: String?` | depends | Terminal returned a non-zero response code. `detail` carries `ResponseMsg`. |\n| `Internal` | `detail: String` | ✕ | Unexpected condition (e.g. malformed response JSON). Report to Pinelabs with `eventId`. |"
+    },
+    {
+      "heading": "Common Terminal Response Codes",
+      "body": "| Code | Meaning |\n|------|---------|\n| `\"0\"` | Approved — delivered as `onSuccess`, not `onFailure`. |\n| `\"7\"` | Batch is Locked. Settle the batch on the terminal before retrying. |"
     },
     {
       "heading": "Best Practices",
-      "body": "1. **Always check the `recoverable` flag** before deciding to retry.\n2. Use exponential back-off for recoverable errors (start at 1 s, cap at 30 s).\n3. Log the `variant` string for diagnostics — Pine Labs support may ask for it.\n4. On non-recoverable errors, surface a user-friendly message and do **not** retry automatically."
+      "body": "1. **Pattern-match on the subclass** to handle each variant distinctly.\n2. For `TransportUnavailable` and `Timeout`, use exponential back-off before retrying.\n3. For `TransactionFailed`, surface `detail` (the `ResponseMsg`) to the user — do not retry automatically.\n4. Always log `eventId` (received in `onStarted`) alongside any error for diagnostics."
     }
   ]
 }

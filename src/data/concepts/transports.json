@@ -4,19 +4,23 @@
   "sections": [
     {
       "heading": "Overview",
-      "body": "The Pine Labs SDK communicates with payment terminals over **transports** — pluggable communication channels that abstract away the physical or network protocol.\n\nWhen calling `init()`, you supply a `transportPreference` list ranked by priority. The SDK will attempt each transport in order until one connects successfully."
+      "body": "The Pine Labs SDK communicates with a Pine Labs POS terminal via **app-to-app IPC** with the on-device MasterApp (`com.pinelabs.masterapp`). The SDK uses Android's `Messenger` + JSON payload pattern — no TCP, Bluetooth, or network configuration is required."
     },
     {
-      "heading": "Available Transports",
-      "body": "| Transport | Constant | Platform | Notes |\n|-----------|----------|----------|-------|\n| TCP/IP | `TCP` | All | Default. Requires terminal and POS on same network. |\n| Bluetooth | `BLUETOOTH` | Android, iOS | Pair terminal first via OS settings. |\n| USB | `USB` | Windows, Linux | HID-class connection; no driver needed on most OS. |\n| Cloud | `CLOUD` | All | Routes through Pine Labs cloud relay; higher latency but works across networks. |"
+      "heading": "How Binding Works",
+      "body": "The SDK binds to MasterApp lazily — on the first `doTransaction` call, not at `init` time.\n\n| Property | Value |\n|----------|-------|\n| Bind action | `com.pinelabs.masterapp.SERVER` |\n| Package | `com.pinelabs.masterapp` |\n| Bind flags | `BIND_AUTO_CREATE` |\n| Reply channel | Private `Messenger` backed by SDK-owned `HandlerThread` |\n\nBinding is transparent to the caller. Transport-related failures surface as `TransportUnavailable` in `onFailure`."
     },
     {
-      "heading": "Fallback Behavior",
-      "body": "If the first transport in `transportPreference` fails to connect within 5 seconds, the SDK moves to the next entry. You can observe transport switches via the `onTransportChange` callback if your platform supports listeners.\n\n```\nconfig.transportPreference = [TCP, BLUETOOTH, CLOUD]\n// Tries TCP → if unavailable → Bluetooth → if unavailable → Cloud\n```"
+      "heading": "Request / Response Wire Format",
+      "body": "**Request** — `Message.what = 1001`, bundle key `MASTERAPPREQUEST`:\n\n```json\n{\n  \"Detail\": {\n    \"BillingRefNo\": \"TX12345678\",\n    \"PaymentAmount\": 9900,\n    \"TransactionType\": 4001,\n    \"InvoiceNo\": \"INV-1001\"\n  },\n  \"Header\": {\n    \"ApplicationId\": \"1001\",\n    \"MethodId\": \"1001\",\n    \"UserId\": \"operator-01\",\n    \"VersionNo\": \"1.0\"\n  }\n}\n```\n\n**Response** — bundle key `MASTERAPPRESPONSE`:\n\n```json\n{\n  \"Detail\": { \"ApprovalCode\": \"T47933\", \"RetrievalReferenceNumber\": \"009711708350\", \"...\" : \"...\" },\n  \"Response\": { \"ResponseCode\": 0, \"ResponseMsg\": \"APPROVED\" }\n}\n```\n\nThe reply is accepted when the bundle contains `MASTERAPPRESPONSE`; `Message.what` on the reply is not filtered."
     },
     {
-      "heading": "Cloud Result Mode",
-      "body": "When using the `CLOUD` transport, set `cloudResultMode` in `SdkConfig`:\n\n- **`PUSH`** — The SDK keeps a WebSocket open and the cloud pushes the transaction result.\n- **`MANUAL_POLL`** — Your code calls `checkStatus()` to poll for the result.\n\nPush mode is recommended for mobile apps; manual poll suits server-side integrations."
+      "heading": "Timeout",
+      "body": "The `timeoutSecs` parameter in `init` (default `60`, range `1..600`) controls the full bind → reply window. If no reply arrives within that window, `onFailure` is called with a `Timeout` error. Raise `timeoutSecs` if transactions are timing out on slow terminals."
+    },
+    {
+      "heading": "Troubleshooting",
+      "body": "| Symptom | Likely cause | Fix |\n|---------|-------------|-----|\n| `TransportUnavailable(\"MasterApp service not available\")` | MasterApp not installed or `<queries>` stripped from manifest. | Install MasterApp; remove `tools:node=\"remove\"` on any `<queries>` element. |\n| `Timeout` on every transaction | Terminal busy, PED stall, or `timeoutSecs` too low. | Retry; raise `timeoutSecs`; check terminal home screen. |\n| `UnsatisfiedLinkError: libuniffi_pinelabs.so not found` | ABI filter missing. | Add `ndk { abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64' }` to `build.gradle`. |"
     }
   ]
 }
