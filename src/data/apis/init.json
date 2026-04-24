@@ -1,66 +1,78 @@
 {
   "id": "init",
   "name": "init",
-  "summary": "Initialize the SDK with configuration.",
-  "description": "Creates a singleton SDK instance. Must be called exactly once per process before any other API. Infrastructure config only; per-transaction identifiers go on the TransactionRequest.",
+  "summary": "Initialize the SDK singleton for the current process.",
+  "description": "Constructs the SDK, creates the MasterApp IPC transport, and wires a single-thread worker executor for transaction dispatch. Must be called before any other SDK API.\n\nTakes identity and infrastructure configuration only — merchant appId, operator userId, host app version, and the IPC timeoutSecs. Per-transaction fields (amount, billingRefNo, invoiceNo) belong on each TransactionRequest.\n\nIdempotent: a second call with any arguments returns the first-created instance. Binding to MasterApp is lazy — it happens per transaction, not at init time.",
   "category": "lifecycle",
   "stability": "stable",
   "since": "0.1.0",
+  "platforms": ["android"],
   "parameters": [
     {
-      "name": "config",
-      "type": "SdkConfig",
+      "name": "context",
+      "type": "android.content.Context",
       "required": true,
-      "description": "SDK infrastructure configuration (transports, logging, cloud mode).",
-      "example": {
-        "transportPreference": ["TCP", "BLUETOOTH"],
-        "logLevel": "INFO",
-        "cloudResultMode": "MANUAL_POLL"
-      }
+      "description": "Any Context. The SDK retains context.applicationContext only."
+    },
+    {
+      "name": "appId",
+      "type": "String",
+      "required": true,
+      "description": "Merchant application identifier supplied by Pinelabs. Sent as Header.ApplicationId. Must be non-blank."
+    },
+    {
+      "name": "userId",
+      "type": "String",
+      "required": true,
+      "description": "Operator / user identifier. Sent as Header.UserId. Must be non-blank."
+    },
+    {
+      "name": "version",
+      "type": "String",
+      "required": true,
+      "description": "Host-app version string. Sent as Header.VersionNo. Must be non-blank."
+    },
+    {
+      "name": "timeoutSecs",
+      "type": "Int",
+      "required": false,
+      "default": 60,
+      "description": "Max seconds to wait for a MasterApp reply, covering the full bind → reply window. Range: 1..600."
     }
   ],
   "returns": {
     "type": "PinelabsSdk",
-    "description": "The singleton SDK handle.",
-    "example": "<PinelabsSdk instance>"
+    "description": "Initialized SDK handle. Thread-safe; use as a process-wide singleton."
   },
   "errors": [
-    { "variant": "AlreadyInitialized", "when": "init() called more than once in the same process.", "recoverable": false },
-    { "variant": "InvalidConfig", "when": "Any config field fails validation.", "recoverable": false }
+    {
+      "variant": "IllegalArgumentException",
+      "when": "appId, userId, or version is blank, or timeoutSecs is outside 1..600.",
+      "recoverable": false
+    }
+  ],
+  "notes": [
+    "init does not bind to MasterApp or perform any I/O. Binding is lazy per transaction. Transport-related failures surface on doTransaction as TransportUnavailable."
   ],
   "examples": [
-    { "language": "kotlin", "code": "val sdk = PinelabsSdk.init(SdkConfig(transportPreference = listOf(TransportKind.TCP)))" },
-    { "language": "python", "code": "sdk = PinelabsSdk.init(SdkConfig(transport_preference=[TransportKind.TCP]))" },
-    { "language": "swift", "code": "let sdk = try PinelabsSdk.init(config: SdkConfig(transportPreference: [.tcp]))" },
-    { "language": "java", "code": "PinelabsSdk sdk = PinelabsSdk.init(new SdkConfig.Builder()\n    .transportPreference(Arrays.asList(TransportKind.TCP))\n    .build());" },
-    { "language": "nodejs", "code": "const sdk = PinelabsSdk.init({\n  transportPreference: ['TCP'],\n  logLevel: 'INFO'\n});" },
-    { "language": "c", "code": "pl_sdk_config_t cfg = { .transport = PL_TRANSPORT_TCP };\npl_sdk_handle_t sdk;\npl_sdk_init(&cfg, &sdk);" }
-  ],
-  "responses": [
     {
       "language": "kotlin",
-      "code": "// sdk: PinelabsSdk\nprintln(sdk) // <PinelabsSdk instance>\n// sdk.isInitialized == true\n// sdk.transportsAvailable == [TCP]"
-    },
-    {
-      "language": "python",
-      "code": "# sdk: PinelabsSdk\nprint(sdk)  # <PinelabsSdk instance>\n# sdk.is_initialized == True\n# sdk.transports_available == ['TCP']"
-    },
-    {
-      "language": "swift",
-      "code": "// sdk: PinelabsSdk\nprint(sdk) // <PinelabsSdk instance>\n// sdk.isInitialized == true\n// sdk.transportsAvailable == [.tcp]"
+      "code": "import com.pinelabs.sdk.PinelabsSdk\n\nval sdk = PinelabsSdk.init(\n    context     = applicationContext,\n    appId       = \"1001\",\n    userId      = \"operator-01\",\n    version     = \"1.0\",\n    timeoutSecs = 60,\n)"
     },
     {
       "language": "java",
-      "code": "// sdk: PinelabsSdk\nSystem.out.println(sdk); // <PinelabsSdk instance>\n// sdk.isInitialized() == true\n// sdk.getTransportsAvailable() == [TCP]"
-    },
-    {
-      "language": "nodejs",
-      "code": "// sdk: PinelabsSdk\nconsole.log(sdk);\n// { initialized: true, transportsAvailable: ['TCP'] }"
-    },
-    {
-      "language": "c",
-      "code": "// sdk: pl_sdk_handle_t\n// pl_sdk_is_initialized(sdk) == PL_TRUE\n// pl_sdk_get_transports(sdk) == PL_TRANSPORT_TCP"
+      "code": "import com.pinelabs.sdk.PinelabsSdk;\n\nPinelabsSdk sdk = PinelabsSdk.init(\n    getApplicationContext(),\n    \"1001\",\n    \"operator-01\",\n    \"1.0\",\n    60\n);"
     }
   ],
-  "see_also": ["do-transaction", "check-status"]
+  "signatures": [
+    {
+      "language": "kotlin",
+      "signature": "fun PinelabsSdk.Companion.init(context: Context, appId: String, userId: String, version: String, timeoutSecs: Int = 60): PinelabsSdk"
+    },
+    {
+      "language": "java",
+      "signature": "static PinelabsSdk PinelabsSdk.init(Context context, String appId, String userId, String version, int timeoutSecs)"
+    }
+  ],
+  "see_also": ["do-transaction"]
 }
