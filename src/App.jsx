@@ -1,24 +1,16 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import DocsLayout from "./layout/DocsLayout";
-import DocRenderer from "./pages/DocRenderer";
+import ApiPage from "./pages/ApiPage";
 import ConceptPage from "./pages/ConceptPage";
 import NotFound from "./pages/NotFound";
 
 import sdkIndex from "./data/sdk-index.json";
 import manifest from "./data/manifest.json";
 
-// Per-API JSON (§3 schema)
-import init from "./data/apis/init.json";
-import doTransaction from "./data/apis/do-transaction.json";
-import checkStatus from "./data/apis/check-status.json";
-import customerCreate from "./data/apis/customer-create.json";
-
-const apiDataMap = {
-  init,
-  "do-transaction": doTransaction,
-  "check-status": checkStatus,
-  "customer-create": customerCreate,
-};
+// API and concept content is sourced directly from markdown files in
+// `public/api/*.md` and `public/concepts/*.md`. JSON files under
+// `src/data/apis/` and `src/data/concepts/` are no longer the content
+// source — only `sdk-index.json` is used for sidebar metadata.
 
 const basename = import.meta.env.BASE_URL.replace(/\/$/, "") || "/";
 
@@ -32,14 +24,12 @@ export default function App() {
         >
           <Route index element={<Navigate to="/api/init" replace />} />
 
-          {/* API pages */}
+          {/* API pages — content sourced from public/api/<id>.md */}
           {sdkIndex.apis.map((entry) => (
             <Route
               key={entry.id}
               path={`api/${entry.id}`}
-              element={
-                <DocRenderer data={apiDataMap[entry.id]} index={entry} />
-              }
+              element={<ApiPage />}
             />
           ))}
 
