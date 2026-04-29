@@ -141,7 +141,7 @@
 
   <header class="topbar">
     <div class="topbar-inner">
-      <a href="index.html" class="brand">
+      <a href="index" class="brand">
         <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
           <rect width="32" height="32" rx="8" fill="#635bff"/>
           <path d="M8 20l6-12 4 8 3-4 3 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -149,10 +149,10 @@
         <span class="brand-name">Pinelabs<span class="brand-sub"> SDK</span></span>
       </a>
       <nav class="topbar-nav">
-        <a href="index.html" class="topbar-link">Home</a>
-        <a href="init.html" class="topbar-link">init</a>
-        <a href="do-transaction.html" class="topbar-link">doTransaction</a>
-        <a href="devices.html" class="topbar-link active">Devices</a>
+        <a href="index" class="topbar-link">Home</a>
+        <a href="init" class="topbar-link">init</a>
+        <a href="do-transaction" class="topbar-link">doTransaction</a>
+        <a href="devices" class="topbar-link active">Devices</a>
       </nav>
       <div class="topbar-actions"><span class="version-badge">v0.1.0</span></div>
     </div>
@@ -164,21 +164,21 @@
       <div class="sidebar-inner">
         <div class="sidebar-section">
           <p class="sidebar-label">Hardware</p>
-          <a href="devices.html" class="sidebar-link">All Supported Devices</a>
+          <a href="devices" class="sidebar-link">All Supported Devices</a>
         </div>
         <div class="sidebar-section" id="oem-list">
           <p class="sidebar-label">By Manufacturer</p>
-          <a href="devices.html#ingenico" class="sidebar-link sidebar-link--sub">Ingenico</a>
-          <a href="devices.html#kozen" class="sidebar-link sidebar-link--sub">Kozen</a>
-          <a href="devices.html#wiseasy" class="sidebar-link sidebar-link--sub">Wiseasy</a>
-          <a href="devices.html#pax" class="sidebar-link sidebar-link--sub">PAX</a>
-          <a href="devices.html#newland" class="sidebar-link sidebar-link--sub">Newland</a>
+          <a href="devices#ingenico" class="sidebar-link sidebar-link--sub">Ingenico</a>
+          <a href="devices#kozen" class="sidebar-link sidebar-link--sub">Kozen</a>
+          <a href="devices#wiseasy" class="sidebar-link sidebar-link--sub">Wiseasy</a>
+          <a href="devices#pax" class="sidebar-link sidebar-link--sub">PAX</a>
+          <a href="devices#newland" class="sidebar-link sidebar-link--sub">Newland</a>
         </div>
         <div class="sidebar-section">
           <p class="sidebar-label">API Reference</p>
-          <a href="index.html" class="sidebar-link">Overview</a>
-          <a href="init.html" class="sidebar-link">init</a>
-          <a href="do-transaction.html" class="sidebar-link">doTransaction</a>
+          <a href="index" class="sidebar-link">Overview</a>
+          <a href="init" class="sidebar-link">init</a>
+          <a href="do-transaction" class="sidebar-link">doTransaction</a>
         </div>
       </div>
     </aside>
@@ -212,9 +212,17 @@
           slug = last.toLowerCase();
         }
       }
+      // If slug ends with .md, serve the raw markdown file
+      if (slug.endsWith('.md')) {
+        const base = basePath();
+        window.location.href = base + 'devices/' + slug;
+        return;
+      }
+      // Strip .html extension if present
+      slug = slug.replace(/\.html$/, '');
       if (!slug) {
         document.getElementById('device-root').innerHTML =
-          '<div class="not-found">No device specified. <a href="devices.html">View all devices →</a></div>';
+          '<div class="not-found">No device specified. <a href="devices">View all devices →</a></div>';
         return;
       }
 
@@ -234,7 +242,7 @@
       const d = data[slug];
       if (!d) {
         document.getElementById('device-root').innerHTML =
-          `<div class="not-found">Device <code>${slug}</code> not found. <a href="devices.html">View all devices →</a></div>`;
+          `<div class="not-found">Device <code>${slug}</code> not found. <a href="devices">View all devices →</a></div>`;
         document.title = 'Device not found';
         return;
       }
@@ -243,7 +251,7 @@
 
       // Crumbs
       document.getElementById('crumbs').innerHTML =
-        `<a href="index.html">Docs</a> &nbsp;›&nbsp; <a href="devices.html">Devices</a> &nbsp;›&nbsp; <span>${d.name}</span>`;
+        `<a href="index">Docs</a> &nbsp;›&nbsp; <a href="devices">Devices</a> &nbsp;›&nbsp; <span>${d.name}</span>`;
 
       // Image with SVG fallback
       const imgFallback = svgFor(d.form);
@@ -259,7 +267,7 @@
         .filter(([k, v]) => v.oem === d.oem && k !== slug)
         .slice(0, 6)
         .map(([k, v]) => `
-          <a class="related-card" href="device-detail.html?slug=${k}">
+          <a class="related-card" href="device-detail?slug=${k}">
             <div class="name">${v.name}</div>
             <div class="meta">${v.form}</div>
           </a>`).join('');
@@ -350,7 +358,7 @@ if (Build.MODEL == "${d.buildModel}") {
         <div class="cta-card">
           <h3>Ready to integrate ${d.name}?</h3>
           <p>The Pinelabs Common SDK works identically across all supported terminals. Start with <code>init</code>, then dispatch via <code>doTransaction</code>.</p>
-          <a href="init.html">Read the integration guide →</a>
+          <a href="init">Read the integration guide →</a>
         </div>
 
         ${related ? `
