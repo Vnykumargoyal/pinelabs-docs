@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SDK Overview — Pinelabs SDK</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    /* ── hero ── */
+    .ov-hero { padding: 52px 0 36px; }
+    .ov-audience {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-size: 12px; font-weight: 700; letter-spacing: .09em;
+      text-transform: uppercase; color: var(--amber);
+      background: rgba(255,184,48,.1); border: 1px solid rgba(255,184,48,.25);
+      border-radius: 20px; padding: 4px 12px; margin-bottom: 16px;
+    }
+    .ov-audience-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--amber); }
+    .ov-title {
+      font-size: 40px; font-weight: 800; letter-spacing: -1.4px;
+      line-height: 1.12; margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--ink-900) 40%, var(--amber) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .ov-sub {
+      font-size: 17px; color: var(--ink-600); max-width: 660px;
+      line-height: 1.7; margin-bottom: 28px;
+    }
+    .ov-api-badge {
+      display: inline-flex; align-items: center; gap: 9px;
+      background: var(--ink-900); color: rgba(255,255,255,.9);
+      font-family: var(--font-mono); font-size: 13px; font-weight: 500;
+      padding: 9px 18px; border-radius: var(--r-md);
+      box-shadow: var(--shadow-md); letter-spacing: .02em;
+    }
+    .ov-api-badge span { color: rgba(255,255,255,.4); font-size: 11px; }
+
+    /* ── callouts ── */
+    .info-callout {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: var(--purple-bg); border: 1.5px solid rgba(99,91,255,.2);
+      border-radius: var(--r-lg); padding: 18px 20px; margin: 20px 0;
+    }
+    .info-callout-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+    .info-callout-body { flex: 1; }
+    .info-callout-body strong {
+      display: block; font-size: 13px; font-weight: 700;
+      color: var(--ink-900); margin-bottom: 5px;
+    }
+    .info-callout-body p { font-size: 14px; color: var(--ink-600); line-height: 1.65; margin: 0; }
+
+    .warn-callout {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: rgba(255,184,48,.07); border: 1.5px solid rgba(255,184,48,.3);
+      border-radius: var(--r-lg); padding: 18px 20px; margin: 20px 0;
+    }
+    .warn-callout-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+    .warn-callout-body { flex: 1; }
+    .warn-callout-body strong {
+      display: block; font-size: 13px; font-weight: 700;
+      color: var(--ink-900); margin-bottom: 5px;
+    }
+    .warn-callout-body p { font-size: 14px; color: var(--ink-600); line-height: 1.65; margin: 0; }
+
+    /* ── what-it-does feature grid ── */
+    .feature-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 14px; margin: 24px 0;
+    }
+    .feature-card {
+      background: var(--white); border: 1px solid var(--ink-100);
+      border-radius: var(--r-xl); padding: 20px 20px 18px;
+      box-shadow: var(--shadow-sm); display: flex; gap: 14px; align-items: flex-start;
+    }
+    .fc-icon {
+      width: 38px; height: 38px; border-radius: var(--r-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .fc-icon--transport { background: var(--purple-bg); }
+    .fc-icon--serial    { background: rgba(0,212,170,.12); }
+    .fc-icon--ceremony  { background: rgba(255,184,48,.12); }
+    .fc-icon--result    { background: rgba(255,107,107,.1); }
+    .fc-body { flex: 1; }
+    .fc-title { font-size: 14px; font-weight: 700; color: var(--ink-900); margin-bottom: 5px; }
+    .fc-desc  { font-size: 13px; color: var(--ink-600); line-height: 1.55; }
+
+    /* ── rust/uniffi badge ── */
+    .rust-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--ink-50); border: 1px solid var(--ink-100);
+      border-radius: var(--r-md); padding: 8px 14px;
+      font-size: 13px; color: var(--ink-600); font-weight: 500;
+      margin-top: 16px; box-shadow: var(--shadow-sm);
+    }
+    .rust-badge strong { color: var(--ink-900); }
+
+    /* ── dark-header table ── */
+    .ov-table-wrap {
+      overflow-x: auto; margin: 16px 0;
+      border-radius: var(--r-lg); border: 1px solid var(--ink-100);
+      box-shadow: var(--shadow-sm);
+    }
+    .ov-table {
+      width: 100%; border-collapse: collapse; font-size: 14px;
+      background: var(--white);
+    }
+    .ov-table thead tr { background: var(--ink-900); }
+    .ov-table thead th {
+      text-align: left; padding: 12px 18px;
+      font-size: 11px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: rgba(255,255,255,.5); border-bottom: none;
+    }
+    .ov-table tbody tr { border-bottom: 1px solid var(--ink-50); transition: background .12s; }
+    .ov-table tbody tr:last-child { border-bottom: none; }
+    .ov-table tbody tr:hover td { background: var(--ink-50); }
+    .ov-table td {
+      padding: 14px 18px; vertical-align: top;
+      color: var(--ink-600); font-size: 14px; line-height: 1.6;
+    }
+    .ov-table td:first-child { font-weight: 700; color: var(--ink-900); white-space: nowrap; }
+
+    /* ── status pills ── */
+    .status-pill {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      letter-spacing: .04em; padding: 3px 9px; border-radius: 20px;
+    }
+    .status-pill--ship    { background: rgba(0,212,170,.12); color: #009e7e; }
+    .status-pill--preview { background: rgba(255,184,48,.14); color: #a07800; }
+
+    /* ── transport cards ── */
+    .transport-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 14px; margin: 20px 0;
+    }
+    .transport-card {
+      background: var(--white); border: 1px solid var(--ink-100);
+      border-radius: var(--r-xl); overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .tc-head {
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--ink-50);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .tc-icon {
+      width: 36px; height: 36px; border-radius: var(--r-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; flex-shrink: 0;
+    }
+    .tc-icon--a2a    { background: var(--purple-bg); }
+    .tc-icon--cloud  { background: rgba(0,212,170,.12); }
+    .tc-icon--pad    { background: rgba(255,184,48,.12); }
+    .tc-icon--tcp    { background: var(--ink-50); }
+    .tc-name { font-size: 14px; font-weight: 700; color: var(--ink-900); }
+    .tc-sub  { font-size: 12px; color: var(--ink-400); margin-top: 1px; }
+    .tc-body { padding: 14px 20px; }
+    .tc-row  { display: flex; gap: 8px; margin-bottom: 7px; font-size: 13px; align-items: flex-start; }
+    .tc-row:last-child { margin-bottom: 0; }
+    .tc-label { color: var(--ink-400); font-weight: 600; white-space: nowrap; min-width: 70px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; padding-top: 1px; }
+    .tc-val   { color: var(--ink-600); line-height: 1.5; }
+    .tc-note  {
+      font-size: 12px; color: #a07800; background: rgba(255,184,48,.1);
+      border-radius: var(--r-sm); padding: 5px 10px; margin-top: 10px;
+      display: flex; gap: 6px; align-items: flex-start;
+    }
+
+    /* ── not-in-v1 list ── */
+    .notin-list {
+      list-style: none; padding: 0; margin: 16px 0;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .notin-list li {
+      display: flex; gap: 12px; align-items: flex-start;
+      background: var(--white); border: 1px solid var(--ink-100);
+      border-left: 3px solid var(--coral);
+      border-radius: 0 var(--r-md) var(--r-md) 0;
+      padding: 12px 16px; box-shadow: var(--shadow-sm);
+      font-size: 14px; color: var(--ink-600); line-height: 1.6;
+    }
+    .notin-x {
+      font-size: 13px; font-weight: 700; color: var(--coral);
+      flex-shrink: 0; margin-top: 1px;
+    }
+
+    /* ── end-to-end flow diagram ── */
+    .e2e-flow {
+      margin: 24px 0; padding: 32px 28px;
+      background: var(--white); border: 1px solid var(--ink-100);
+      border-radius: var(--r-xl); box-shadow: var(--shadow-sm);
+    }
+    .e2e-node {
+      background: var(--ink-50); border: 1px solid var(--ink-100);
+      border-radius: var(--r-lg); padding: 14px 20px;
+      display: flex; align-items: flex-start; gap: 14px;
+    }
+    .e2e-node--app      { border-color: rgba(99,91,255,.3);  background: var(--purple-bg); }
+    .e2e-node--sdk      { border-color: rgba(0,212,170,.3);  background: rgba(0,212,170,.06); }
+    .e2e-node--transport{ border-color: rgba(255,184,48,.3); background: rgba(255,184,48,.06); }
+    .e2e-node--terminal { border-color: var(--ink-100);      background: var(--ink-50); }
+    .e2e-node--sdk2     { border-color: rgba(0,212,170,.3);  background: rgba(0,212,170,.06); }
+    .e2e-node-icon {
+      font-size: 22px; flex-shrink: 0; margin-top: 1px;
+    }
+    .e2e-node-body { flex: 1; }
+    .e2e-node-title {
+      font-size: 14px; font-weight: 700; color: var(--ink-900); margin-bottom: 4px;
+    }
+    .e2e-steps {
+      display: flex; flex-direction: column; gap: 4px; margin-top: 4px;
+    }
+    .e2e-step {
+      display: flex; gap: 8px; align-items: baseline; font-size: 13px; color: var(--ink-600);
+    }
+    .e2e-step-num {
+      font-size: 11px; font-weight: 700; color: var(--ink-400);
+      background: var(--ink-50); border: 1px solid var(--ink-100);
+      border-radius: 20px; padding: 1px 7px; flex-shrink: 0;
+      font-family: var(--font-mono);
+    }
+    .e2e-arrow {
+      display: flex; align-items: center; gap: 10px;
+      padding: 6px 0 6px 34px;
+    }
+    .e2e-arrow-line { flex: 1; height: 2px; background: var(--ink-100); max-width: 40px; }
+    .e2e-arrow-head { color: var(--ink-200); font-size: 14px; }
+    .e2e-arrow-label { font-size: 12px; color: var(--ink-400); }
+    .e2e-transport-pills {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;
+    }
+    .e2e-tpill {
+      font-size: 11px; font-weight: 700; padding: 3px 9px;
+      border-radius: 20px; letter-spacing: .03em;
+    }
+    .e2e-tpill--a2a   { background: var(--purple-bg); color: var(--purple); }
+    .e2e-tpill--cloud { background: rgba(0,212,170,.12); color: #009e7e; }
+    .e2e-tpill--pad   { background: rgba(255,184,48,.12); color: #a07800; }
+    .e2e-tpill--tcp   { background: var(--ink-50); color: var(--ink-600); border: 1px solid var(--ink-100); }
+
+    /* ── next steps nav cards ── */
+    .next-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 14px; margin: 20px 0;
+    }
+    .next-card {
+      display: block; text-decoration: none;
+      background: var(--white); border: 1px solid var(--ink-100);
+      border-radius: var(--r-xl); padding: 20px 20px 16px;
+      box-shadow: var(--shadow-sm); transition: box-shadow .15s, border-color .15s;
+    }
+    .next-card:hover {
+      text-decoration: none;
+      box-shadow: var(--shadow-md); border-color: var(--purple);
+    }
+    .next-card-eyebrow {
+      font-size: 10px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .nc-e--01 { color: var(--purple); }
+    .nc-e--02 { color: var(--teal); }
+    .nc-e--03 { color: var(--amber); }
+    .nc-e--04 { color: var(--coral); }
+    .nc-e--ref{ color: var(--ink-400); }
+    .next-card-title {
+      font-size: 15px; font-weight: 700; color: var(--ink-900); margin-bottom: 6px;
+    }
+    .next-card-desc { font-size: 13px; color: var(--ink-600); line-height: 1.55; }
+    .next-card-arrow {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 12px; font-weight: 700; color: var(--purple); margin-top: 12px;
+    }
+
+    @media (max-width: 680px) {
+      .ov-title { font-size: 28px; }
+      .feature-grid  { grid-template-columns: 1fr; }
+      .transport-grid{ grid-template-columns: 1fr; }
+      .next-grid     { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="../index" class="brand">
+        <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="#635bff"/>
+          <path d="M8 20l6-12 4 8 3-4 3 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="brand-name">Pinelabs<span class="brand-sub"> SDK</span></span>
+      </a>
+      <nav class="topbar-nav">
+        <a href="../index" class="topbar-link">Home</a>
+        <a href="../init" class="topbar-link">init</a>
+        <a href="../do-transaction" class="topbar-link">doTransaction</a>
+        <a href="../devices" class="topbar-link">Devices</a>
+        <a href="capabilities" class="topbar-link">Capabilities</a>
+      </nav>
+      <div class="topbar-actions">
+        <span class="version-badge">v1.0</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-inner">
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">Overview</p>
+          <a href="../index" class="sidebar-link">Introduction</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">Concepts</p>
+          <a href="overview" class="sidebar-link active">SDK Overview</a>
+          <a href="capabilities" class="sidebar-link">Capability Matrix</a>
+          <a href="error-handling" class="sidebar-link">Error Handling</a>
+          <a href="lifecycle" class="sidebar-link">Lifecycle &amp; Threading</a>
+          <a href="eventid-and-reconciliation" class="sidebar-link">event_id &amp; Reconciliation</a>
+          <a href="result-payload" class="sidebar-link">TransactionResult</a>
+          <a href="transports.html" class="sidebar-link">Transports</a>
+          <a href="versioning-and-support" class="sidebar-link">Versioning &amp; Support</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">On this page</p>
+          <a href="#what-it-is"   class="sidebar-link sidebar-link--sub">What the SDK is</a>
+          <a href="#languages"    class="sidebar-link sidebar-link--sub">Languages &amp; platforms</a>
+          <a href="#transports"   class="sidebar-link sidebar-link--sub">Transports</a>
+          <a href="#not-in-v1"   class="sidebar-link sidebar-link--sub">What's not in v1</a>
+          <a href="#e2e-flow"     class="sidebar-link sidebar-link--sub">End-to-end flow</a>
+          <a href="#next"         class="sidebar-link sidebar-link--sub">Where to go next</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">API Reference</p>
+          <a href="../init" class="sidebar-link">init</a>
+          <a href="../do-transaction" class="sidebar-link">doTransaction</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">Hardware</p>
+          <a href="../devices" class="sidebar-link">Supported Devices</a>
+        </div>
+
+      </div>
+    </aside>
+
+    <main class="content" id="main-content">
+
+      <!-- ── Hero ── -->
+      <section class="ov-hero" id="intro">
+        <div class="ov-audience">
+          <span class="ov-audience-dot"></span>
+          Merchant-side application developers
+        </div>
+        <h1 class="ov-title">Pine Labs SDK</h1>
+        <p class="ov-sub">
+          A single, language-idiomatic library that drives a Pinelabs payment terminal from
+          your POS, restaurant, retail, or unattended-checkout software.
+          One API. Every transport. Rust-core reliability.
+        </p>
+        <div class="ov-api-badge">
+          <span>entry point</span>
+          PineBillingSdk.doTransaction(request, listener)
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ── §01 What the SDK is ── -->
+      <section class="doc-section" id="what-it-is">
+        <div class="section-header">
+          <span class="section-number">01</span>
+          <h2>What the SDK is</h2>
+        </div>
+        <p>
+          From your code's point of view, you call one method. The SDK handles everything beneath it:
+        </p>
+
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="fc-icon fc-icon--transport">🔀</div>
+            <div class="fc-body">
+              <div class="fc-title">Transport selection</div>
+              <div class="fc-desc">Chooses the right transport for your environment — App‑to‑App, Cloud REST, PADController, or TCP — so you never write transport-specific code.</div>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon fc-icon--serial">📦</div>
+            <div class="fc-body">
+              <div class="fc-title">Serialisation &amp; framing</div>
+              <div class="fc-desc">Serializes your request into the on-the-wire format the terminal understands. You never see CSV, JSON, framing bytes, or protocol details.</div>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon fc-icon--ceremony">⚙️</div>
+            <div class="fc-body">
+              <div class="fc-title">Transport ceremony</div>
+              <div class="fc-desc">Handles bind / connect / send / wait-for-reply / unbind — every per-transport lifecycle step that previously had to live in your app.</div>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon fc-icon--result">✅</div>
+            <div class="fc-body">
+              <div class="fc-title">Normalized result</div>
+              <div class="fc-desc">Surfaces a typed <code class="inline-code">TransactionResult</code> on success, or a typed <code class="inline-code">SdkError</code> variant on failure — the same shape across all transports.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rust-badge">
+          ⚙️ &nbsp; Built in <strong>Rust</strong> — wrapped with <strong>UniFFI</strong> — same contract, same names, same validation rules in every language binding.
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ── §02 Languages ── -->
+      <section class="doc-section" id="languages">
+        <div class="section-header">
+          <span class="section-number">02</span>
+          <h2>Languages &amp; platforms in v1</h2>
+        </div>
+
+        <div class="ov-table-wrap">
+          <table class="ov-table">
+            <thead>
+              <tr>
+                <th>Language</th>
+                <th>Distribution artifact</th>
+                <th>v1 status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Kotlin / Java — Android</td>
+                <td><code class="inline-code">pine-billing-sdk-&lt;semver&gt;.aar</code></td>
+                <td><span class="status-pill status-pill--ship">Shipping</span> — App‑to‑App transport ready</td>
+              </tr>
+              <tr>
+                <td>Swift — iOS / iPadOS</td>
+                <td><code class="inline-code">PineBillingSdk-&lt;semver&gt;.xcframework.zip</code></td>
+                <td><span class="status-pill status-pill--preview">Preview</span> — full release in Phase 7</td>
+              </tr>
+              <tr>
+                <td>Python ≥ 3.9 — Linux / macOS / Windows</td>
+                <td><code class="inline-code">pine_billing_sdk-&lt;semver&gt;-*.whl</code></td>
+                <td><span class="status-pill status-pill--preview">Preview</span> — full release in Phase 7</td>
+              </tr>
+              <tr>
+                <td>Node.js ≥ 18 — Linux / macOS / Windows</td>
+                <td><code class="inline-code">@pinelabs/billing-sdk-&lt;semver&gt;.tgz</code></td>
+                <td><span class="status-pill status-pill--preview">Preview</span> — full release in Phase 7</td>
+              </tr>
+              <tr>
+                <td>C / C++ — Linux / Windows / embedded</td>
+                <td><code class="inline-code">pine_billing_sdk-&lt;semver&gt;.tar.gz</code></td>
+                <td><span class="status-pill status-pill--preview">Preview</span> — full release in Phase 7</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="info-callout">
+          <div class="info-callout-icon">📥</div>
+          <div class="info-callout-body">
+            <strong>One distribution channel only</strong>
+            <p>
+              All artifacts are published exclusively on the <strong>Pinelabs Developer Portal</strong>
+              (download) and via the Pinelabs <strong>MCP <code class="inline-code">getSDK</code> tool</strong>.
+              The SDK is <strong>not</strong> on Maven Central, CocoaPods.org, PyPI, npmjs.com,
+              or any private registry. Each artifact ships as a zip containing the binary
+              plus a copy of these docs.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ── §03 Transports ── -->
+      <section class="doc-section" id="transports">
+        <div class="section-header">
+          <span class="section-number">03</span>
+          <h2>Transports in v1</h2>
+        </div>
+        <p>Pick the transport that matches where your terminal lives and where your code runs:</p>
+
+        <div class="transport-grid">
+
+          <div class="transport-card">
+            <div class="tc-head">
+              <div class="tc-icon tc-icon--a2a">📱</div>
+              <div>
+                <div class="tc-name">App‑to‑App</div>
+                <div class="tc-sub">Android · Inter-process</div>
+              </div>
+            </div>
+            <div class="tc-body">
+              <div class="tc-row">
+                <div class="tc-label">Terminal</div>
+                <div class="tc-val">Pinelabs Android terminal running MasterApp</div>
+              </div>
+              <div class="tc-row">
+                <div class="tc-label">Your code</div>
+                <div class="tc-val">Same Android device (e.g. Pinelabs all-in-one)</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="transport-card">
+            <div class="tc-head">
+              <div class="tc-icon tc-icon--cloud">☁️</div>
+              <div>
+                <div class="tc-name">Cloud REST</div>
+                <div class="tc-sub">HTTPS · Any platform</div>
+              </div>
+            </div>
+            <div class="tc-body">
+              <div class="tc-row">
+                <div class="tc-label">Terminal</div>
+                <div class="tc-val">Anywhere reachable from the Pinelabs cloud</div>
+              </div>
+              <div class="tc-row">
+                <div class="tc-label">Your code</div>
+                <div class="tc-val">Any device with HTTPS egress</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="transport-card">
+            <div class="tc-head">
+              <div class="tc-icon tc-icon--pad">🔌</div>
+              <div>
+                <div class="tc-name">PADController</div>
+                <div class="tc-sub">Bluetooth / USB / Serial</div>
+              </div>
+            </div>
+            <div class="tc-body">
+              <div class="tc-row">
+                <div class="tc-label">Terminal</div>
+                <div class="tc-val">Same device as the host via PADController</div>
+              </div>
+              <div class="tc-row">
+                <div class="tc-label">Your code</div>
+                <div class="tc-val">Any platform supported by PADController</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="transport-card">
+            <div class="tc-head">
+              <div class="tc-icon tc-icon--tcp">🌐</div>
+              <div>
+                <div class="tc-name">TCP direct</div>
+                <div class="tc-sub">LAN · v1 placeholder</div>
+              </div>
+            </div>
+            <div class="tc-body">
+              <div class="tc-row">
+                <div class="tc-label">Terminal</div>
+                <div class="tc-val">LAN-connected terminal</div>
+              </div>
+              <div class="tc-row">
+                <div class="tc-label">Your code</div>
+                <div class="tc-val">Reachable host on the same LAN</div>
+              </div>
+              <div class="tc-note">
+                ⚠ Wire protocol is unspecified in v1 — calls may raise
+                <code class="inline-code">NotSupported</code> until the adapter ships in a later 7.x release.
+                Use App‑to‑App, Cloud, or PADController in v1.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ── §04 Not in v1 ── -->
+      <section class="doc-section" id="not-in-v1">
+        <div class="section-header">
+          <span class="section-number">04</span>
+          <h2>What is <em>not</em> in v1</h2>
+        </div>
+        <p>
+          Deliberately out of scope. <strong>Do not design your integration around these.</strong>
+          They will ship — if at all — in a later phase:
+        </p>
+
+        <ul class="notin-list">
+          <li>
+            <span class="notin-x">✗</span>
+            <span>
+              <strong>Direct-from-SDK Bluetooth scanning / pairing.</strong>
+              Bluetooth terminals are reached through PADController only.
+              The SDK does not expose a Bluetooth radio API.
+            </span>
+          </li>
+          <li>
+            <span class="notin-x">✗</span>
+            <span>
+              <strong>Direct USB enumeration on platforms other than Android.</strong>
+              PADController is the supported path.
+            </span>
+          </li>
+          <li>
+            <span class="notin-x">✗</span>
+            <span>
+              <strong>A typed enum for "Pinelabs cloud allowed-payment-mode".</strong>
+              The Cloud transport accepts an opaque <code class="inline-code">allowed_payment_mode</code>
+              string (commonly <code class="inline-code">"10"</code>) until the typed mapping is published.
+            </span>
+          </li>
+          <li>
+            <span class="notin-x">✗</span>
+            <span>
+              <strong>Wire-format APIs.</strong> CSV, JSON, framing — none are exposed in any binding.
+              They are an internal implementation detail. Use the typed
+              <code class="inline-code">TransportOptions::*</code> variants on the request for
+              transport-specific extras.
+            </span>
+          </li>
+          <li>
+            <span class="notin-x">✗</span>
+            <span>
+              <strong>Public package registries.</strong>
+              Maven Central / CocoaPods.org / PyPI / npmjs.com publication.
+              Use the Developer Portal or the MCP <code class="inline-code">getSDK</code> tool.
+            </span>
+          </li>
+        </ul>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ── §05 E2E flow ── -->
+      <section class="doc-section" id="e2e-flow">
+        <div class="section-header">
+          <span class="section-number">05</span>
+          <h2>End-to-end flow at a glance</h2>
+        </div>
+        <p>
+          The same flow applies to <code class="inline-code">testPrint</code>,
+          <code class="inline-code">cancel</code>, <code class="inline-code">checkStatus</code>,
+          <code class="inline-code">discoverTerminals</code>, and every other
+          transport-touching method.
+        </p>
+
+        <div class="e2e-flow">
+
+          <!-- Node 1: Your app -->
+          <div class="e2e-node e2e-node--app">
+            <div class="e2e-node-icon">💻</div>
+            <div class="e2e-node-body">
+              <div class="e2e-node-title">Your app — UI thread</div>
+              <div class="e2e-steps">
+                <div class="e2e-step">
+                  <span class="e2e-step-num">call</span>
+                  <span><code class="inline-code">sdk.doTransaction(request, listener)</code> — returns immediately, no blocking I/O on your thread.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="e2e-arrow">
+            <div class="e2e-arrow-line"></div>
+            <div class="e2e-arrow-head">▼</div>
+            <div class="e2e-arrow-label">dispatches to worker thread</div>
+          </div>
+
+          <!-- Node 2: SDK core -->
+          <div class="e2e-node e2e-node--sdk">
+            <div class="e2e-node-icon">⚙️</div>
+            <div class="e2e-node-body">
+              <div class="e2e-node-title">PineBillingSdk — Rust core via UniFFI</div>
+              <div class="e2e-steps">
+                <div class="e2e-step"><span class="e2e-step-num">1</span><span>Validates the request (throws <code class="inline-code">InvalidInput</code> if bad)</span></div>
+                <div class="e2e-step"><span class="e2e-step-num">2</span><span>Allocates a UUIDv4 <code class="inline-code">event_id</code> for this operation</span></div>
+                <div class="e2e-step"><span class="e2e-step-num">3</span><span>Fires <code class="inline-code">listener.onStarted(event_id)</code> on worker thread — persist now</span></div>
+                <div class="e2e-step"><span class="e2e-step-num">4</span><span>Routes to the active transport</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="e2e-arrow">
+            <div class="e2e-arrow-line"></div>
+            <div class="e2e-arrow-head">▼</div>
+            <div class="e2e-arrow-label">selects active transport</div>
+          </div>
+
+          <!-- Node 3: Transport -->
+          <div class="e2e-node e2e-node--transport">
+            <div class="e2e-node-icon">🔀</div>
+            <div class="e2e-node-body">
+              <div class="e2e-node-title">Active transport — one of:</div>
+              <div class="e2e-transport-pills" style="margin-top:8px">
+                <span class="e2e-tpill e2e-tpill--a2a">App‑to‑App</span>
+                <span class="e2e-tpill e2e-tpill--cloud">Cloud REST</span>
+                <span class="e2e-tpill e2e-tpill--pad">PADController</span>
+                <span class="e2e-tpill e2e-tpill--tcp">TCP</span>
+              </div>
+              <div style="font-size:12px;color:var(--ink-400);margin-top:10px">
+                On-the-wire format: CSV · JSON · framed bytes · HTTPS — all internal, never exposed to your code.
+              </div>
+            </div>
+          </div>
+
+          <div class="e2e-arrow">
+            <div class="e2e-arrow-line"></div>
+            <div class="e2e-arrow-head">▼</div>
+            <div class="e2e-arrow-label">on-the-wire request</div>
+          </div>
+
+          <!-- Node 4: Terminal -->
+          <div class="e2e-node e2e-node--terminal">
+            <div class="e2e-node-icon">💳</div>
+            <div class="e2e-node-body">
+              <div class="e2e-node-title">Pinelabs terminal</div>
+              <div class="e2e-steps">
+                <div class="e2e-step"><span class="e2e-step-num">A</span><span>Cardholder taps / inserts / swipes card, enters PIN</span></div>
+                <div class="e2e-step"><span class="e2e-step-num">B</span><span>Acquirer / cloud round-trip completes (seconds–tens of seconds)</span></div>
+                <div class="e2e-step"><span class="e2e-step-num">C</span><span>Approval slip / printer output</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="e2e-arrow">
+            <div class="e2e-arrow-line"></div>
+            <div class="e2e-arrow-head">▼</div>
+            <div class="e2e-arrow-label">terminal reply</div>
+          </div>
+
+          <!-- Node 5: SDK reply -->
+          <div class="e2e-node e2e-node--sdk2">
+            <div class="e2e-node-icon">📬</div>
+            <div class="e2e-node-body">
+              <div class="e2e-node-title">PineBillingSdk — worker thread callback</div>
+              <div class="e2e-steps">
+                <div class="e2e-step"><span class="e2e-step-num">5</span><span>Parses and normalizes the terminal reply</span></div>
+                <div class="e2e-step"><span class="e2e-step-num">6</span><span>Fires <code class="inline-code">listener.onSuccess(result)</code> <strong>or</strong> <code class="inline-code">listener.onFailure(error)</code> — marshal to UI thread before touching views</span></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ── §06 Where to go next ── -->
+      <section class="doc-section" id="next">
+        <div class="section-header">
+          <span class="section-number">06</span>
+          <h2>Where to go next</h2>
+        </div>
+        <p>
+          New here? The four "load-bearing" concepts — read them in order for a real integration:
+        </p>
+
+        <div class="next-grid">
+
+          <a class="next-card" href="lifecycle">
+            <div class="next-card-eyebrow nc-e--01">Concept 01</div>
+            <div class="next-card-title">Lifecycle &amp; Threading</div>
+            <div class="next-card-desc">
+              When to construct the SDK, one-instance rule, threading model, how callbacks fire,
+              and how to avoid <code class="inline-code">OperationInProgress</code> bugs.
+            </div>
+            <div class="next-card-arrow">Read →</div>
+          </a>
+
+          <a class="next-card" href="capabilities">
+            <div class="next-card-eyebrow nc-e--02">Concept 02</div>
+            <div class="next-card-title">Capability Matrix</div>
+            <div class="next-card-desc">
+              Which methods are supported by which transport — before you write code,
+              check what your chosen transport can actually do.
+            </div>
+            <div class="next-card-arrow">Read →</div>
+          </a>
+
+          <a class="next-card" href="eventid-and-reconciliation">
+            <div class="next-card-eyebrow nc-e--03">Concept 03</div>
+            <div class="next-card-title">event_id &amp; Reconciliation</div>
+            <div class="next-card-desc">
+              Persist <code class="inline-code">event_id</code> in <code class="inline-code">onStarted</code>,
+              query lifecycle state with <code class="inline-code">checkStatus</code>,
+              and recover correctly after a process crash.
+            </div>
+            <div class="next-card-arrow">Read →</div>
+          </a>
+
+          <a class="next-card" href="error-handling">
+            <div class="next-card-eyebrow nc-e--04">Concept 04</div>
+            <div class="next-card-title">Error Handling</div>
+            <div class="next-card-desc">
+              Every <code class="inline-code">SdkError</code> variant, when it fires synchronously
+              vs asynchronously, retryability, and the canonical
+              <code class="inline-code">try/catch</code> pattern.
+            </div>
+            <div class="next-card-arrow">Read →</div>
+          </a>
+
+        </div>
+
+        <p style="font-size:14px;color:var(--ink-600);margin-top:8px">
+          Already comfortable with the concepts? Jump straight to the API reference:
+          <a href="../init">init</a> ·
+          <a href="../do-transaction">doTransaction</a> ·
+          <a href="../devices">Supported Devices</a>
+        </p>
+      </section>
+
+      <!-- Footer -->
+      <footer class="doc-footer">
+        <div class="doc-footer-inner">
+          <div class="footer-left">
+            <div class="brand">
+              <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
+                <rect width="32" height="32" rx="8" fill="#635bff"/>
+                <path d="M8 20l6-12 4 8 3-4 3 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="brand-name">Pinelabs SDK</span>
+            </div>
+            <p class="footer-note">Document version: <code class="inline-code">1.0</code></p>
+          </div>
+          <div class="footer-links">
+            <a href="../index">Home</a>
+            <a href="#what-it-is">What it is</a>
+            <a href="#languages">Languages</a>
+            <a href="#transports">Transports</a>
+            <a href="#e2e-flow">Flow</a>
+            <a href="#next">Next steps</a>
+          </div>
+        </div>
+      </footer>
+
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="../js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Versioning &amp; Support — Pinelabs SDK</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    :root { --green: #00c896; --green-bg: rgba(0,200,150,.08); }
+
+    /* ── hero ── */
+    .vs-hero { padding: 48px 0 32px; }
+    .vs-eyebrow {
+      font-size: 12px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--green); margin-bottom: 10px;
+    }
+    .vs-title {
+      font-size: 38px; font-weight: 800; letter-spacing: -1.3px;
+      line-height: 1.13; margin-bottom: 14px;
+      background: linear-gradient(135deg, var(--ink-900) 35%, var(--green) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .vs-sub {
+      font-size: 16px; color: var(--ink-600); max-width: 680px;
+      line-height: 1.7; margin-bottom: 0;
+    }
+
+    /* ── callouts ── */
+    .info-callout {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: var(--green-bg); border: 1.5px solid rgba(0,200,150,.22);
+      border-radius: var(--r-lg); padding: 18px 20px; margin: 20px 0;
+    }
+    .info-callout-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+    .info-callout-body { flex: 1; }
+    .info-callout-body strong { display: block; font-size: 13px; font-weight: 700; color: var(--ink-900); margin-bottom: 5px; }
+    .info-callout-body p { font-size: 14px; color: var(--ink-600); line-height: 1.65; margin: 0; }
+    .info-callout-body p + p { margin-top: 7px; }
+
+    .warn-callout {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: rgba(255,184,48,.08); border: 1.5px solid rgba(255,184,48,.3);
+      border-radius: var(--r-lg); padding: 18px 20px; margin: 20px 0;
+    }
+    .warn-callout-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+    .warn-callout-body { flex: 1; }
+    .warn-callout-body strong { display: block; font-size: 13px; font-weight: 700; color: var(--ink-900); margin-bottom: 5px; }
+    .warn-callout-body p { font-size: 14px; color: var(--ink-600); line-height: 1.65; margin: 0; }
+    .warn-callout-body p + p { margin-top: 7px; }
+
+    .danger-callout {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: rgba(255,107,107,.07); border: 1.5px solid rgba(255,107,107,.25);
+      border-radius: var(--r-lg); padding: 18px 20px; margin: 20px 0;
+    }
+    .danger-callout-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+    .danger-callout-body { flex: 1; }
+    .danger-callout-body strong { display: block; font-size: 13px; font-weight: 700; color: var(--coral); margin-bottom: 5px; }
+    .danger-callout-body p { font-size: 14px; color: var(--ink-600); line-height: 1.65; margin: 0; }
+
+    /* ── semver bump cards ── */
+    .bump-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin: 24px 0; }
+    @media (max-width: 780px) { .bump-cards { grid-template-columns: 1fr; } }
+    .bump-card {
+      background: var(--white); border: 1px solid var(--ink-100);
+      border-radius: var(--r-xl); padding: 20px; box-shadow: var(--shadow-sm);
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .bump-card-top { display: flex; align-items: center; gap: 10px; }
+    .bump-badge {
+      font-family: var(--font-mono); font-size: 15px; font-weight: 800;
+      padding: 4px 12px; border-radius: var(--r-md);
+    }
+    .bump-badge--major { background: rgba(255,107,107,.12); color: var(--coral); border: 1px solid rgba(255,107,107,.25); }
+    .bump-badge--minor { background: rgba(0,200,150,.1);    color: var(--green); border: 1px solid rgba(0,200,150,.25); }
+    .bump-badge--patch { background: rgba(99,91,255,.1);    color: var(--purple); border: 1px solid rgba(99,91,255,.2); }
+    .bump-card-label { font-size: 14px; font-weight: 700; color: var(--ink-900); }
+    .bump-card-items { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 7px; }
+    .bump-card-items li {
+      display: flex; align-items: flex-start; gap: 8px;
+      font-size: 13px; color: var(--ink-600); line-height: 1.55;
+    }
+    .bump-card-items li::before { content: '▸'; font-size: 9px; margin-top: 4px; flex-shrink: 0; }
+    .bump-badge--major ~ .bump-card-label + .bump-card-items li::before { color: var(--coral); }
+
+    /* ── versions table ── */
+    .versions-table-wrap { overflow-x: auto; margin: 20px 0; border-radius: var(--r-xl); border: 1px solid var(--ink-100); box-shadow: var(--shadow-sm); }
+    .versions-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    .versions-table th {
+      background: var(--ink-900); color: rgba(255,255,255,.85);
+      font-size: 11px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; padding: 12px 16px; text-align: left;
+    }
+    .versions-table th:first-child { border-radius: var(--r-xl) 0 0 0; }
+    .versions-table th:last-child  { border-radius: 0 var(--r-xl) 0 0; }
+    .versions-table td {
+      padding: 12px 16px; border-bottom: 1px solid var(--ink-100);
+      vertical-align: middle; color: var(--ink-700); font-size: 13.5px;
+    }
+    .versions-table tr:last-child td { border-bottom: none; }
+    .versions-table tr:nth-child(even) td { background: rgba(99,91,255,.025); }
+    .versions-table td:first-child { font-weight: 700; color: var(--ink-900); }
+    .vt-mono { font-family: var(--font-mono); font-size: 13px; }
+    .vt-min { font-family: var(--font-mono); font-size: 13px; color: var(--ink-700); }
+    .vt-target { font-family: var(--font-mono); font-size: 12px; color: var(--ink-500); }
+    .pill-stable {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: var(--green-bg); color: #0a7a5e; border: 1px solid rgba(0,200,150,.3);
+      font-size: 11px; font-weight: 700; border-radius: 20px; padding: 2px 9px;
+    }
+
+    /* ── transport × language matrix ── */
+    .matrix-wrap { overflow-x: auto; margin: 20px 0; border-radius: var(--r-xl); border: 1px solid var(--ink-100); box-shadow: var(--shadow-sm); }
+    .matrix-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    .matrix-table th {
+      background: var(--ink-900); color: rgba(255,255,255,.85);
+      font-size: 11px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; padding: 12px 16px; text-align: center;
+    }
+    .matrix-table th:first-child { text-align: left; border-radius: var(--r-xl) 0 0 0; }
+    .matrix-table th:last-child  { border-radius: 0 var(--r-xl) 0 0; }
+    .matrix-table td {
+      padding: 12px 16px; border-bottom: 1px solid var(--ink-100);
+      vertical-align: middle; text-align: center; font-size: 13px;
+    }
+    .matrix-table tr:last-child td { border-bottom: none; }
+    .matrix-table tr:nth-child(even) td { background: rgba(99,91,255,.025); }
+    .matrix-table td:first-child { font-weight: 700; color: var(--ink-900); text-align: left; }
+    .m-yes  { color: var(--green);  font-size: 17px; }
+    .m-na   { color: var(--ink-300); font-size: 13px; font-style: italic; }
+    .m-ph   { color: var(--amber);  font-size: 12px; font-weight: 700; }
+
+    /* ── guarantee lists ── */
+    .guarantee-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+    @media (max-width: 700px) { .guarantee-grid { grid-template-columns: 1fr; } }
+    .guarantee-card {
+      background: var(--white); border: 1px solid var(--ink-100);
+      border-radius: var(--r-xl); padding: 20px; box-shadow: var(--shadow-sm);
+    }
+    .gc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .gc-icon { font-size: 20px; }
+    .gc-title { font-size: 14px; font-weight: 700; color: var(--ink-900); }
+    .gc-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .gc-list li {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 13.5px; color: var(--ink-600); line-height: 1.6;
+    }
+    .gc-list--wont li::before { content: '✗'; color: var(--coral);  font-size: 12px; font-weight: 800; margin-top: 2px; flex-shrink: 0; }
+    .gc-list--may  li::before { content: '✓'; color: var(--green);  font-size: 12px; font-weight: 800; margin-top: 2px; flex-shrink: 0; }
+
+    /* ── deprecation steps ── */
+    .dep-steps { display: flex; flex-direction: column; gap: 0; margin: 24px 0; }
+    .dep-step { display: flex; gap: 0; }
+    .dep-step-num {
+      display: flex; flex-direction: column; align-items: center; flex-shrink: 0;
+    }
+    .dep-step-circle {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--ink-900); color: rgba(255,255,255,.9);
+      font-size: 13px; font-weight: 800; display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0;
+    }
+    .dep-step-line { flex: 1; width: 2px; background: var(--ink-100); margin: 4px 0; }
+    .dep-step:last-child .dep-step-line { display: none; }
+    .dep-step-body { padding: 4px 0 20px 16px; flex: 1; }
+    .dep-step-title { font-size: 14px; font-weight: 700; color: var(--ink-900); margin-bottom: 5px; }
+    .dep-step-desc  { font-size: 13.5px; color: var(--ink-600); line-height: 1.65; }
+    .dep-step-desc code { font-family: var(--font-mono); font-size: .87em; background: rgba(99,91,255,.07); padding: 1px 5px; border-radius: 4px; color: var(--purple); }
+
+    /* ── distribution cards ── */
+    .distrib-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0; }
+    @media (max-width: 640px) { .distrib-grid { grid-template-columns: 1fr; } }
+    .distrib-card {
+      background: var(--white); border: 1px solid var(--ink-100);
+      border-radius: var(--r-xl); padding: 18px 20px;
+      box-shadow: var(--shadow-sm); display: flex; gap: 14px;
+    }
+    .dc-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+    .dc-body { flex: 1; }
+    .dc-title { font-size: 14px; font-weight: 700; color: var(--ink-900); margin-bottom: 6px; }
+    .dc-desc  { font-size: 13px; color: var(--ink-600); line-height: 1.6; }
+
+    /* ── eol timeline ── */
+    .eol-timeline {
+      display: flex; gap: 0; align-items: stretch; margin: 24px 0;
+      border-radius: var(--r-xl); overflow: hidden; border: 1px solid var(--ink-100);
+      box-shadow: var(--shadow-sm);
+    }
+    .eol-cell {
+      flex: 1; padding: 18px 16px; text-align: center;
+      display: flex; flex-direction: column; gap: 8px; justify-content: center;
+    }
+    .eol-cell + .eol-cell { border-left: 1px solid var(--ink-100); }
+    .eol-cell--current  { background: var(--green-bg); }
+    .eol-cell--prev     { background: rgba(255,184,48,.07); }
+    .eol-cell--eol      { background: rgba(255,107,107,.06); }
+    .eol-label { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .eol-label--current { color: var(--green); }
+    .eol-label--prev    { color: #9a6800; }
+    .eol-label--eol     { color: var(--coral); }
+    .eol-version { font-family: var(--font-mono); font-size: 20px; font-weight: 800; color: var(--ink-900); }
+    .eol-desc { font-size: 12px; color: var(--ink-500); line-height: 1.5; }
+
+    /* ── support channels ── */
+    .support-cards { display: flex; flex-direction: column; gap: 12px; margin: 20px 0; }
+    .support-card {
+      background: var(--white); border: 1px solid var(--ink-100);
+      border-radius: var(--r-xl); padding: 18px 20px;
+      box-shadow: var(--shadow-sm); display: flex; gap: 16px; align-items: flex-start;
+    }
+    .sc-icon {
+      width: 40px; height: 40px; border-radius: var(--r-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .sc-icon--green  { background: var(--green-bg); }
+    .sc-icon--red    { background: rgba(255,107,107,.08); }
+    .sc-icon--purple { background: rgba(99,91,255,.08); }
+    .sc-body { flex: 1; }
+    .sc-title { font-size: 14px; font-weight: 700; color: var(--ink-900); margin-bottom: 5px; }
+    .sc-desc  { font-size: 13.5px; color: var(--ink-600); line-height: 1.65; }
+
+    /* ── inline code ── */
+    code { font-family: var(--font-mono); font-size: .88em; background: rgba(99,91,255,.07); padding: 1px 5px; border-radius: 4px; color: var(--purple); }
+
+    /* ── see also ── */
+    .see-also { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+    .see-also-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 600; color: var(--purple);
+      background: var(--purple-bg); border: 1px solid rgba(99,91,255,.2);
+      padding: 7px 14px; border-radius: 20px; text-decoration: none;
+      transition: background .15s, border-color .15s;
+    }
+    .see-also-link:hover { background: rgba(99,91,255,.12); border-color: rgba(99,91,255,.35); }
+  </style>
+</head>
+<body>
+
+<!-- ═══ TOP BAR ═══ -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="../index" class="brand">
+      <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" rx="8" fill="#635bff"/>
+        <path d="M8 20l6-12 4 8 3-4 3 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="brand-name">Pinelabs<span class="brand-sub"> SDK</span></span>
+    </a>
+    <nav class="topbar-nav">
+      <a href="../index" class="topbar-link">Home</a>
+      <a href="../init" class="topbar-link">init</a>
+      <a href="../do-transaction" class="topbar-link">doTransaction</a>
+      <a href="../devices" class="topbar-link">Devices</a>
+      <a href="capabilities" class="topbar-link">Capabilities</a>
+    </nav>
+    <div class="topbar-actions">
+      <span class="version-badge">v1.0</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ LAYOUT ═══ -->
+<div class="layout">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-inner">
+
+      <div class="sidebar-section">
+        <p class="sidebar-label">Overview</p>
+        <a href="../index" class="sidebar-link">Introduction</a>
+        <a href="overview" class="sidebar-link">SDK Overview</a>
+      </div>
+
+      <div class="sidebar-section">
+        <p class="sidebar-label">Concepts</p>
+        <a href="capabilities" class="sidebar-link">Capability Matrix</a>
+        <a href="error-handling" class="sidebar-link">Error Handling</a>
+        <a href="lifecycle" class="sidebar-link">Lifecycle &amp; Threading</a>
+        <a href="eventid-and-reconciliation" class="sidebar-link">event_id &amp; Reconciliation</a>
+        <a href="result-payload" class="sidebar-link">TransactionResult</a>
+        <a href="transports.html" class="sidebar-link">Transports</a>
+        <a href="versioning-and-support" class="sidebar-link active">Versioning &amp; Support</a>
+      </div>
+
+      <div class="sidebar-section">
+        <p class="sidebar-label">On this page</p>
+        <a href="#semver"           class="sidebar-link sidebar-link--sub">SemVer policy</a>
+        <a href="#min-versions"     class="sidebar-link sidebar-link--sub">Minimum versions</a>
+        <a href="#transport-matrix" class="sidebar-link sidebar-link--sub">Transport × language</a>
+        <a href="#compat"           class="sidebar-link sidebar-link--sub">Compatibility guarantees</a>
+        <a href="#distribution"     class="sidebar-link sidebar-link--sub">Distribution &amp; integrity</a>
+        <a href="#deprecation"      class="sidebar-link sidebar-link--sub">Deprecation policy</a>
+        <a href="#support"          class="sidebar-link sidebar-link--sub">Support channels</a>
+        <a href="#eol"              class="sidebar-link sidebar-link--sub">End-of-life</a>
+      </div>
+
+      <div class="sidebar-section">
+        <p class="sidebar-label">API Reference</p>
+        <a href="../init" class="sidebar-link">init</a>
+        <a href="../do-transaction" class="sidebar-link">doTransaction</a>
+      </div>
+
+      <div class="sidebar-section">
+        <p class="sidebar-label">Hardware</p>
+        <a href="../devices" class="sidebar-link">Supported Devices</a>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="content" id="main-content">
+
+    <!-- HERO -->
+    <div class="vs-hero">
+      <div class="vs-eyebrow">Concepts</div>
+      <h1 class="vs-title">Versioning, support &amp; compatibility</h1>
+      <p class="vs-sub">
+        This page is the contract between the Pinelabs SDK and your code across releases.
+        It defines the SemVer policy, minimum platform requirements, backwards-compatibility
+        guarantees, deprecation rules, and end-of-life schedule.
+      </p>
+      <div class="warn-callout" style="margin-top:24px">
+        <span class="warn-callout-icon">⚠️</span>
+        <div class="warn-callout-body">
+          <strong>v1.0.0 is not yet tagged</strong>
+          <p>
+            Releases are currently tagged <code>v0.x.y</code> and may break compatibly within the v0
+            line at MINOR bumps to absorb late-breaking deltas. The v1.0.0 tag ships when the full
+            §4 transport × language matrix (App-to-App / Cloud / PADController across
+            Kotlin / Swift / Python / Node.js / C) is complete.
+          </p>
+          <p style="margin-top:8px">
+            <strong>Action:</strong> Pin production integrations to an exact <code>v0.x.y</code> tag
+            and re-validate on every bump.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ─── 01  SEMVER POLICY ─── -->
+    <section class="doc-section" id="semver">
+      <div class="section-header">
+        <span class="section-number">01</span>
+        <h2 class="section-title">SemVer policy</h2>
+      </div>
+      <p class="section-intro">
+        The SDK follows <strong>SemVer 2.0.0</strong> — <code>MAJOR.MINOR.PATCH</code>.
+        Each bump level carries a specific promise.
+      </p>
+
+      <div class="bump-cards">
+        <!-- MAJOR -->
+        <div class="bump-card">
+          <div class="bump-card-top">
+            <span class="bump-badge bump-badge--major">MAJOR</span>
+            <span class="bump-card-label">Breaking changes</span>
+          </div>
+          <ul class="bump-card-items">
+            <li>Removed or renamed public types or methods</li>
+            <li>Narrowed input validation rules</li>
+            <li>Removed <code>metadata</code> keys</li>
+            <li>Removed <code>TransactionStatus</code> variants</li>
+            <li>Behavioural change with no overload-and-deprecate path</li>
+          </ul>
+        </div>
+        <!-- MINOR -->
+        <div class="bump-card">
+          <div class="bump-card-top">
+            <span class="bump-badge bump-badge--minor">MINOR</span>
+            <span class="bump-card-label">Additive only</span>
+          </div>
+          <ul class="bump-card-items">
+            <li>New optional fields or methods</li>
+            <li>New transports or <code>TransportType</code> entries</li>
+            <li>New <code>PaymentMode</code> / <code>OperationState</code> enum entries</li>
+            <li>New <code>metadata</code> keys</li>
+            <li>New <code>SdkException</code> variants (see exhaustiveness note)</li>
+          </ul>
+        </div>
+        <!-- PATCH -->
+        <div class="bump-card">
+          <div class="bump-card-top">
+            <span class="bump-badge bump-badge--patch">PATCH</span>
+            <span class="bump-card-label">No API surface change</span>
+          </div>
+          <ul class="bump-card-items">
+            <li>Bug fixes and performance improvements</li>
+            <li>Internal refactors</li>
+            <li>Log-level tuning</li>
+            <li>Documentation updates</li>
+            <li>Dependency bumps without consumer-side change</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="info-callout">
+        <span class="info-callout-icon">💡</span>
+        <div class="info-callout-body">
+          <strong>SdkException exhaustiveness</strong>
+          <p>New exception variants are MINOR additions. Always include a default / wildcard branch when matching on <code>SdkException</code> so your code does not break on a MINOR bump:</p>
+        </div>
+      </div>
+
+      <div class="code-block" style="margin-top:0">
+        <div class="code-header"><span class="code-lang">Kotlin</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><code class="language-kotlin">when (e) {
+    is SdkException.InvalidInput  -> handleInput(e)
+    is SdkException.Timeout       -> handleTimeout(e)
+    is SdkException.TransactionFailed -> handleFailed(e)
+    // … other known variants …
+    else -> log.warn("unknown SdkException variant: $e")
+}</code></pre>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ─── 02  MINIMUM SUPPORTED VERSIONS ─── -->
+    <section class="doc-section" id="min-versions">
+      <div class="section-header">
+        <span class="section-number">02</span>
+        <h2 class="section-title">Minimum supported versions</h2>
+      </div>
+      <p class="section-intro">
+        The MSRV (minimum supported Rust toolchain) is <strong>1.75</strong>. We bump it at most
+        at MINOR releases, and only with at least one full release of advance warning in the changelog.
+      </p>
+
+      <div class="versions-table-wrap">
+        <table class="versions-table">
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Minimum</th>
+              <th>Target / tested</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Rust toolchain <span style="font-size:12px;color:var(--ink-400);font-weight:400">(build from source)</span></td>
+              <td><span class="vt-min">1.75 (MSRV)</span></td>
+              <td><span class="vt-target">latest stable</span></td>
+            </tr>
+            <tr>
+              <td>Android</td>
+              <td><span class="vt-min">API 21 <span style="font-weight:400;color:var(--ink-500)">(Android 5.0)</span></span></td>
+              <td><span class="vt-target">API 34</span></td>
+            </tr>
+            <tr>
+              <td>AGP <span style="font-size:12px;color:var(--ink-400);font-weight:400">(Android Gradle Plugin)</span></td>
+              <td><span class="vt-min">8.6</span></td>
+              <td><span class="vt-target">8.6.1</span></td>
+            </tr>
+            <tr>
+              <td>Kotlin</td>
+              <td><span class="vt-min">2.0.0</span></td>
+              <td><span class="vt-target">2.0.20</span></td>
+            </tr>
+            <tr>
+              <td>iOS / iPadOS</td>
+              <td><span class="vt-min">14.0</span></td>
+              <td><span class="vt-target">latest stable</span></td>
+            </tr>
+            <tr>
+              <td>Swift</td>
+              <td><span class="vt-min">5.9</span></td>
+              <td><span class="vt-target">latest stable</span></td>
+            </tr>
+            <tr>
+              <td>Python</td>
+              <td><span class="vt-min">3.9</span></td>
+              <td><span class="vt-target">3.12</span></td>
+            </tr>
+            <tr>
+              <td>Node.js</td>
+              <td><span class="vt-min">18 LTS</span></td>
+              <td><span class="vt-target">latest LTS</span></td>
+            </tr>
+            <tr>
+              <td>C compiler</td>
+              <td><span class="vt-min">C11 <span style="font-weight:400;color:var(--ink-500)">(GCC ≥ 9, Clang ≥ 11, MSVC 2019+)</span></span></td>
+              <td><span class="vt-target">latest stable</span></td>
+            </tr>
+            <tr>
+              <td>JNA <span style="font-size:12px;color:var(--ink-400);font-weight:400">(transitive via UniFFI Kotlin)</span></td>
+              <td><span class="vt-min">5.14.0</span></td>
+              <td><span class="vt-target">5.14.0</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ─── 03  TRANSPORT × LANGUAGE ─── -->
+    <section class="doc-section" id="transport-matrix">
+      <div class="section-header">
+        <span class="section-number">03</span>
+        <h2 class="section-title">Supported transports per language (v1)</h2>
+      </div>
+      <p class="section-intro">
+        App-to-App is Android-only (it bridges to MasterApp via <code>Messenger</code> IPC).
+        Cloud REST and PADController are platform-agnostic. TCP direct is a placeholder across all languages.
+      </p>
+
+      <div class="matrix-wrap">
+        <table class="matrix-table">
+          <thead>
+            <tr>
+              <th>Transport</th>
+              <th>Kotlin</th>
+              <th>Swift</th>
+              <th>Python</th>
+              <th>Node.js</th>
+              <th>C</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>App-to-App</td>
+              <td><span class="m-yes">✓</span></td>
+              <td><span class="m-na">n/a</span></td>
+              <td><span class="m-na">n/a</span></td>
+              <td><span class="m-na">n/a</span></td>
+              <td><span class="m-na">n/a</span></td>
+            </tr>
+            <tr>
+              <td>Cloud REST</td>
+              <td><span class="m-yes">✓</span></td>
+              <td><span class="m-yes">✓</span></td>
+              <td><span class="m-yes">✓</span></td>
+              <td><span class="m-yes">✓</span></td>
+              <td><span class="m-yes">✓</span></td>
+            </tr>
+            <tr>
+              <td>PADController</td>
+              <td><span class="m-yes">✓</span></td>
+              <td><span class="m-yes">✓</span></td>
+              <td><span class="m-yes">✓</span></td>
+              <td><span class="m-yes">✓</span></td>
+              <td><span class="m-yes">✓</span></td>
+            </tr>
+            <tr>
+              <td>TCP direct</td>
+              <td><span class="m-ph">placeholder</span></td>
+              <td><span class="m-ph">placeholder</span></td>
+              <td><span class="m-ph">placeholder</span></td>
+              <td><span class="m-ph">placeholder</span></td>
+              <td><span class="m-ph">placeholder</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ─── 04  BACKWARDS COMPATIBILITY ─── -->
+    <section class="doc-section" id="compat">
+      <div class="section-header">
+        <span class="section-number">04</span>
+        <h2 class="section-title">Backwards compatibility guarantees</h2>
+      </div>
+      <p class="section-intro">
+        The table below is the binding contract per bump level. The "Will not" list applies
+        without a MAJOR; the "May do" lists are explicitly permitted.
+      </p>
+
+      <div class="guarantee-grid">
+        <!-- Will NOT -->
+        <div class="guarantee-card">
+          <div class="gc-header">
+            <span class="gc-icon">🔒</span>
+            <span class="gc-title">Will <strong>not</strong> do without a MAJOR bump</span>
+          </div>
+          <ul class="gc-list gc-list--wont">
+            <li>Remove a public type, method, parameter, field, or enum variant</li>
+            <li>Remove an <code>SdkException</code> variant</li>
+            <li>Tighten validation rules (e.g. lower the <code>metadata</code> cap)</li>
+            <li>Change the meaning of an existing <code>metadata</code> key</li>
+            <li>Change the callback dispatch thread (always SDK-internal, always serialised)</li>
+            <li>Re-order callback emission (<code>onStarted</code> always before <code>onSuccess</code> / <code>onFailure</code>)</li>
+            <li>Change the synchronous-vs-async error delivery channel for an existing variant</li>
+          </ul>
+        </div>
+        <!-- May do MINOR -->
+        <div class="guarantee-card">
+          <div class="gc-header">
+            <span class="gc-icon">➕</span>
+            <span class="gc-title">May do at <strong>MINOR</strong> (additive)</span>
+          </div>
+          <ul class="gc-list gc-list--may">
+            <li>Add new fields, methods, enum variants, or <code>metadata</code> keys</li>
+            <li>Add new <code>SdkException</code> variants</li>
+            <li>Add new transports</li>
+            <li>Loosen validation rules</li>
+            <li>Promote a <code>metadata</code> key to a typed field (key remains populated for one MAJOR cycle)</li>
+          </ul>
+          <div style="height:20px"></div>
+          <div class="gc-header">
+            <span class="gc-icon">🔧</span>
+            <span class="gc-title">May do at <strong>PATCH</strong></span>
+          </div>
+          <ul class="gc-list gc-list--may">
+            <li>Bug fixes and performance improvements</li>
+            <li>Log-level tuning and internal refactors</li>
+            <li>Dependency bumps without consumer-side change</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ─── 05  DISTRIBUTION & INTEGRITY ─── -->
+    <section class="doc-section" id="distribution">
+      <div class="section-header">
+        <span class="section-number">05</span>
+        <h2 class="section-title">Distribution &amp; integrity</h2>
+      </div>
+      <p class="section-intro">
+        The SDK is distributed exclusively through official Pinelabs channels with
+        cryptographic verification on every artifact.
+      </p>
+
+      <div class="distrib-grid">
+        <div class="distrib-card">
+          <span class="dc-icon">🏛️</span>
+          <div class="dc-body">
+            <div class="dc-title">Official channels only</div>
+            <div class="dc-desc">
+              Every release artifact (AAR, xcframework, wheel, npm tarball, <code>.tar.gz</code>)
+              is published exclusively on the <strong>Pinelabs Developer Portal</strong>
+              and via the <strong>Pinelabs MCP <code>getSDK</code> tool</strong>.
+            </div>
+          </div>
+        </div>
+        <div class="distrib-card">
+          <span class="dc-icon">🚫</span>
+          <div class="dc-body">
+            <div class="dc-title">Not on public registries</div>
+            <div class="dc-desc">
+              The SDK is <strong>not</strong> published to Maven Central, CocoaPods.org,
+              PyPI, npmjs.com, or any private registry. Packages from those sources are
+              unofficial and should not be used.
+            </div>
+          </div>
+        </div>
+        <div class="distrib-card">
+          <span class="dc-icon">🔐</span>
+          <div class="dc-body">
+            <div class="dc-title">SHA-256 checksum + detached signature</div>
+            <div class="dc-desc">
+              Every artifact ships with a SHA-256 checksum and a detached signature,
+              both downloadable from the same release page.
+              Verify checksums before checking the artifact into your build system.
+            </div>
+          </div>
+        </div>
+        <div class="distrib-card">
+          <span class="dc-icon">📦</span>
+          <div class="dc-body">
+            <div class="dc-title">Docs bundled in every release</div>
+            <div class="dc-desc">
+              Every artifact zip includes a copy of these docs at
+              <code>docs/site/index.html</code> so you can browse offline.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-callout">
+        <span class="info-callout-icon">📖</span>
+        <div class="info-callout-body">
+          <strong>Per-language verification procedures</strong>
+          <p>
+            Step-by-step checksum verification instructions for each platform are documented in
+            <code>per-language/&lt;lang&gt;/setup.md</code> inside the release zip.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ─── 06  DEPRECATION POLICY ─── -->
+    <section class="doc-section" id="deprecation">
+      <div class="section-header">
+        <span class="section-number">06</span>
+        <h2 class="section-title">Deprecation policy</h2>
+      </div>
+      <p class="section-intro">
+        Deprecated symbols follow a four-step lifecycle before removal. Removal only ever
+        happens at the next MAJOR version.
+      </p>
+
+      <div class="dep-steps">
+        <div class="dep-step">
+          <div class="dep-step-num">
+            <div class="dep-step-circle">1</div>
+            <div class="dep-step-line"></div>
+          </div>
+          <div class="dep-step-body">
+            <div class="dep-step-title">Annotate the symbol</div>
+            <div class="dep-step-desc">
+              The symbol is marked with the language-idiomatic deprecation annotation:
+              <code>@Deprecated</code> (Kotlin / Java),
+              <code>@available(*, deprecated)</code> (Swift),
+              <code>DeprecationWarning</code> (Python),
+              <code>@deprecated</code> JSDoc (Node.js),
+              <code>__attribute__((deprecated))</code> (C).
+            </div>
+          </div>
+        </div>
+        <div class="dep-step">
+          <div class="dep-step-num">
+            <div class="dep-step-circle">2</div>
+            <div class="dep-step-line"></div>
+          </div>
+          <div class="dep-step-body">
+            <div class="dep-step-title">Name the replacement</div>
+            <div class="dep-step-desc">
+              The deprecation message includes the name of the replacement symbol so IDEs
+              and compilers surface the migration path inline.
+            </div>
+          </div>
+        </div>
+        <div class="dep-step">
+          <div class="dep-step-num">
+            <div class="dep-step-circle">3</div>
+            <div class="dep-step-line"></div>
+          </div>
+          <div class="dep-step-body">
+            <div class="dep-step-title">Record in CHANGELOG</div>
+            <div class="dep-step-desc">
+              The CHANGELOG records the deprecation in the MINOR release that introduced
+              it, so it appears in release notes.
+            </div>
+          </div>
+        </div>
+        <div class="dep-step">
+          <div class="dep-step-num">
+            <div class="dep-step-circle">4</div>
+            <div class="dep-step-line"></div>
+          </div>
+          <div class="dep-step-body">
+            <div class="dep-step-title">Remove at the next MAJOR</div>
+            <div class="dep-step-desc">
+              The symbol is removed <strong>only</strong> at the next MAJOR version — never
+              at a MINOR or PATCH — giving you a full MAJOR cycle to migrate.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ─── 07  SUPPORT CHANNELS ─── -->
+    <section class="doc-section" id="support">
+      <div class="section-header">
+        <span class="section-number">07</span>
+        <h2 class="section-title">Support channels</h2>
+      </div>
+      <p class="section-intro">Use the right channel for your issue type — especially for security, where the public queue must not be used.</p>
+
+      <div class="support-cards">
+        <div class="support-card">
+          <div class="sc-icon sc-icon--green">🐛</div>
+          <div class="sc-body">
+            <div class="sc-title">Bug reports &amp; questions</div>
+            <div class="sc-desc">
+              Use the <strong>Pinelabs Developer Portal ticketing system</strong>. Include:
+              the SDK version, your platform, the <code>event_id</code> (if any),
+              and an excerpt of the SDK log at <code>Debug</code> level.
+            </div>
+          </div>
+        </div>
+        <div class="support-card">
+          <div class="sc-icon sc-icon--red">🔒</div>
+          <div class="sc-body">
+            <div class="sc-title">Security issues</div>
+            <div class="sc-desc">
+              Follow the process in <code>SECURITY.md</code> at the repository root.
+              <strong>Do not file security issues in the public ticket queue</strong> — doing
+              so may expose the vulnerability before a fix is available.
+            </div>
+          </div>
+        </div>
+        <div class="support-card">
+          <div class="sc-icon sc-icon--purple">💡</div>
+          <div class="sc-body">
+            <div class="sc-title">Feature requests</div>
+            <div class="sc-desc">
+              Use the <strong>Developer Portal feedback channel</strong>. Feature work is
+              scheduled into the next MINOR release.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ─── 08  END-OF-LIFE ─── -->
+    <section class="doc-section" id="eol">
+      <div class="section-header">
+        <span class="section-number">08</span>
+        <h2 class="section-title">End-of-life</h2>
+      </div>
+      <p class="section-intro">
+        The SDK supports the <strong>two most recent MAJOR lines</strong> at any time.
+        When <code>vN+2.0.0</code> ships, <code>vN.x.y</code> enters maintenance mode
+        (security patches only) for <strong>6 months</strong>, then reaches EOL.
+        The CHANGELOG records EOL deadlines as soon as <code>vN+1.0.0</code> ships.
+      </p>
+
+      <div class="eol-timeline">
+        <div class="eol-cell eol-cell--current">
+          <div class="eol-label eol-label--current">Current</div>
+          <div class="eol-version">vN+1</div>
+          <div class="eol-desc">Active development &amp; bug fixes</div>
+        </div>
+        <div class="eol-cell eol-cell--prev">
+          <div class="eol-label eol-label--prev">Maintenance</div>
+          <div class="eol-version">vN</div>
+          <div class="eol-desc">Security patches only · 6-month window after vN+2 ships</div>
+        </div>
+        <div class="eol-cell eol-cell--eol">
+          <div class="eol-label eol-label--eol">EOL</div>
+          <div class="eol-version">vN−1</div>
+          <div class="eol-desc">No patches · upgrade required</div>
+        </div>
+      </div>
+
+      <div class="info-callout">
+        <span class="info-callout-icon">📅</span>
+        <div class="info-callout-body">
+          <strong>Deadlines are tracked in the CHANGELOG</strong>
+          <p>As soon as <code>vN+1.0.0</code> ships, the CHANGELOG entry records the exact EOL date for <code>vN−1.x.y</code> so you can plan migrations in advance.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- FOOTER -->
+    <div class="doc-footer">
+      <div class="doc-footer-title">See also</div>
+      <div class="see-also">
+        <a href="overview"       class="see-also-link">🗺️ SDK Overview</a>
+        <a href="transports.html"     class="see-also-link">🔌 Transports</a>
+        <a href="error-handling" class="see-also-link">⚠️ Error Handling</a>
+        <a href="capabilities"   class="see-also-link">📊 Capability Matrix</a>
+      </div>
+    </div>
+
+  </main>
+</div><!-- /layout -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../js/main.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => { hljs.highlightAll(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Device — Pinelabs Common SDK</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .crumbs {
+      font-size: 13px; color: #8a8aa3; margin: 28px 0 18px;
+    }
+    .crumbs a { color: #635bff; text-decoration: none; }
+    .crumbs a:hover { text-decoration: underline; }
+
+    .device-hero {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 48px;
+      padding: 24px 0 40px;
+      border-bottom: 1px solid #e6e6ef;
+      margin-bottom: 40px;
+    }
+    @media (max-width: 880px) { .device-hero { grid-template-columns: 1fr; } }
+
+    .hero-image {
+      background: linear-gradient(135deg, #f6f6fb 0%, #ececf6 100%);
+      border-radius: 14px;
+      aspect-ratio: 1 / 1;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .hero-image img { max-width: 80%; max-height: 80%; object-fit: contain; }
+    .hero-image svg { width: 60%; height: 60%; }
+
+    .hero-info h1 {
+      font-size: 36px; font-weight: 700; letter-spacing: -0.02em;
+      color: #1a1a2e; margin: 12px 0 8px;
+    }
+    .hero-info .oem-tag {
+      font-size: 13px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.06em; color: #635bff;
+    }
+    .hero-info .tagline {
+      font-size: 17px; color: #545478; line-height: 1.55; margin: 0 0 24px;
+    }
+    .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+    .pill {
+      font-size: 12px; padding: 4px 10px; border-radius: 999px;
+      background: #f0eefe; color: #635bff; font-weight: 500;
+    }
+    .pill--code {
+      background: #1a1a2e; color: #fff;
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+    }
+    .pill--stable { background: #ecfdf3; color: #027a48; }
+
+    .quick-facts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .quick-fact {
+      padding: 14px;
+      border: 1px solid #e6e6ef;
+      border-radius: 8px;
+      background: #fafafd;
+    }
+    .quick-fact .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #8a8aa3; font-weight: 600; }
+    .quick-fact .value { font-size: 14px; color: #1a1a2e; font-weight: 500; margin-top: 4px; }
+
+    .spec-section { margin: 40px 0; }
+    .spec-section h2 {
+      font-size: 20px; font-weight: 600; color: #1a1a2e;
+      margin: 0 0 16px; padding-bottom: 10px; border-bottom: 1px solid #ececf3;
+    }
+    .spec-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .spec-table tr { border-bottom: 1px solid #f1f1f7; }
+    .spec-table td { padding: 12px 0; color: #545478; vertical-align: top; }
+    .spec-table td:first-child { width: 220px; font-weight: 500; color: #1a1a2e; }
+
+    .feature-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .feature-list .pill { background: #f4f4fb; color: #545478; font-weight: 500; }
+
+    .cta-card {
+      margin-top: 48px;
+      padding: 24px;
+      background: linear-gradient(135deg, #635bff 0%, #5048e5 100%);
+      color: #fff;
+      border-radius: 12px;
+    }
+    .cta-card h3 { margin: 0 0 8px; font-size: 18px; font-weight: 600; }
+    .cta-card p { margin: 0 0 16px; opacity: 0.92; }
+    .cta-card a {
+      display: inline-block; padding: 10px 18px;
+      background: #fff; color: #635bff; border-radius: 6px;
+      text-decoration: none; font-weight: 600; font-size: 14px;
+    }
+
+    .related { margin-top: 48px; }
+    .related h2 { font-size: 18px; margin: 0 0 16px; }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .related-card {
+      padding: 14px;
+      border: 1px solid #e6e6ef;
+      border-radius: 8px;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color .15s, transform .15s;
+    }
+    .related-card:hover { border-color: #635bff; transform: translateY(-1px); }
+    .related-card .name { font-weight: 600; color: #1a1a2e; font-size: 14px; }
+    .related-card .meta { font-size: 12px; color: #8a8aa3; margin-top: 2px; }
+
+    .not-found { padding: 80px 0; text-align: center; color: #545478; }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="index" class="brand">
+        <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="#635bff"/>
+          <path d="M8 20l6-12 4 8 3-4 3 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="brand-name">Pinelabs<span class="brand-sub"> SDK</span></span>
+      </a>
+      <nav class="topbar-nav">
+        <a href="index" class="topbar-link">Home</a>
+        <a href="init" class="topbar-link">init</a>
+        <a href="do-transaction" class="topbar-link">doTransaction</a>
+        <a href="devices" class="topbar-link active">Devices</a>
+      </nav>
+      <div class="topbar-actions"><span class="version-badge">v0.1.0</span></div>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-inner">
+        <div class="sidebar-section">
+          <p class="sidebar-label">Hardware</p>
+          <a href="devices" class="sidebar-link">All Supported Devices</a>
+        </div>
+        <div class="sidebar-section" id="oem-list">
+          <p class="sidebar-label">By Manufacturer</p>
+          <a href="devices#ingenico" class="sidebar-link sidebar-link--sub">Ingenico</a>
+          <a href="devices#kozen" class="sidebar-link sidebar-link--sub">Kozen</a>
+          <a href="devices#wiseasy" class="sidebar-link sidebar-link--sub">Wiseasy</a>
+          <a href="devices#pax" class="sidebar-link sidebar-link--sub">PAX</a>
+          <a href="devices#newland" class="sidebar-link sidebar-link--sub">Newland</a>
+        </div>
+        <div class="sidebar-section">
+          <p class="sidebar-label">API Reference</p>
+          <a href="index" class="sidebar-link">Overview</a>
+          <a href="init" class="sidebar-link">init</a>
+          <a href="do-transaction" class="sidebar-link">doTransaction</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="content" id="main-content">
+      <nav class="crumbs" id="crumbs"></nav>
+      <div id="device-root">
+        <div class="not-found">Loading device…</div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    (async function () {
+      // model slug from ?model= or last URL segment
+      const params = new URLSearchParams(location.search);
+      let slug = (params.get('model') || '').toLowerCase();
+      if (!slug) {
+        const parts = location.pathname.replace(/\/$/, '').split('/');
+        slug = parts[parts.length - 1] || '';
+      }
+      if (!slug || slug === 'device-detail.html') {
+        document.getElementById('device-root').innerHTML =
+          '<div class="not-found">No device specified. <a href="devices">View all devices →</a></div>';
+        return;
+      }
+
+      let data;
+      try {
+        const res = await fetch('devices/data.json', { cache: 'no-cache' });
+        data = await res.json();
+      } catch (e) {
+        document.getElementById('device-root').innerHTML =
+          '<div class="not-found">Failed to load device data.</div>';
+        return;
+      }
+
+      const d = data[slug];
+      if (!d) {
+        document.getElementById('device-root').innerHTML =
+          `<div class="not-found">Device <code>${slug}</code> not found. <a href="devices">View all devices →</a></div>`;
+        document.title = 'Device not found';
+        return;
+      }
+
+      document.title = `${d.name} — Pinelabs Common SDK`;
+
+      // Crumbs
+      document.getElementById('crumbs').innerHTML =
+        `<a href="index">Docs</a> &nbsp;›&nbsp; <a href="devices">Devices</a> &nbsp;›&nbsp; <span>${d.name}</span>`;
+
+      // Image with SVG fallback
+      const imgFallback = svgFor(d.form);
+      const heroImg = `
+        <div class="hero-image">
+          <img src="assets/devices/${slug}.png" alt="${d.name}"
+               onerror="this.remove();" />
+          ${imgFallback}
+        </div>`;
+
+      // Related: same OEM others
+      const related = Object.entries(data)
+        .filter(([k, v]) => v.oem === d.oem && k !== slug)
+        .slice(0, 6)
+        .map(([k, v]) => `
+          <a class="related-card" href="device-detail?slug=${k}">
+            <div class="name">${v.name}</div>
+            <div class="meta">${v.form}</div>
+          </a>`).join('');
+
+      document.getElementById('device-root').innerHTML = `
+        ${heroImg ? '' : ''}
+        <section class="device-hero">
+          ${heroImg}
+          <div class="hero-info">
+            <span class="oem-tag">${d.oem}</span>
+            <h1>${d.name}</h1>
+            <p class="tagline">${d.tagline}</p>
+            <div class="pill-row">
+              <span class="pill pill--code">${d.model}</span>
+              <span class="pill pill--stable">${d.status}</span>
+              <span class="pill">Since ${d.since}</span>
+              <span class="pill">${d.form}</span>
+              <span class="pill">${d.os}</span>
+            </div>
+            <div class="quick-facts">
+              <div class="quick-fact"><div class="label">Display</div><div class="value">${d.screen}</div></div>
+              <div class="quick-fact"><div class="label">Printer</div><div class="value">${d.printer}</div></div>
+              <div class="quick-fact"><div class="label">Battery</div><div class="value">${d.battery}</div></div>
+              <div class="quick-fact"><div class="label">Scanner</div><div class="value">${d.scanner}</div></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="spec-section">
+          <h2>Specifications</h2>
+          <table class="spec-table">
+            <tr><td>Operating system</td><td>${d.os}</td></tr>
+            <tr><td>Processor</td><td>${d.cpu}</td></tr>
+            <tr><td>Memory</td><td>${d.ram} RAM · ${d.storage} storage</td></tr>
+            <tr><td>Display</td><td>${d.screen}</td></tr>
+            <tr><td>Printer</td><td>${d.printer}</td></tr>
+            <tr><td>Battery</td><td>${d.battery}</td></tr>
+            <tr><td>Scanner</td><td>${d.scanner}</td></tr>
+            <tr><td>Dimensions</td><td>${d.dimensions}</td></tr>
+            <tr><td>Weight</td><td>${d.weight}</td></tr>
+            <tr><td><code class="inline-code">Build.MODEL</code></td><td><code class="inline-code">${d.buildModel}</code></td></tr>
+          </table>
+        </section>
+
+        <section class="spec-section">
+          <h2>Connectivity</h2>
+          <div class="feature-list">
+            ${d.connectivity.map(c => `<span class="pill">${c}</span>`).join('')}
+          </div>
+        </section>
+
+        <section class="spec-section">
+          <h2>Card support</h2>
+          <div class="feature-list">
+            ${d.card.map(c => `<span class="pill">${c}</span>`).join('')}
+          </div>
+        </section>
+
+        <section class="spec-section">
+          <h2>Certifications</h2>
+          <div class="feature-list">
+            ${d.certifications.map(c => `<span class="pill">${c}</span>`).join('')}
+          </div>
+        </section>
+
+        <section class="spec-section">
+          <h2>Typical use cases</h2>
+          <div class="feature-list">
+            ${d.useCases.map(c => `<span class="pill">${c}</span>`).join('')}
+          </div>
+        </section>
+
+        <section class="spec-section">
+          <h2>Detect this device at runtime</h2>
+          <div class="code-block" data-lang="kotlin">
+            <div class="code-block-header">
+              <span class="code-lang">Kotlin</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+<pre><code class="language-kotlin">import android.os.Build
+
+if (Build.MODEL == "${d.buildModel}") {
+    // ${d.name} specific code path
+}</code></pre>
+          </div>
+        </section>
+
+        <div class="cta-card">
+          <h3>Ready to integrate ${d.name}?</h3>
+          <p>The Pinelabs Common SDK works identically across all supported terminals. Start with <code>init</code>, then dispatch via <code>doTransaction</code>.</p>
+          <a href="init">Read the integration guide →</a>
+        </div>
+
+        ${related ? `
+        <section class="related">
+          <h2>Other ${d.oem} devices</h2>
+          <div class="related-grid">${related}</div>
+        </section>` : ''}
+      `;
+
+      if (window.hljs) hljs.highlightAll();
+    })();
+
+    function svgFor(form) {
+      const f = (form || '').toLowerCase();
+      let id = 'dev-handheld';
+      if (f.includes('smart')) id = 'dev-smartpos';
+      else if (f.includes('counter')) id = 'dev-countertop';
+      else if (f.includes('mpos')) id = 'dev-mpos';
+      else if (f.includes('tablet')) id = 'dev-tablet';
+      else if (f.includes('compact')) id = 'dev-compact';
+      else if (f.includes('kiosk') || f.includes('unattended')) id = 'dev-kiosk';
+      // Inline minimal handheld silhouette as universal fallback
+      return `<svg viewBox="0 0 110 140" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="b" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#3a3a4a"/><stop offset="100%" stop-color="#1c1c28"/>
+          </linearGradient>
+          <linearGradient id="s" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#7c75ff"/><stop offset="100%" stop-color="#5048e5"/>
+          </linearGradient>
+        </defs>
+        <rect x="14" y="4" width="82" height="132" rx="10" fill="url(#b)"/>
+        <rect x="22" y="14" width="66" height="58" rx="3" fill="url(#s)"/>
+        <rect x="26" y="22" width="40" height="3" rx="1.5" fill="#fff" opacity="0.85"/>
+        <rect x="26" y="32" width="56" height="2" rx="1" fill="#fff" opacity="0.55"/>
+        <g fill="#2a2a38" stroke="#4a4a5e" stroke-width="0.6">
+          <rect x="22" y="80" width="20" height="14" rx="2"/>
+          <rect x="46" y="80" width="20" height="14" rx="2"/>
+          <rect x="70" y="80" width="18" height="14" rx="2"/>
+          <rect x="22" y="98" width="20" height="14" rx="2"/>
+          <rect x="46" y="98" width="20" height="14" rx="2"/>
+          <rect x="70" y="98" width="18" height="14" rx="2"/>
+          <rect x="22" y="116" width="20" height="14" rx="2"/>
+          <rect x="46" y="116" width="20" height="14" rx="2"/>
+          <rect x="70" y="116" width="18" height="14" rx="2"/>
+        </g>
+      </svg>`;
+    }
+  </script>
+</body>
+</html>

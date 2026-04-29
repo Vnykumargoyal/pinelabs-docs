@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supported Devices — Pinelabs Common SDK</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ===== Devices page (Stripe setup-reader style) ===== */
+    .devices-hero {
+      padding: 56px 0 32px;
+      border-bottom: 1px solid #e6e6ef;
+      margin-bottom: 40px;
+    }
+    .devices-hero h1 {
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 0 0 12px;
+      color: #1a1a2e;
+    }
+    .devices-hero p {
+      font-size: 17px;
+      color: #545478;
+      max-width: 720px;
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    .oem-section {
+      margin-bottom: 56px;
+    }
+    .oem-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding-bottom: 14px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid #ececf3;
+    }
+    .oem-name {
+      font-size: 22px;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin: 0;
+      letter-spacing: -0.01em;
+    }
+    .oem-count {
+      font-size: 13px;
+      color: #8a8aa3;
+      font-weight: 500;
+    }
+
+    .device-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .device-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      background: #fff;
+      border: 1px solid #e6e6ef;
+      border-radius: 10px;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+      min-height: 168px;
+    }
+    .device-card:hover {
+      border-color: #635bff;
+      box-shadow: 0 4px 16px rgba(99,91,255,0.10);
+      transform: translateY(-1px);
+    }
+    .device-thumb {
+      width: 100%;
+      height: 160px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #f6f6fb 0%, #eceaf6 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: -4px 0 16px;
+      overflow: hidden;
+    }
+    .device-thumb svg { width: 110px; height: 140px; }
+    .device-thumb img {
+      max-width: 92%;
+      max-height: 92%;
+      object-fit: contain;
+      display: block;
+    }
+    /* When real image loads, hide the SVG fallback inside the same thumb */
+    .device-thumb img + svg { display: none; }
+    .device-card { min-height: 280px; padding: 16px; }
+
+    .device-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin: 0 0 4px;
+    }
+    .device-model {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 12px;
+      color: #635bff;
+      background: #f0eefe;
+      padding: 2px 8px;
+      border-radius: 4px;
+      align-self: flex-start;
+      margin-bottom: 12px;
+    }
+    .device-meta {
+      margin-top: auto;
+      font-size: 12px;
+      color: #8a8aa3;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .device-meta .arrow {
+      margin-left: auto;
+      transition: transform .15s ease;
+      color: #635bff;
+    }
+    .device-card:hover .device-meta .arrow { transform: translateX(3px); }
+
+    .badge-status {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 3px 7px;
+      border-radius: 4px;
+      background: #ecfdf3;
+      color: #027a48;
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+    .filter-chip {
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border: 1px solid #e6e6ef;
+      border-radius: 999px;
+      background: #fff;
+      color: #545478;
+      cursor: pointer;
+      transition: all .12s ease;
+    }
+    .filter-chip:hover { border-color: #635bff; color: #635bff; }
+    .filter-chip.active {
+      background: #635bff;
+      border-color: #635bff;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== Reusable device SVG symbols ===== -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="devBody" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#3a3a4a"/>
+        <stop offset="100%" stop-color="#1c1c28"/>
+      </linearGradient>
+      <linearGradient id="devScreen" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#7c75ff"/>
+        <stop offset="100%" stop-color="#5048e5"/>
+      </linearGradient>
+    </defs>
+
+    <!-- Handheld: tall body, screen on top, keypad below, printer slot at very top -->
+    <symbol id="dev-handheld" viewBox="0 0 110 140">
+      <rect x="14" y="4" width="82" height="132" rx="10" fill="url(#devBody)"/>
+      <rect x="22" y="8" width="66" height="2" rx="1" fill="#0a0a14"/>
+      <rect x="22" y="14" width="66" height="48" rx="3" fill="url(#devScreen)"/>
+      <rect x="26" y="20" width="34" height="3" rx="1.5" fill="#fff" opacity="0.85"/>
+      <rect x="26" y="28" width="50" height="2" rx="1" fill="#fff" opacity="0.55"/>
+      <rect x="26" y="34" width="42" height="2" rx="1" fill="#fff" opacity="0.55"/>
+      <rect x="26" y="50" width="58" height="6" rx="2" fill="#fff" opacity="0.20"/>
+      <!-- keypad 4x3 -->
+      <g fill="#2a2a38" stroke="#4a4a5e" stroke-width="0.6">
+        <rect x="22" y="68" width="16" height="12" rx="2"/>
+        <rect x="42" y="68" width="16" height="12" rx="2"/>
+        <rect x="62" y="68" width="16" height="12" rx="2"/>
+        <rect x="22" y="84" width="16" height="12" rx="2"/>
+        <rect x="42" y="84" width="16" height="12" rx="2"/>
+        <rect x="62" y="84" width="16" height="12" rx="2"/>
+        <rect x="22" y="100" width="16" height="12" rx="2"/>
+        <rect x="42" y="100" width="16" height="12" rx="2"/>
+        <rect x="62" y="100" width="16" height="12" rx="2"/>
+        <rect x="22" y="116" width="16" height="12" rx="2"/>
+        <rect x="42" y="116" width="16" height="12" rx="2"/>
+        <rect x="62" y="116" width="16" height="12" rx="2"/>
+      </g>
+    </symbol>
+
+    <!-- Smart POS: tall slim, all-screen Android, no keypad -->
+    <symbol id="dev-smartpos" viewBox="0 0 110 140">
+      <rect x="18" y="4" width="74" height="132" rx="10" fill="url(#devBody)"/>
+      <rect x="22" y="10" width="66" height="118" rx="4" fill="url(#devScreen)"/>
+      <rect x="28" y="18" width="32" height="3" rx="1.5" fill="#fff" opacity="0.85"/>
+      <rect x="28" y="26" width="54" height="2" rx="1" fill="#fff" opacity="0.55"/>
+      <rect x="28" y="32" width="42" height="2" rx="1" fill="#fff" opacity="0.55"/>
+      <rect x="28" y="46" width="54" height="22" rx="3" fill="#fff" opacity="0.15"/>
+      <rect x="28" y="74" width="54" height="14" rx="3" fill="#fff" opacity="0.15"/>
+      <rect x="28" y="94" width="54" height="14" rx="3" fill="#fff" opacity="0.15"/>
+      <rect x="28" y="114" width="54" height="10" rx="3" fill="#fff" opacity="0.25"/>
+      <circle cx="55" cy="132" r="1.6" fill="#0a0a14" opacity="0.6"/>
+    </symbol>
+
+    <!-- Counter-top: wider, stubbier, with printer slot at top -->
+    <symbol id="dev-countertop" viewBox="0 0 110 140">
+      <rect x="6" y="20" width="98" height="110" rx="10" fill="url(#devBody)"/>
+      <rect x="14" y="14" width="82" height="10" rx="3" fill="#0a0a14"/>
+      <rect x="22" y="18" width="66" height="2" rx="1" fill="#3a3a4a"/>
+      <rect x="14" y="30" width="82" height="40" rx="3" fill="url(#devScreen)"/>
+      <rect x="20" y="38" width="40" height="3" rx="1.5" fill="#fff" opacity="0.85"/>
+      <rect x="20" y="46" width="60" height="2" rx="1" fill="#fff" opacity="0.55"/>
+      <rect x="20" y="52" width="48" height="2" rx="1" fill="#fff" opacity="0.55"/>
+      <g fill="#2a2a38" stroke="#4a4a5e" stroke-width="0.6">
+        <rect x="14" y="78" width="18" height="12" rx="2"/>
+        <rect x="36" y="78" width="18" height="12" rx="2"/>
+        <rect x="58" y="78" width="18" height="12" rx="2"/>
+        <rect x="80" y="78" width="16" height="12" rx="2"/>
+        <rect x="14" y="94" width="18" height="12" rx="2"/>
+        <rect x="36" y="94" width="18" height="12" rx="2"/>
+        <rect x="58" y="94" width="18" height="12" rx="2"/>
+        <rect x="80" y="94" width="16" height="12" rx="2"/>
+        <rect x="14" y="110" width="18" height="12" rx="2"/>
+        <rect x="36" y="110" width="18" height="12" rx="2"/>
+        <rect x="58" y="110" width="18" height="12" rx="2"/>
+        <rect x="80" y="110" width="16" height="12" rx="2"/>
+      </g>
+    </symbol>
+
+    <!-- mPOS: small dongle / mini-card-reader with tiny screen -->
+    <symbol id="dev-mpos" viewBox="0 0 110 140">
+      <rect x="28" y="20" width="54" height="100" rx="8" fill="url(#devBody)"/>
+      <rect x="34" y="28" width="42" height="32" rx="3" fill="url(#devScreen)"/>
+      <rect x="38" y="34" width="22" height="2.5" rx="1" fill="#fff" opacity="0.85"/>
+      <rect x="38" y="40" width="34" height="2" rx="1" fill="#fff" opacity="0.55"/>
+      <rect x="38" y="46" width="28" height="2" rx="1" fill="#fff" opacity="0.55"/>
+      <g fill="#2a2a38" stroke="#4a4a5e" stroke-width="0.6">
+        <rect x="34" y="68" width="12" height="10" rx="2"/>
+        <rect x="49" y="68" width="12" height="10" rx="2"/>
+        <rect x="64" y="68" width="12" height="10" rx="2"/>
+        <rect x="34" y="82" width="12" height="10" rx="2"/>
+        <rect x="49" y="82" width="12" height="10" rx="2"/>
+        <rect x="64" y="82" width="12" height="10" rx="2"/>
+        <rect x="34" y="96" width="12" height="10" rx="2"/>
+        <rect x="49" y="96" width="12" height="10" rx="2"/>
+        <rect x="64" y="96" width="12" height="10" rx="2"/>
+      </g>
+      <rect x="48" y="116" width="14" height="6" rx="1" fill="#0a0a14"/>
+    </symbol>
+
+    <!-- Tablet: wide landscape body with all-screen front -->
+    <symbol id="dev-tablet" viewBox="0 0 110 140">
+      <rect x="6" y="32" width="98" height="76" rx="6" fill="url(#devBody)"/>
+      <rect x="12" y="38" width="86" height="64" rx="3" fill="url(#devScreen)"/>
+      <rect x="18" y="46" width="34" height="3" rx="1.5" fill="#fff" opacity="0.85"/>
+      <rect x="18" y="54" width="60" height="2" rx="1" fill="#fff" opacity="0.55"/>
+      <rect x="18" y="60" width="48" height="2" rx="1" fill="#fff" opacity="0.55"/>
+      <rect x="18" y="76" width="74" height="20" rx="3" fill="#fff" opacity="0.18"/>
+      <circle cx="9.5" cy="70" r="1.4" fill="#0a0a14" opacity="0.6"/>
+    </symbol>
+
+    <!-- Compact: square-ish small terminal -->
+    <symbol id="dev-compact" viewBox="0 0 110 140">
+      <rect x="14" y="22" width="82" height="96" rx="10" fill="url(#devBody)"/>
+      <rect x="22" y="30" width="66" height="44" rx="3" fill="url(#devScreen)"/>
+      <rect x="28" y="38" width="32" height="3" rx="1.5" fill="#fff" opacity="0.85"/>
+      <rect x="28" y="46" width="50" height="2" rx="1" fill="#fff" opacity="0.55"/>
+      <rect x="28" y="52" width="42" height="2" rx="1" fill="#fff" opacity="0.55"/>
+      <g fill="#2a2a38" stroke="#4a4a5e" stroke-width="0.6">
+        <rect x="22" y="80" width="18" height="10" rx="2"/>
+        <rect x="46" y="80" width="18" height="10" rx="2"/>
+        <rect x="70" y="80" width="18" height="10" rx="2"/>
+        <rect x="22" y="94" width="18" height="10" rx="2"/>
+        <rect x="46" y="94" width="18" height="10" rx="2"/>
+        <rect x="70" y="94" width="18" height="10" rx="2"/>
+      </g>
+    </symbol>
+
+    <!-- Unattended kiosk: chunky module with screen + card slot -->
+    <symbol id="dev-kiosk" viewBox="0 0 110 140">
+      <rect x="6" y="20" width="98" height="100" rx="8" fill="url(#devBody)"/>
+      <rect x="14" y="28" width="82" height="48" rx="3" fill="url(#devScreen)"/>
+      <rect x="20" y="36" width="40" height="3" rx="1.5" fill="#fff" opacity="0.85"/>
+      <rect x="20" y="44" width="60" height="2" rx="1" fill="#fff" opacity="0.55"/>
+      <rect x="14" y="84" width="82" height="6" rx="1" fill="#0a0a14"/>
+      <rect x="18" y="86" width="74" height="2" rx="1" fill="#3a3a4a"/>
+      <g fill="#2a2a38" stroke="#4a4a5e" stroke-width="0.6">
+        <rect x="14" y="96" width="38" height="18" rx="2"/>
+        <rect x="58" y="96" width="38" height="18" rx="2"/>
+      </g>
+      <rect x="44" y="100" width="22" height="4" rx="1" fill="#5048e5" opacity="0.7"/>
+    </symbol>
+  </svg>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="index" class="brand">
+        <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="#635bff"/>
+          <path d="M8 20l6-12 4 8 3-4 3 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="brand-name">Pinelabs<span class="brand-sub"> SDK</span></span>
+      </a>
+      <nav class="topbar-nav">
+        <a href="index" class="topbar-link">Home</a>
+        <a href="init" class="topbar-link">init</a>
+        <a href="do-transaction" class="topbar-link">doTransaction</a>
+        <a href="devices" class="topbar-link active">Devices</a>
+      </nav>
+      <div class="topbar-actions">
+        <span class="version-badge">v0.1.0</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-inner">
+        <div class="sidebar-section">
+          <p class="sidebar-label">Hardware</p>
+          <a href="devices" class="sidebar-link active">Supported Devices</a>
+        </div>
+        <div class="sidebar-section">
+          <p class="sidebar-label">By Manufacturer</p>
+          <a href="#ingenico" class="sidebar-link sidebar-link--sub">Ingenico</a>
+          <a href="#kozen" class="sidebar-link sidebar-link--sub">Kozen</a>
+          <a href="#wiseasy" class="sidebar-link sidebar-link--sub">Wiseasy</a>
+          <a href="#pax" class="sidebar-link sidebar-link--sub">PAX</a>
+          <a href="#newland" class="sidebar-link sidebar-link--sub">Newland</a>
+        </div>
+        <div class="sidebar-section">
+          <p class="sidebar-label">API Reference</p>
+          <a href="index" class="sidebar-link">Overview</a>
+          <a href="init" class="sidebar-link">init</a>
+          <a href="do-transaction" class="sidebar-link">doTransaction</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="content" id="main-content">
+
+      <section class="devices-hero">
+        <h1>Supported devices</h1>
+        <p>Choose a smart payment terminal certified to run the Pinelabs Common SDK. The SDK detects the device model at runtime via <code class="inline-code">Build.MODEL</code> and routes transactions to the correct MasterApp transport. All listed devices ship with Android and bundle MasterApp out of the box.</p>
+      </section>
+
+      <div class="filter-bar">
+        <button class="filter-chip active" data-filter="all">All (24)</button>
+        <button class="filter-chip" data-filter="ingenico">Ingenico</button>
+        <button class="filter-chip" data-filter="kozen">Kozen</button>
+        <button class="filter-chip" data-filter="wiseasy">Wiseasy</button>
+        <button class="filter-chip" data-filter="pax">PAX</button>
+        <button class="filter-chip" data-filter="newland">Newland</button>
+      </div>
+
+      <!-- ===== INGENICO ===== -->
+      <section class="oem-section" id="ingenico" data-oem="ingenico">
+        <div class="oem-header">
+          <h2 class="oem-name">Ingenico</h2>
+          <span class="oem-count">1 device</span>
+        </div>
+        <div class="device-grid">
+          <a href="#" class="device-card">
+            <div class="device-thumb">
+              <svg><use href="#dev-smartpos"/></svg>
+            </div>
+            <span class="badge-status">Stable</span>
+            <h3 class="device-name">Ingenico DX8000</h3>
+            <span class="device-model">DX8000</span>
+            <div class="device-meta">Android · Smart POS<span class="arrow">→</span></div>
+          </a>
+        </div>
+      </section>
+
+      <!-- ===== KOZEN ===== -->
+      <section class="oem-section" id="kozen" data-oem="kozen">
+        <div class="oem-header">
+          <h2 class="oem-name">Kozen</h2>
+          <span class="oem-count">2 devices</span>
+        </div>
+        <div class="device-grid">
+          <a href="#" class="device-card">
+            <div class="device-thumb"><svg><use href="#dev-handheld"/></svg></div>
+            <span class="badge-status">Stable</span>
+            <h3 class="device-name">Kozen P3</h3>
+            <span class="device-model">P3</span>
+            <div class="device-meta">Android · Handheld<span class="arrow">→</span></div>
+          </a>
+          <a href="#" class="device-card">
+            <div class="device-thumb"><svg><use href="#dev-countertop"/></svg></div>
+            <span class="badge-status">Stable</span>
+            <h3 class="device-name">Kozen L200</h3>
+            <span class="device-model">L200</span>
+            <div class="device-meta">Android · Counter-top<span class="arrow">→</span></div>
+          </a>
+        </div>
+      </section>
+
+      <!-- ===== WISEASY ===== -->
+      <section class="oem-section" id="wiseasy" data-oem="wiseasy">
+        <div class="oem-header">
+          <h2 class="oem-name">Wiseasy</h2>
+          <span class="oem-count">3 devices</span>
+        </div>
+        <div class="device-grid">
+          <a href="#" class="device-card">
+            <div class="device-thumb"><svg><use href="#dev-smartpos"/></svg></div>
+            <span class="badge-status">Stable</span>
+            <h3 class="device-name">Wiseasy P052</h3>
+            <span class="device-model">P052</span>
+            <div class="device-meta">Android · Smart POS<span class="arrow">→</span></div>
+          </a>
+          <a href="#" class="device-card">
+            <div class="device-thumb"><svg><use href="#dev-smartpos"/></svg></div>
+            <span class="badge-status">Stable</span>
+            <h3 class="device-name">Wiseasy P5</h3>
+            <span class="device-model">P5</span>
+            <div class="device-meta">Android · Smart POS<span class="arrow">→</span></div>
+          </a>
+          <a href="#" class="device-card">
+            <div class="device-thumb"><svg><use href="#dev-tablet"/></svg></div>
+            <span class="badge-status">Stable</span>
+            <h3 class="device-name">Wiseasy T2</h3>
+            <span class="device-model">T2</span>
+            <div class="device-meta">Android · Tablet<span class="arrow">→</span></div>
+          </a>
+        </div>
+      </section>
+
+      <!-- ===== PAX ===== -->
+      <section class="oem-section" id="pax" data-oem="pax">
+        <div class="oem-header">
+          <h2 class="oem-name">PAX Technology</h2>
+          <span class="oem-count">12 devices</span>
+        </div>
+        <div class="device-grid">
+          <a href="#" class="device-card">
+            <div class="device-thumb"><svg><use href="#dev-compact"/></svg></div>
+            <span class="badge-status">Stable</span>
+            <h3 class="device-name">PAX A60</h3>
+            <span class="device-model">A60</span>
+            <div class="device-meta">Android · Compact<span class="arrow">→</span></div>
+          </a>
+          <a href="#" class="device-card">
+            <div class="device-thumb"><svg><use href="#dev-countertop"/></svg></div>
+            <span class="badge-status">Stable</span>
+            <h3 class="device-name">PAX A80</h3>
+            <span class="device-model">A80</span>
+            <div class="device-meta">Android · Counter-top<span class="arrow">→</span></div>
+          </a>
+          <a href="#" class="device-card">
+            <div class="device-thumb"><svg><use href="#dev-handheld"/></svg></div>
+            <span class="badge-status">Stable</span>
+            <h3 class="device-name">PAX A920</h3>
+            <span class="device-model">A920</span>
+            <div class="device-meta">Android · Handheld<span class="arrow">→</span></div>
+          </a>
+          <a href="#" class="device-card">
+            <div class="device-thumb"><svg><use href="#dev-handheld"/></svg></div>
+            <span class="badge-status">Stable</span>
+            <h3 class="device-name">PAX A920 Pro</h3>
+            <span class="device-model">A920Pro</span>
+            <div class="device-meta">Android · Handheld<span class="arrow">→</span></div>
+          </a>
+          <a href="#" class="device-card">
+            <div class="device-thumb"><svg><use href="#dev-handheld"/></svg></div>
+            <span class="badge-status">Stable</span>
+            <h3 class="device-name">PAX A910</h3>
+            <span class="device-model">A910</span>
+            <div class="device-meta">Android · Handheld<span class="arrow">→</span></div>
+          </a>
+          <a href="#" class="device-card">
+            <div class="device-thumb"><svg><use href="#dev-handheld"/></svg></div>
+            <span class="badge-status">Stable</span>
+            <h3 class="device-name">PAX A910S</h3>
+            <span class="device-model">A910S</span>
+            <div class="device-meta">Android · Handheld<span class="arrow">→</span></div>
+          </a>
+          <a href="#" class="device-card">
+            <div class="device-thumb"><svg><use href="#dev-handheld"/></svg></div>
+            <span class="badge-status">Stable</span>
+            <h3 class="device-name">PAX A950</h3>
+            <span class="device-model">A950</span>
+            <div class="device-meta">Android · Handheld<span class="arrow">→</span></div>
+          </a>
+          <a href="#" class="device-card">
+            <div class="device-thumb"><svg><use href="#dev-mpos"/></svg></div>
+            <span class="badge-status">Stable</span>
+            <h3 class="device-name">PAX A77</h3>
+            <span class="device-model">A77</span>
+            <div class="device-meta">Android · mPOS<span class="arrow">→</span></div>
+          </a>
+          <a href="#" class="device-card">
+            <div class="device-thumb"><svg><use href="#dev-mpos"/></svg></div>
+            <span class="badge-status">Stable</span>
+            <h3 class="device-name">PAX A50</h3>
+            <span class="device-model">A50</span>
+            <div class="device-meta">Android · mPOS<span class="arrow">→</span></div>
+          </a>
+          <a href="#" class="device-card">
+            <div class="device-thumb"><svg><use href="#dev-mpos"/></svg></div>
+            <span class="badge-status">Stable</span>
+            <h3 class="device-name">PAX A50D</h3>
+            <span class="device-model">A50D</span>
+            <div class="device-meta">Android · mPOS<span class="arrow">→</span></div>
+          </a>
+          <a href="#" class="device-card">
+            <div class="device-thumb"><svg><use href="#dev-handheld"/></svg></div>
+            <span class="badge-status">Stable</span>
+            <h3 class="device-name">PAX A99</h3>
+            <span class="device-model">A99</span>
+            <div class="device-meta">Android · Handheld<span class="arrow">→</span></div>
+          </a>
+          <a href="#" class="device-card">
+            <div class="device-thumb"><svg><use href="#dev-kiosk"/></svg></div>
+            <span class="badge-status">Stable</span>
+            <h3 class="device-name">PAX IM30</h3>
+            <span class="device-model">IM30</span>
+            <div class="device-meta">Android · Unattended<span class="arrow">→</span></div>
+          </a>
+        </div>
+      </section>
+
+      <!-- ===== NEWLAND ===== -->
+      <section class="oem-section" id="newland" data-oem="newland">
+        <div class="oem-header">
+          <h2 class="oem-name">Newland</h2>
+          <span class="oem-count">2 devices</span>
+        </div>
+        <div class="device-grid">
+          <a href="#" class="device-card">
+            <div class="device-thumb"><svg><use href="#dev-handheld"/></svg></div>
+            <span class="badge-status">Stable</span>
+            <h3 class="device-name">Newland N950</h3>
+            <span class="device-model">N950</span>
+            <div class="device-meta">Android · Handheld<span class="arrow">→</span></div>
+          </a>
+          <a href="#" class="device-card">
+            <div class="device-thumb"><svg><use href="#dev-handheld"/></svg></div>
+            <span class="badge-status">Stable</span>
+            <h3 class="device-name">Newland N950S</h3>
+            <span class="device-model">N950S</span>
+            <div class="device-meta">Android · Handheld<span class="arrow">→</span></div>
+          </a>
+        </div>
+      </section>
+
+      <section class="doc-section" style="margin-top:48px;padding-top:32px;border-top:1px solid #e6e6ef;">
+        <h3 style="font-size:18px;font-weight:600;margin:0 0 12px;">Detecting the device at runtime</h3>
+        <p style="color:#545478;margin:0 0 16px;">Use the constants from <code class="inline-code">com.pinelabs.sdk.devices.DeviceModels</code> to branch on the current terminal:</p>
+        <div class="code-block" data-lang="kotlin">
+          <div class="code-block-header">
+            <span class="code-lang">Kotlin</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-kotlin">import android.os.Build
+import com.pinelabs.sdk.devices.DeviceModels.*
+
+when (Build.MODEL) {
+    INGENICO_DX8000              -&gt; { /* Ingenico DX8000 specific path */ }
+    KOZEN_P3, KOZEN_L200         -&gt; { /* Kozen */ }
+    WISEASY_P052, WISEASY_P5,
+    WISEASY_T2                   -&gt; { /* Wiseasy */ }
+    PAX_A60, PAX_A80, PAX_A920,
+    PAX_A920_PRO, PAX_A910,
+    PAX_A910S, PAX_A950, PAX_A77,
+    PAX_A50, PAX_A50D, PAX_A99,
+    PAX_IM30                     -&gt; { /* PAX */ }
+    N950, N950S                  -&gt; { /* Newland */ }
+    else                         -&gt; { /* Unsupported model */ }
+}</code></pre>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    // ---- Try to load a real product photo for every card ----
+    // Looks up assets/devices/<oem>-<model>.png based on the card's model code.
+    // If the image 404s it removes itself and the SVG illustration shows through.
+    (function loadDeviceImages() {
+      const oemBySection = {};
+      document.querySelectorAll('.oem-section').forEach(sec => {
+        const oem = sec.dataset.oem;
+        sec.querySelectorAll('.device-card').forEach(card => {
+          const model = (card.querySelector('.device-model')?.textContent || '').trim().toLowerCase();
+          if (!model) return;
+          const slug = `${oem}-${model}`.replace(/[^a-z0-9-]/g, '');
+          // Make every card link to its detail page
+          card.setAttribute('href', `device-detail.html?slug=${slug}`);
+          const thumb = card.querySelector('.device-thumb');
+          if (!thumb) return;
+          const img = new Image();
+          img.alt = card.querySelector('.device-name')?.textContent || model;
+          img.loading = 'lazy';
+          img.onerror = () => img.remove();
+          img.src = `assets/devices/${slug}.png`;
+          thumb.insertBefore(img, thumb.firstChild);
+        });
+      });
+    })();
+
+    // Filter chips
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const filter = chip.dataset.filter;
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        document.querySelectorAll('.oem-section').forEach(sec => {
+          sec.style.display = (filter === 'all' || sec.dataset.oem === filter) ? '' : 'none';
+        });
+      });
+    });
+    if (window.hljs) hljs.highlightAll();
+  </script>
+</body>
+</html>

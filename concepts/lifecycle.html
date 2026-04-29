@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lifecycle &amp; Threading — Pinelabs SDK</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    /* ── hero ── */
+    .lc-hero { padding: 48px 0 32px; }
+    .lc-eyebrow {
+      font-size: 12px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--purple); margin-bottom: 10px;
+    }
+    .lc-title {
+      font-size: 36px; font-weight: 800; letter-spacing: -1.2px;
+      line-height: 1.15; margin-bottom: 14px;
+      background: linear-gradient(135deg, var(--ink-900) 0%, var(--purple) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .lc-sub {
+      font-size: 16px; color: var(--ink-600); max-width: 700px;
+      line-height: 1.65; margin-bottom: 0;
+    }
+
+    /* ── danger pill row (hero warning) ── */
+    .danger-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    .danger-pill {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px; border-radius: 24px; font-size: 13px; font-weight: 600;
+      border: 1px solid rgba(255,107,107,.25); background: rgba(255,107,107,.07);
+      color: #c0392b;
+    }
+    .danger-pill .dp-dot { width:7px; height:7px; border-radius:50%; background:#c0392b; flex-shrink:0; }
+
+    /* ── callouts ── */
+    .rule-callout {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: linear-gradient(135deg, rgba(99,91,255,.07) 0%, rgba(0,212,170,.07) 100%);
+      border: 1.5px solid rgba(99,91,255,.25);
+      border-radius: var(--r-lg); padding: 18px 20px; margin: 20px 0;
+    }
+    .rule-callout-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+    .rule-callout-body { flex: 1; }
+    .rule-callout-body strong {
+      display: block; font-size: 13px; font-weight: 700;
+      color: var(--ink-900); margin-bottom: 6px;
+    }
+    .rule-callout-body p { font-size: 14px; color: var(--ink-600); line-height: 1.65; margin: 0; }
+    .rule-callout-body p + p { margin-top: 8px; }
+
+    .warn-callout {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: rgba(255,184,48,.08); border: 1.5px solid rgba(255,184,48,.35);
+      border-radius: var(--r-lg); padding: 18px 20px; margin: 20px 0;
+    }
+    .warn-callout-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+    .warn-callout-body { flex: 1; }
+    .warn-callout-body strong {
+      display: block; font-size: 13px; font-weight: 700;
+      color: var(--ink-900); margin-bottom: 6px;
+    }
+    .warn-callout-body p { font-size: 14px; color: var(--ink-600); line-height: 1.65; margin: 0; }
+
+    .info-callout {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: var(--purple-bg); border: 1.5px solid rgba(99,91,255,.2);
+      border-radius: var(--r-lg); padding: 18px 20px; margin: 20px 0;
+    }
+    .info-callout-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+    .info-callout-body { flex: 1; }
+    .info-callout-body strong {
+      display: block; font-size: 13px; font-weight: 700;
+      color: var(--ink-900); margin-bottom: 6px;
+    }
+    .info-callout-body p { font-size: 14px; color: var(--ink-600); line-height: 1.65; margin: 0; }
+
+    /* ── generic dark-header table ── */
+    .lc-table-wrap {
+      overflow-x: auto; margin: 16px 0;
+      border-radius: var(--r-lg); border: 1px solid var(--ink-100);
+      box-shadow: var(--shadow-sm);
+    }
+    .lc-table {
+      width: 100%; border-collapse: collapse; font-size: 14px;
+      background: var(--white);
+    }
+    .lc-table thead tr { background: var(--ink-900); }
+    .lc-table thead th {
+      text-align: left; padding: 12px 18px;
+      font-size: 11px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: rgba(255,255,255,.5); border-bottom: none;
+    }
+    .lc-table tbody tr { border-bottom: 1px solid var(--ink-50); transition: background .12s; }
+    .lc-table tbody tr:last-child { border-bottom: none; }
+    .lc-table tbody tr:hover td { background: var(--ink-50); }
+    .lc-table td {
+      padding: 14px 18px; vertical-align: top;
+      border-bottom: none; color: var(--ink-600); font-size: 14px; line-height: 1.6;
+    }
+    .lc-table td:first-child {
+      font-weight: 600; color: var(--ink-900); width: 30%;
+    }
+    .lc-table td strong { color: var(--ink-800); }
+
+    /* ── construction rules table: first col mono ── */
+    .lc-table--rules td:first-child {
+      font-family: var(--font-mono); font-size: 13px;
+    }
+
+    /* ── thread flow diagram ── */
+    .thread-flow {
+      margin: 24px 0; padding: 28px 24px;
+      background: var(--white); border: 1px solid var(--ink-100);
+      border-radius: var(--r-xl); box-shadow: var(--shadow-sm);
+      overflow-x: auto;
+    }
+    .tf-row {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0; min-width: 520px;
+    }
+    .tf-node {
+      display: flex; flex-direction: column; align-items: center;
+      text-align: center;
+    }
+    .tf-box {
+      padding: 12px 20px; border-radius: var(--r-lg);
+      font-size: 13px; font-weight: 600; white-space: nowrap;
+      border: 2px solid;
+    }
+    .tf-box--caller   { background: var(--purple-bg); border-color: var(--purple); color: var(--purple); }
+    .tf-box--worker   { background: rgba(0,212,170,.1); border-color: var(--teal); color: #009e7e; }
+    .tf-box--terminal { background: var(--ink-50); border-color: var(--ink-200); color: var(--ink-600); }
+    .tf-sub { font-size: 11px; color: var(--ink-400); margin-top: 6px; max-width: 130px; line-height: 1.4; }
+    .tf-arrow {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 0 10px; flex-shrink: 0;
+    }
+    .tf-arrow-fwd, .tf-arrow-rev {
+      display: flex; align-items: center; gap: 0;
+    }
+    .tf-arrow-fwd { margin-bottom: 4px; }
+    .tf-line { height: 2px; width: 60px; background: var(--ink-200); }
+    .tf-head-r { color: var(--ink-200); font-size: 12px; margin-left:-1px; }
+    .tf-head-l { color: var(--ink-200); font-size: 12px; margin-right:-1px; }
+    .tf-label { font-size: 10px; color: var(--ink-400); text-align: center; line-height:1.3; white-space: nowrap; }
+    .tf-cb-note {
+      text-align: center; margin-top: 20px; padding-top: 16px;
+      border-top: 1px dashed var(--ink-100);
+      font-size: 12px; color: var(--ink-400); line-height: 1.6;
+    }
+    .tf-cb-note code { font-family: var(--font-mono); font-size: 11px; }
+
+    /* ── thread category cards ── */
+    .thread-cards {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 14px; margin: 20px 0;
+    }
+    .thread-card {
+      background: var(--white); border: 1px solid var(--ink-100);
+      border-radius: var(--r-xl); overflow: hidden; box-shadow: var(--shadow-sm);
+    }
+    .tc-header {
+      padding: 14px 18px 10px; border-bottom: 1px solid var(--ink-50);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .tc-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .tc-dot--caller { background: var(--purple); }
+    .tc-dot--worker { background: var(--teal); }
+    .tc-dot--cb     { background: var(--amber); }
+    .tc-title { font-size: 14px; font-weight: 700; color: var(--ink-900); }
+    .tc-sub   { font-size: 11px; color: var(--ink-400); font-weight: 500; }
+    .tc-body  { padding: 14px 18px; }
+    .tc-body ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+    .tc-body li { font-size: 13px; color: var(--ink-600); line-height: 1.5; padding-left: 14px; position: relative; }
+    .tc-body li::before { content: "·"; position: absolute; left: 0; color: var(--ink-200); font-weight: 700; }
+
+    /* ── op lifecycle timeline ── */
+    .op-timeline {
+      margin: 24px 0; padding: 28px 28px;
+      background: var(--white); border: 1px solid var(--ink-100);
+      border-radius: var(--r-xl); box-shadow: var(--shadow-sm);
+    }
+    .tl-item { display: flex; gap: 20px; position: relative; }
+    .tl-item + .tl-item { margin-top: 0; }
+    .tl-left {
+      display: flex; flex-direction: column; align-items: center;
+      flex-shrink: 0; width: 40px;
+    }
+    .tl-marker {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+      flex-shrink: 0; z-index: 1;
+    }
+    .tl-marker--t0 { background: var(--purple-bg); color: var(--purple); border: 2px solid var(--purple); }
+    .tl-marker--t1 { background: rgba(0,212,170,.12); color: #009e7e; border: 2px solid var(--teal); }
+    .tl-marker--t2 { background: rgba(255,184,48,.12); color: #a07800; border: 2px solid var(--amber); }
+    .tl-marker--t3 { background: rgba(0,212,170,.12); color: #009e7e; border: 2px solid var(--teal); }
+    .tl-vline { width: 2px; flex: 1; background: var(--ink-100); min-height: 32px; }
+    .tl-right { flex: 1; padding-bottom: 28px; padding-top: 6px; }
+    .tl-item:last-child .tl-right { padding-bottom: 0; }
+    .tl-thread {
+      font-size: 11px; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--ink-400); margin-bottom: 4px;
+    }
+    .tl-action { font-size: 14px; font-weight: 700; color: var(--ink-900); margin-bottom: 4px; }
+    .tl-desc { font-size: 13px; color: var(--ink-600); line-height: 1.6; }
+    .tl-state {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      padding: 2px 9px; border-radius: 20px; margin-top: 6px;
+    }
+    .tl-state--pending  { background: var(--purple-bg); color: var(--purple); }
+    .tl-state--inflight { background: rgba(0,212,170,.12); color: #009e7e; }
+    .tl-state--done     { background: rgba(0,212,170,.12); color: #009e7e; }
+    .tl-state--either   { background: var(--ink-50); color: var(--ink-600); }
+
+    /* ── single-instance language matrix ── */
+    .si-grid {
+      display: flex; flex-direction: column; gap: 8px; margin: 16px 0;
+    }
+    .si-row {
+      display: flex; gap: 0; background: var(--white);
+      border: 1px solid var(--ink-100); border-radius: var(--r-md);
+      overflow: hidden; box-shadow: var(--shadow-sm);
+    }
+    .si-lang {
+      font-size: 11px; font-weight: 700; letter-spacing: .05em;
+      text-transform: uppercase; color: var(--ink-400);
+      background: var(--ink-50); border-right: 1px solid var(--ink-100);
+      padding: 10px 14px; min-width: 86px; display: flex;
+      align-items: center; flex-shrink: 0;
+    }
+    .si-pattern {
+      font-size: 13px; font-family: var(--font-mono); color: var(--ink-700, #1a3354);
+      padding: 10px 14px; line-height: 1.5; display: flex; align-items: center;
+    }
+
+    /* ── common mistakes table accent ── */
+    .mistake-row td:first-child {
+      border-left: 3px solid var(--coral) !important;
+    }
+
+    /* ── blocking methods grid ── */
+    .method-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0;
+    }
+    .method-card {
+      background: var(--white); border: 1px solid var(--ink-100);
+      border-radius: var(--r-lg); padding: 14px 16px; box-shadow: var(--shadow-sm);
+    }
+    .method-card-title {
+      font-size: 11px; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; margin-bottom: 10px;
+    }
+    .method-card-title--safe { color: #009e7e; }
+    .method-card-title--block { color: #c0392b; }
+    .method-card ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+    .method-card li {
+      font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+      padding: 4px 10px; border-radius: var(--r-sm);
+    }
+    .method-card--safe li  { background: rgba(0,212,170,.08); color: #009e7e; }
+    .method-card--block li { background: rgba(255,107,107,.08); color: #c0392b; }
+
+    @media (max-width: 700px) {
+      .lc-title { font-size: 26px; }
+      .thread-cards { grid-template-columns: 1fr; }
+      .method-grid  { grid-template-columns: 1fr; }
+      .tf-row { min-width: 420px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="../index" class="brand">
+        <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="#635bff"/>
+          <path d="M8 20l6-12 4 8 3-4 3 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="brand-name">Pinelabs<span class="brand-sub"> SDK</span></span>
+      </a>
+      <nav class="topbar-nav">
+        <a href="../index" class="topbar-link">Home</a>
+        <a href="../init" class="topbar-link">init</a>
+        <a href="../do-transaction" class="topbar-link">doTransaction</a>
+        <a href="../devices" class="topbar-link">Devices</a>
+        <a href="capabilities" class="topbar-link">Capabilities</a>
+      </nav>
+      <div class="topbar-actions">
+        <span class="version-badge">v1.0</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-inner">
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">Overview</p>
+          <a href="../index" class="sidebar-link">Introduction</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">Concepts</p>
+          <a href="overview" class="sidebar-link">SDK Overview</a>
+          <a href="capabilities" class="sidebar-link">Capability Matrix</a>
+          <a href="error-handling" class="sidebar-link">Error Handling</a>
+          <a href="lifecycle" class="sidebar-link active">Lifecycle &amp; Threading</a>
+          <a href="eventid-and-reconciliation" class="sidebar-link">event_id &amp; Reconciliation</a>
+          <a href="result-payload" class="sidebar-link">TransactionResult</a>
+          <a href="transports.html" class="sidebar-link">Transports</a>
+          <a href="versioning-and-support" class="sidebar-link">Versioning &amp; Support</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">On this page</p>
+          <a href="#construction" class="sidebar-link sidebar-link--sub">Construction</a>
+          <a href="#threading" class="sidebar-link sidebar-link--sub">Threading model</a>
+          <a href="#concurrency" class="sidebar-link sidebar-link--sub">Concurrency</a>
+          <a href="#op-lifecycle" class="sidebar-link sidebar-link--sub">Single op lifecycle</a>
+          <a href="#teardown" class="sidebar-link sidebar-link--sub">Tear-down</a>
+          <a href="#mistakes" class="sidebar-link sidebar-link--sub">Common mistakes</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">API Reference</p>
+          <a href="../init" class="sidebar-link">init</a>
+          <a href="../do-transaction" class="sidebar-link">doTransaction</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">Hardware</p>
+          <a href="../devices" class="sidebar-link">Supported Devices</a>
+        </div>
+
+      </div>
+    </aside>
+
+    <main class="content" id="main-content">
+
+      <!-- Hero -->
+      <section class="lc-hero" id="intro">
+        <p class="lc-eyebrow">Concepts · v1</p>
+        <h1 class="lc-title">Lifecycle &amp; Threading</h1>
+        <p class="lc-sub">
+          The contract for <strong>when</strong> to construct the SDK,
+          <strong>how many</strong> instances to keep, and <strong>which thread</strong>
+          your code runs on at every step. Get this wrong and you will see
+          <code class="inline-code">OperationInProgress</code> errors, frozen UIs,
+          or double-charged customers.
+        </p>
+        <div class="danger-row">
+          <div class="danger-pill"><span class="dp-dot"></span>OperationInProgress</div>
+          <div class="danger-pill"><span class="dp-dot"></span>Frozen UI thread</div>
+          <div class="danger-pill"><span class="dp-dot"></span>Double-charge risk</div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- §01 Construction -->
+      <section class="doc-section" id="construction">
+        <div class="section-header">
+          <span class="section-number">01</span>
+          <h2>Construction</h2>
+        </div>
+
+        <div class="code-block" style="margin-bottom:20px">
+          <div class="code-block-header">
+            <span class="code-lang">pseudo-code</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-kotlin">sdk = PineBillingSdk(config, appToAppBridge)</code></pre>
+        </div>
+
+        <div class="lc-table-wrap">
+          <table class="lc-table lc-table--rules">
+            <thead>
+              <tr>
+                <th>Rule</th>
+                <th>Why it matters</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>One instance per process</strong></td>
+                <td>The SDK keeps an in-memory operation registry keyed by <code class="inline-code">event_id</code>. Two instances → two registries → <code class="inline-code">checkStatus</code> returns <code class="inline-code">Unknown</code> for ops the <em>other</em> instance ran.</td>
+              </tr>
+              <tr>
+                <td><strong>Construction is fast &amp; synchronous</strong></td>
+                <td>No I/O is performed during construction. Safe to call from the main thread.</td>
+              </tr>
+              <tr>
+                <td><strong>Config is validated at construction</strong></td>
+                <td>Invalid <code class="inline-code">SdkConfig</code> raises <code class="inline-code">SdkError.InvalidInput</code> immediately — catch misconfiguration at app launch, not at the first transaction.</td>
+              </tr>
+              <tr>
+                <td><strong>appToAppBridge required for App-to-App</strong></td>
+                <td>Required iff you ever call <code class="inline-code">setTransport(AppToApp)</code>. On Android the binding constructs the bridge automatically when you pass <code class="inline-code">SdkConfig.appToApp</code>.</td>
+              </tr>
+              <tr>
+                <td><strong>Not enforced-idempotent</strong></td>
+                <td>Calling the constructor twice will not crash, but you will leak an SDK and confuse <code class="inline-code">checkStatus</code>. Some test harnesses need two SDKs against fakes — that is the only legitimate case.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="rule-callout">
+          <div class="rule-callout-icon">🔒</div>
+          <div class="rule-callout-body">
+            <strong>Single-instance pattern — per language</strong>
+            <p>Construct once at app startup and share the reference everywhere.</p>
+          </div>
+        </div>
+
+        <div class="si-grid">
+          <div class="si-row">
+            <div class="si-lang">Kotlin</div>
+            <div class="si-pattern">object SdkHolder { val sdk = PineBillingSdk(config, bridge) }</div>
+          </div>
+          <div class="si-row">
+            <div class="si-lang">Java</div>
+            <div class="si-pattern">@Provides @Singleton PineBillingSdk provideSdk() { return new PineBillingSdk(config, bridge); }</div>
+          </div>
+          <div class="si-row">
+            <div class="si-lang">Swift</div>
+            <div class="si-pattern">class SdkManager { static let shared = PineBillingSdk(config: cfg, bridge: bridge) }</div>
+          </div>
+          <div class="si-row">
+            <div class="si-lang">Python</div>
+            <div class="si-pattern">_sdk = PineBillingSdk(config, bridge)  # module-level, imported once</div>
+          </div>
+          <div class="si-row">
+            <div class="si-lang">Node.js</div>
+            <div class="si-pattern">export const sdk = new PineBillingSdk(config, bridge);  // default export</div>
+          </div>
+          <div class="si-row">
+            <div class="si-lang">C</div>
+            <div class="si-pattern">static pine_billing_sdk_t *g_sdk;  pthread_once(&amp;once, sdk_init);</div>
+          </div>
+        </div>
+
+        <!-- Kotlin + Java full-code tabs -->
+        <div class="lang-tabs" data-tabs="lc-tabs" style="margin-top:20px">
+          <button class="lang-tab active" data-lang="kotlin" onclick="switchTab(this,'lc-tabs')">Kotlin</button>
+          <button class="lang-tab"        data-lang="java"   onclick="switchTab(this,'lc-tabs')">Java</button>
+        </div>
+
+        <div class="code-block" id="lc-tabs-kotlin-init" data-lang="kotlin">
+          <div class="code-block-header">
+            <span class="code-lang">Kotlin — Application.onCreate</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-kotlin">class MyApplication : Application() {
+    lateinit var sdk: PineBillingSdk
+
+    override fun onCreate() {
+        super.onCreate()
+        val config = SdkConfig(
+            appToApp = AppToAppConfig(context = this),
+            logLevel  = LogLevel.INFO
+        )
+        sdk = try {
+            PineBillingSdk(config, AppToAppBridge(this))
+        } catch (e: SdkException.InvalidInput) {
+            Log.e(TAG, "SDK misconfiguration: ${e.detail}")
+            throw e   // crash-fast: no point starting with bad config
+        }
+    }
+}</code></pre>
+        </div>
+
+        <div class="code-block hidden" id="lc-tabs-java-init" data-lang="java">
+          <div class="code-block-header">
+            <span class="code-lang">Java — Application.onCreate</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-java">public class MyApplication extends Application {
+    private PineBillingSdk sdk;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        SdkConfig config = new SdkConfig.Builder()
+            .appToApp(new AppToAppConfig(this))
+            .logLevel(LogLevel.INFO)
+            .build();
+        try {
+            sdk = new PineBillingSdk(config, new AppToAppBridge(this));
+        } catch (SdkException.InvalidInput e) {
+            Log.e(TAG, "SDK misconfiguration: " + e.getDetail());
+            throw e;  // crash-fast: no point starting with bad config
+        }
+    }
+
+    public PineBillingSdk getSdk() { return sdk; }
+}</code></pre>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- §02 Threading model -->
+      <section class="doc-section" id="threading">
+        <div class="section-header">
+          <span class="section-number">02</span>
+          <h2>Threading model</h2>
+        </div>
+        <p>The SDK has three relevant thread categories:</p>
+
+        <!-- Visual thread flow -->
+        <div class="thread-flow">
+          <div class="tf-row">
+
+            <div class="tf-node">
+              <div class="tf-box tf-box--caller">Caller thread</div>
+              <div class="tf-sub">Your code — submit call, receive callback</div>
+            </div>
+
+            <div class="tf-arrow">
+              <div class="tf-arrow-fwd">
+                <div class="tf-line"></div>
+                <div class="tf-head-r">▶</div>
+              </div>
+              <div class="tf-label">submit<br>call</div>
+              <div class="tf-arrow-rev">
+                <div class="tf-head-l">◀</div>
+                <div class="tf-line"></div>
+              </div>
+              <div class="tf-label">callback<br>fired</div>
+            </div>
+
+            <div class="tf-node">
+              <div class="tf-box tf-box--worker">SDK worker thread(s)</div>
+              <div class="tf-sub">Tokio pool — transport I/O &amp; serialisation</div>
+            </div>
+
+            <div class="tf-arrow">
+              <div class="tf-arrow-fwd">
+                <div class="tf-line"></div>
+                <div class="tf-head-r">▶</div>
+              </div>
+              <div class="tf-label">transport<br>I/O</div>
+              <div class="tf-arrow-rev">
+                <div class="tf-head-l">◀</div>
+                <div class="tf-line"></div>
+              </div>
+              <div class="tf-label">reply</div>
+            </div>
+
+            <div class="tf-node">
+              <div class="tf-box tf-box--terminal">Terminal</div>
+              <div class="tf-sub">Card reader, acquirer, cloud server</div>
+            </div>
+
+          </div>
+          <div class="tf-cb-note">
+            ⚠ Callbacks fire on the <strong>SDK worker thread</strong> —
+            marshal to your UI thread before touching views.<br>
+            <code>runOnUiThread { … }</code> · <code>DispatchQueue.main.async { … }</code> · <code>Handler(mainLooper).post { … }</code>
+          </div>
+        </div>
+
+        <!-- Three thread cards -->
+        <div class="thread-cards">
+          <div class="thread-card">
+            <div class="tc-header">
+              <div class="tc-dot tc-dot--caller"></div>
+              <div>
+                <div class="tc-title">Caller thread</div>
+                <div class="tc-sub">Your code</div>
+              </div>
+            </div>
+            <div class="tc-body">
+              <ul>
+                <li><strong>Listener methods</strong> return immediately — safe on any thread including UI.</li>
+                <li><strong>Blocking methods</strong> perform I/O inline — <em>never</em> call from the UI thread.</li>
+                <li>No blocking I/O is done on the caller's stack during a listener call.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="thread-card">
+            <div class="tc-header">
+              <div class="tc-dot tc-dot--worker"></div>
+              <div>
+                <div class="tc-title">SDK worker thread</div>
+                <div class="tc-sub">Rust / Tokio pool</div>
+              </div>
+            </div>
+            <div class="tc-body">
+              <ul>
+                <li>Owned by the Rust core — not configurable.</li>
+                <li>All transport I/O: HTTPS, TCP, PAD framing, <code class="inline-code">bindService</code>.</li>
+                <li>On Android, App-to-App spins a one-shot <code class="inline-code">HandlerThread</code> per call, created and quit in a single <code class="inline-code">roundTrip()</code>.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="thread-card">
+            <div class="tc-header">
+              <div class="tc-dot tc-dot--cb"></div>
+              <div>
+                <div class="tc-title">Callback thread</div>
+                <div class="tc-sub">SDK-internal</div>
+              </div>
+            </div>
+            <div class="tc-body">
+              <ul>
+                <li>All callbacks fire here — <strong>serialised</strong>, never concurrent on the same listener.</li>
+                <li><strong>Never</strong> fired on the caller's stack frame before the call returns.</li>
+                <li>Must not block — hand off to UI dispatcher and return.</li>
+                <li>Must not re-enter SDK with listener-based methods synchronously.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Listener vs blocking method lists -->
+        <div class="method-grid">
+          <div class="method-card method-card--safe">
+            <div class="method-card-title method-card-title--safe">✓ Listener-based — safe on any thread</div>
+            <ul>
+              <li>doTransaction()</li>
+              <li>testPrint()</li>
+              <li>discoverTerminals()</li>
+            </ul>
+          </div>
+          <div class="method-card method-card--block">
+            <div class="method-card-title method-card-title--block">✗ Blocking — must run on worker thread</div>
+            <ul>
+              <li>cancel()</li>
+              <li>checkStatus()</li>
+              <li>connect() / disconnect()</li>
+              <li>ping() / runSelfTest()</li>
+              <li>getLogs() / getTerminalInfo()</li>
+              <li>setTransport()</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="warn-callout">
+          <div class="warn-callout-icon">⚠️</div>
+          <div class="warn-callout-body">
+            <strong>Android: SDK throws on main-thread blocking calls</strong>
+            <p>
+              The SDK detects <code class="inline-code">Looper.getMainLooper()</code> and throws
+              <code class="inline-code">IllegalStateException</code> if you call a blocking method from
+              the UI thread. Use <code class="inline-code">Dispatchers.IO</code>, an
+              <code class="inline-code">Executor</code>, or <code class="inline-code">WorkManager</code>.
+            </p>
+          </div>
+        </div>
+
+        <div class="info-callout">
+          <div class="info-callout-icon">💡</div>
+          <div class="info-callout-body">
+            <strong>Why the two-step model?</strong>
+            <p>
+              Listener-based methods can take tens of seconds at the terminal — cardholder inserting
+              a card, entering a PIN, acquirer responding. A synchronous API would either block your
+              UI for that time or force a thread-per-transaction model. The two-step model lets you
+              write natural code: show a "tap card" UI, then update the screen when the callback fires.
+            </p>
+          </div>
+        </div>
+
+        <!-- Blocking method thread examples -->
+        <div class="lang-tabs" data-tabs="lc-tabs">
+          <button class="lang-tab active" data-lang="kotlin" onclick="switchTab(this,'lc-tabs')">Kotlin</button>
+          <button class="lang-tab"        data-lang="java"   onclick="switchTab(this,'lc-tabs')">Java</button>
+        </div>
+
+        <div class="code-block" id="lc-tabs-kotlin-thread" data-lang="kotlin">
+          <div class="code-block-header">
+            <span class="code-lang">Kotlin — blocking methods on worker thread</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-kotlin">// ✅ Blocking methods on a coroutine worker dispatcher
+viewModelScope.launch(Dispatchers.IO) {
+    val status = sdk.checkStatus(eventId, CheckStatusOptions.Cloud(/* … */))
+    withContext(Dispatchers.Main) {
+        updateUi(status)
+    }
+}
+
+// ✅ connect() before first transaction
+viewModelScope.launch(Dispatchers.IO) {
+    try {
+        sdk.connect(ConnectOptions.Tcp(host = "192.168.1.50", port = 9100))
+    } catch (e: SdkException) {
+        Log.e(TAG, "Connect failed: $e")
+    }
+}</code></pre>
+        </div>
+
+        <div class="code-block hidden" id="lc-tabs-java-thread" data-lang="java">
+          <div class="code-block-header">
+            <span class="code-lang">Java — blocking methods on worker thread</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-java">// ✅ Blocking methods on an Executor
+ExecutorService io = Executors.newSingleThreadExecutor();
+
+io.execute(() -> {
+    try {
+        OperationStatus status = sdk.checkStatus(eventId,
+                new CheckStatusOptions.Cloud(/* … */));
+        runOnUiThread(() -> updateUi(status));
+    } catch (SdkException e) {
+        Log.e(TAG, "checkStatus failed: " + e);
+    }
+});
+
+// ✅ connect() before first transaction
+io.execute(() -> {
+    try {
+        sdk.connect(new ConnectOptions.Tcp("192.168.1.50", 9100));
+    } catch (SdkException e) {
+        Log.e(TAG, "Connect failed: " + e);
+    }
+});</code></pre>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- §03 Concurrency -->
+      <section class="doc-section" id="concurrency">
+        <div class="section-header">
+          <span class="section-number">03</span>
+          <h2>Concurrency: one operation per instance</h2>
+        </div>
+        <p>
+          The SDK enforces a <strong>single in-flight operation</strong> per
+          <code class="inline-code">PineBillingSdk</code> instance:
+        </p>
+
+        <div class="lang-tabs" data-tabs="lc-tabs">
+          <button class="lang-tab active" data-lang="kotlin" onclick="switchTab(this,'lc-tabs')">Kotlin</button>
+          <button class="lang-tab"        data-lang="java"   onclick="switchTab(this,'lc-tabs')">Java</button>
+        </div>
+
+        <div class="code-block" id="lc-tabs-kotlin-concur" data-lang="kotlin">
+          <div class="code-block-header">
+            <span class="code-lang">Kotlin</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-kotlin">sdk.doTransaction(req1, listener1)   // ✅ accepted — onStarted fires
+
+sdk.doTransaction(req2, listener2)   // ❌ throws SdkException.OperationInProgress
+                                     //    .activeEventId = "&lt;uuid of req1&gt;"</code></pre>
+        </div>
+
+        <div class="code-block hidden" id="lc-tabs-java-concur" data-lang="java">
+          <div class="code-block-header">
+            <span class="code-lang">Java</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-java">sdk.doTransaction(req1, listener1);   // ✅ accepted — onStarted fires
+
+try {
+    sdk.doTransaction(req2, listener2);
+} catch (SdkException.OperationInProgress e) {
+    // ❌ throws — carry the active event ID to show "still busy with order #123…"
+    showBusyMessage(e.getActiveEventId());
+}</code></pre>
+        </div>
+
+        <div class="rule-callout" style="margin-top:16px">
+          <div class="rule-callout-icon">🔘</div>
+          <div class="rule-callout-body">
+            <strong>Disable the trigger control on onStarted — re-enable on onSuccess / onFailure</strong>
+            <p>
+              This is the canonical way to prevent double-charge bugs. The
+              <code class="inline-code">OperationInProgress</code> exception carries the
+              <code class="inline-code">active_event_id</code> so your UI can show
+              "still processing order #123…" if it somehow fires.
+            </p>
+            <p>
+              <code class="inline-code">cancel</code> and <code class="inline-code">checkStatus</code>
+              are <strong>not</strong> counted as operations — you can poll
+              <code class="inline-code">checkStatus(activeEventId)</code> while a transaction is
+              in flight to drive a "still waiting…" spinner on Cloud transport.
+            </p>
+          </div>
+        </div>
+
+        <div class="warn-callout">
+          <div class="warn-callout-icon">⚠️</div>
+          <div class="warn-callout-body">
+            <strong>Multiple SDK instances are not a concurrency workaround</strong>
+            <p>
+              The one-instance-per-process rule (§01) takes precedence. For throughput,
+              serialise on a worker queue — one transaction at a time per terminal is the
+              correct model.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- §04 Op lifecycle timeline -->
+      <section class="doc-section" id="op-lifecycle">
+        <div class="section-header">
+          <span class="section-number">04</span>
+          <h2>Lifecycle of a single operation</h2>
+        </div>
+        <p>
+          From call site to terminal callback — what happens on each thread at each moment:
+        </p>
+
+        <div class="op-timeline">
+          <div class="tl-item">
+            <div class="tl-left">
+              <div class="tl-marker tl-marker--t0">T0</div>
+              <div class="tl-vline"></div>
+            </div>
+            <div class="tl-right">
+              <div class="tl-thread">Caller thread</div>
+              <div class="tl-action">sdk.doTransaction(req, listener)</div>
+              <div class="tl-desc">
+                SDK validates config, allocates a UUIDv4 <code class="inline-code">event_id</code>,
+                enqueues work on the worker pool, and <strong>returns immediately</strong>.
+                Your caller thread is free.
+              </div>
+              <span class="tl-state tl-state--pending">OperationState.Pending</span>
+            </div>
+          </div>
+
+          <div class="tl-item">
+            <div class="tl-left">
+              <div class="tl-marker tl-marker--t1">T1</div>
+              <div class="tl-vline"></div>
+            </div>
+            <div class="tl-right">
+              <div class="tl-thread">SDK worker thread</div>
+              <div class="tl-action">listener.onStarted(eventId)</div>
+              <div class="tl-desc">
+                The SDK fires <code class="inline-code">onStarted</code> — persist the
+                <code class="inline-code">event_id</code> to durable storage now. The
+                SDK then begins the active transport: bind service, open TCP, POST to cloud.
+              </div>
+              <span class="tl-state tl-state--inflight">OperationState.InFlight</span>
+            </div>
+          </div>
+
+          <div class="tl-item">
+            <div class="tl-left">
+              <div class="tl-marker tl-marker--t2">T2</div>
+              <div class="tl-vline"></div>
+            </div>
+            <div class="tl-right">
+              <div class="tl-thread">SDK worker thread + Terminal</div>
+              <div class="tl-action">Terminal interaction</div>
+              <div class="tl-desc">
+                Cardholder taps / inserts card, enters PIN. Acquirer round-trip completes.
+                This can take seconds to tens of seconds. Your UI thread remains responsive.
+              </div>
+              <span class="tl-state tl-state--inflight">OperationState.InFlight</span>
+            </div>
+          </div>
+
+          <div class="tl-item">
+            <div class="tl-left">
+              <div class="tl-marker tl-marker--t3">T3</div>
+            </div>
+            <div class="tl-right">
+              <div class="tl-thread">SDK worker thread</div>
+              <div class="tl-action">listener.onSuccess(result) <em>or</em> onFailure(error)</div>
+              <div class="tl-desc">
+                Terminal state is settled. Persist the outcome, update your UI
+                (via <code class="inline-code">runOnUiThread</code>), and re-enable the
+                payment trigger control.
+              </div>
+              <span class="tl-state tl-state--done">Completed · Failed · Cancelled</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="see-also" style="margin-top:4px">
+          Query state between T0 and T3 — or after a crash — with
+          <code class="inline-code">checkStatus(eventId)</code>.
+          See <a href="eventid-and-reconciliation">event_id &amp; Reconciliation</a>
+          for the full persistence contract.
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- §05 Tear-down -->
+      <section class="doc-section" id="teardown">
+        <div class="section-header">
+          <span class="section-number">05</span>
+          <h2>Tear-down</h2>
+        </div>
+
+        <p>
+          The SDK does <strong>not</strong> require an explicit
+          <code class="inline-code">close()</code> / <code class="inline-code">shutdown()</code>
+          call. At process exit:
+        </p>
+
+        <div class="convention-grid">
+          <div class="convention-item">
+            <div class="convention-icon">✅</div>
+            <div>The worker pool is dropped and joined automatically.</div>
+          </div>
+          <div class="convention-item">
+            <div class="convention-icon">✅</div>
+            <div>On Android, per-call <code class="inline-code">HandlerThread</code> instances have already been quit in their own <code class="inline-code">finally</code> block.</div>
+          </div>
+          <div class="convention-item">
+            <div class="convention-icon">✅</div>
+            <div>No persistent file handles, network sockets, or listening ports to leak.</div>
+          </div>
+        </div>
+
+        <div class="info-callout">
+          <div class="info-callout-icon">🔌</div>
+          <div class="info-callout-body">
+            <strong>Explicit disconnect for long-running services</strong>
+            <p>
+              If you need to release transport resources before process exit — e.g. a
+              long-running service doing dynamic re-config — call
+              <code class="inline-code">disconnect()</code> first, then drop your reference.
+              After <code class="inline-code">disconnect()</code>, any transport-touching
+              method raises <code class="inline-code">SdkError.NotConnected</code> until
+              you call <code class="inline-code">connect()</code> again (or App-to-App's
+              per-call bind takes over).
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- §06 Common mistakes -->
+      <section class="doc-section" id="mistakes">
+        <div class="section-header">
+          <span class="section-number">06</span>
+          <h2>Common mistakes</h2>
+        </div>
+        <p>If you hit one of these symptoms, here is the likely cause and fix:</p>
+
+        <div class="lc-table-wrap">
+          <table class="lc-table">
+            <thead>
+              <tr>
+                <th>Symptom</th>
+                <th>Cause &amp; fix</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="mistake-row">
+                <td><code class="inline-code">IllegalStateException: Pine Labs SDK called from main thread</code></td>
+                <td>
+                  You called <code class="inline-code">cancel</code>,
+                  <code class="inline-code">checkStatus</code>,
+                  <code class="inline-code">connect</code>,
+                  <code class="inline-code">ping</code>, etc. on the Android UI thread.
+                  Move the call to <code class="inline-code">Dispatchers.IO</code> or an
+                  <code class="inline-code">Executor</code>.
+                </td>
+              </tr>
+              <tr class="mistake-row">
+                <td><code class="inline-code">OperationInProgress(active_event_id = …)</code> on the very next call</td>
+                <td>
+                  You did not disable the trigger control in
+                  <code class="inline-code">onStarted</code>. The user tapped "Charge" twice
+                  before the first transaction settled.
+                </td>
+              </tr>
+              <tr class="mistake-row">
+                <td>Callback never fires</td>
+                <td>
+                  Your <code class="inline-code">TransactionListener</code> threw an
+                  unhandled exception inside <code class="inline-code">onStarted</code> or
+                  <code class="inline-code">onSuccess</code>. The SDK delivered the callback,
+                  but your code threw and swallowed it. Add a top-level
+                  <code class="inline-code">try/catch</code> and log.
+                </td>
+              </tr>
+              <tr class="mistake-row">
+                <td><code class="inline-code">onSuccess</code> fires but UI does nothing</td>
+                <td>
+                  Your callback ran on the SDK worker thread; touching a
+                  <code class="inline-code">TextView</code> directly fails silently.
+                  Marshal to the UI thread with
+                  <code class="inline-code">runOnUiThread { … }</code>.
+                </td>
+              </tr>
+              <tr class="mistake-row">
+                <td><code class="inline-code">checkStatus</code> returns <code class="inline-code">Unknown</code> for an ID you definitely allocated</td>
+                <td>
+                  You constructed two SDK instances in the same process. The ID belongs
+                  to the other instance's registry. Consolidate to one instance (§01).
+                </td>
+              </tr>
+              <tr class="mistake-row">
+                <td>Cloud <code class="inline-code">cancel</code> hangs 30 s then <code class="inline-code">Timeout</code></td>
+                <td>
+                  One of: (a) called <code class="inline-code">cancel</code> on the UI thread
+                  on Android, (b) forgot <code class="inline-code">cancelOptions = CancelOptions.Cloud { amount }</code>
+                  and the server rejected it, (c) <code class="inline-code">cloudConnectTimeoutMs</code>
+                  is set too high. Check logs for the specific sub-reason.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="see-also" style="margin-top:24px">
+          <strong>See also:</strong>
+          <a href="error-handling">Error handling reference</a> ·
+          <a href="eventid-and-reconciliation">event_id &amp; Reconciliation</a> ·
+          <a href="../do-transaction">doTransaction reference</a>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="doc-footer">
+        <div class="doc-footer-inner">
+          <div class="footer-left">
+            <div class="brand">
+              <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
+                <rect width="32" height="32" rx="8" fill="#635bff"/>
+                <path d="M8 20l6-12 4 8 3-4 3 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="brand-name">Pinelabs SDK</span>
+            </div>
+            <p class="footer-note">Document version: <code class="inline-code">1.0</code></p>
+          </div>
+          <div class="footer-links">
+            <a href="../index">Home</a>
+            <a href="#construction">Construction</a>
+            <a href="#threading">Threading</a>
+            <a href="#concurrency">Concurrency</a>
+            <a href="#op-lifecycle">Op lifecycle</a>
+            <a href="#mistakes">Mistakes</a>
+          </div>
+        </div>
+      </footer>
+
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="../js/main.js"></script>
+</body>
+</html>

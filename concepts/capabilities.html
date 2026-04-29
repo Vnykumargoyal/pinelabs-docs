@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Capability Matrix — Pinelabs SDK</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    /* ── capability-specific overrides ── */
+    .cap-hero {
+      padding: 48px 0 32px;
+    }
+    .cap-hero-eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--purple);
+      margin-bottom: 10px;
+    }
+    .cap-hero-title {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--ink-900);
+      letter-spacing: -1.2px;
+      line-height: 1.15;
+      margin-bottom: 14px;
+      background: linear-gradient(135deg, var(--ink-900) 0%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .cap-hero-sub {
+      font-size: 16px;
+      color: var(--ink-600);
+      max-width: 640px;
+      line-height: 1.65;
+      margin-bottom: 24px;
+    }
+
+    /* ── transport pill row ── */
+    .transport-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 36px;
+    }
+    .transport-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 24px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid var(--ink-100);
+      background: var(--white);
+      box-shadow: var(--shadow-sm);
+    }
+    .transport-pill .tp-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .tp-a2a   .tp-dot { background: var(--purple); }
+    .tp-cloud .tp-dot { background: var(--teal); }
+    .tp-pad   .tp-dot { background: var(--amber); }
+    .tp-tcp   .tp-dot { background: var(--ink-200); }
+
+    /* ── matrix section ── */
+    .matrix-section {
+      padding: 40px 0;
+    }
+    .matrix-section + .matrix-section {
+      border-top: 1px solid var(--ink-100);
+    }
+    .matrix-section-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--ink-900);
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+    .matrix-section-desc {
+      font-size: 14px;
+      color: var(--ink-600);
+      margin-bottom: 16px;
+      max-width: 680px;
+    }
+
+    /* ── cell badges ── */
+    .cell-yes {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: #009e7e;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .cell-yes::before { content: "✓"; font-size: 14px; }
+
+    .cell-no {
+      display: inline-flex;
+      align-items: center;
+      color: #c0392b;
+      font-weight: 600;
+      font-size: 12px;
+      background: rgba(255,107,107,0.08);
+      border-radius: 4px;
+      padding: 2px 7px;
+    }
+    .cell-noop {
+      font-size: 12px;
+      color: var(--ink-400);
+      font-style: italic;
+    }
+    .cell-placeholder {
+      display: inline-flex;
+      align-items: center;
+      color: #a07800;
+      font-weight: 600;
+      font-size: 12px;
+      background: rgba(255,184,48,0.1);
+      border-radius: 4px;
+      padding: 2px 7px;
+    }
+
+    /* ── footnote list ── */
+    .footnote-list {
+      margin: 20px 0 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .footnote-list li {
+      font-size: 13px;
+      color: var(--ink-600);
+      padding: 10px 14px;
+      background: var(--ink-50);
+      border-left: 3px solid var(--ink-100);
+      border-radius: 0 var(--r-sm) var(--r-sm) 0;
+      line-height: 1.6;
+    }
+    .fn-marker {
+      font-weight: 700;
+      color: var(--purple);
+      font-family: var(--font-mono);
+      margin-right: 6px;
+    }
+
+    /* ── legend ── */
+    .legend-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--ink-600);
+      background: var(--white);
+      border: 1px solid var(--ink-100);
+      border-radius: var(--r-md);
+      padding: 7px 12px;
+    }
+
+    /* ── options detail cards ── */
+    .options-card {
+      background: var(--white);
+      border: 1px solid var(--ink-100);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .options-card-header {
+      background: var(--ink-50);
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--ink-100);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .options-card-header code {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--purple);
+    }
+    .options-card-body {
+      padding: 16px 20px;
+    }
+    .options-card-body p {
+      font-size: 14px;
+      color: var(--ink-600);
+      margin-bottom: 10px;
+      line-height: 1.6;
+    }
+    .options-card-body p:last-child { margin-bottom: 0; }
+
+    @media (max-width: 600px) {
+      .cap-hero-title { font-size: 26px; }
+      .transport-row { gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="../index" class="brand">
+        <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="#635bff"/>
+          <path d="M8 20l6-12 4 8 3-4 3 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="brand-name">Pinelabs<span class="brand-sub"> SDK</span></span>
+      </a>
+      <nav class="topbar-nav">
+        <a href="../index" class="topbar-link">Home</a>
+        <a href="../init" class="topbar-link">init</a>
+        <a href="../do-transaction" class="topbar-link">doTransaction</a>
+        <a href="../devices" class="topbar-link">Devices</a>
+        <a href="capabilities" class="topbar-link">Capabilities</a>
+      </nav>
+      <div class="topbar-actions">
+        <span class="version-badge">v1.0</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-inner">
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">Overview</p>
+          <a href="../index" class="sidebar-link">Introduction</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">Concepts</p>
+          <a href="overview" class="sidebar-link">SDK Overview</a>
+          <a href="capabilities" class="sidebar-link active">Capability Matrix</a>
+          <a href="error-handling" class="sidebar-link">Error Handling</a>
+          <a href="lifecycle" class="sidebar-link">Lifecycle &amp; Threading</a>
+          <a href="eventid-and-reconciliation" class="sidebar-link">event_id &amp; Reconciliation</a>
+          <a href="result-payload" class="sidebar-link">TransactionResult</a>
+          <a href="transports.html" class="sidebar-link">Transports</a>
+          <a href="versioning-and-support" class="sidebar-link">Versioning &amp; Support</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">API Reference</p>
+          <a href="../init" class="sidebar-link">init</a>
+          <a href="../do-transaction" class="sidebar-link">doTransaction</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">Capability Matrix</p>
+          <a href="#method-transport" class="sidebar-link sidebar-link--sub">Method × Transport</a>
+          <a href="#txtype-transport" class="sidebar-link sidebar-link--sub">TransactionType × Transport</a>
+          <a href="#transport-options" class="sidebar-link sidebar-link--sub">TransportOptions</a>
+          <a href="#cancel-options" class="sidebar-link sidebar-link--sub">CancelOptions</a>
+          <a href="#checkstatus-options" class="sidebar-link sidebar-link--sub">CheckStatusOptions</a>
+          <a href="#payment-modes" class="sidebar-link sidebar-link--sub">allowedPaymentModes</a>
+          <a href="#legend" class="sidebar-link sidebar-link--sub">Legend</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">Hardware</p>
+          <a href="../devices" class="sidebar-link">Supported Devices</a>
+        </div>
+
+      </div>
+    </aside>
+
+    <main class="content" id="main-content">
+
+      <!-- Hero -->
+      <section class="cap-hero" id="intro">
+        <p class="cap-hero-eyebrow">SDK v1 · Formal Reference</p>
+        <h1 class="cap-hero-title">Capability Matrix</h1>
+        <p class="cap-hero-sub">
+          The formal reference for what each transport can and cannot do in v1.
+          Every cell marked <span class="cell-no">NotSupported</span> corresponds to a real
+          <code class="inline-code">SdkError.NotSupported</code> raised at call time.
+          For prose-style transport descriptions, see the transports guide.
+        </p>
+
+        <!-- Transport pills -->
+        <div class="transport-row">
+          <div class="transport-pill tp-a2a">
+            <span class="tp-dot"></span>App-to-App
+          </div>
+          <div class="transport-pill tp-cloud">
+            <span class="tp-dot"></span>Cloud
+          </div>
+          <div class="transport-pill tp-pad">
+            <span class="tp-dot"></span>PADController (BT / USB / Serial)
+          </div>
+          <div class="transport-pill tp-tcp">
+            <span class="tp-dot"></span>TCP <span class="badge badge--beta" style="margin-left:4px">placeholder</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 1. Method × Transport -->
+      <section class="matrix-section" id="method-transport">
+        <h2 class="matrix-section-title">Method × Transport (v1)</h2>
+        <p class="matrix-section-desc">
+          Each row is an SDK method; each column is a transport. Cells show whether the
+          call succeeds, is a no-op, or raises <code class="inline-code">SdkError.NotSupported</code>.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>App-to-App</th>
+                <th>TCP ※</th>
+                <th>Cloud</th>
+                <th>PADController (BT/USB/Serial)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code class="inline-code">doTransaction</code></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-yes"></span> <sup>✚</sup></td>
+                <td><span class="cell-yes"></span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">testPrint</code></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-yes"></span> <sup>✚</sup></td>
+                <td><span class="cell-yes"></span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">cancel</code></td>
+                <td><span class="cell-no">NotSupported</span> <sup>◊</sup></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-yes"></span> <sup>✚</sup></td>
+                <td><span class="cell-yes"></span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">checkStatus</code></td>
+                <td><span class="cell-no">NotSupported</span> <sup>◊</sup></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-yes"></span> <sup>✚</sup></td>
+                <td><span class="cell-yes"></span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">connect</code> / <code class="inline-code">disconnect</code></td>
+                <td><span class="cell-noop">no-op</span> <sup>†</sup></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-noop">no-op (HTTPS per call)</span></td>
+                <td><span class="cell-yes"></span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">isConnected</code></td>
+                <td><span class="cell-noop">true only mid-call</span> <sup>†</sup></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-noop">always false</span></td>
+                <td><span class="cell-noop">reflects link state</span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">discoverTerminals</code></td>
+                <td><span class="cell-no">NotSupported</span></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-no">NotSupported</span></td>
+                <td><span class="cell-yes"></span> <sup>‡</sup></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">ping</code></td>
+                <td><span class="cell-no">NotSupported</span></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-no">NotSupported</span></td>
+                <td><span class="cell-yes"></span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">runSelfTest</code></td>
+                <td><span class="cell-no">NotSupported</span></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-no">NotSupported</span></td>
+                <td><span class="cell-yes"></span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">getLogs</code></td>
+                <td><span class="cell-no">NotSupported</span></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-no">NotSupported</span></td>
+                <td><span class="cell-yes"></span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">getTerminalInfo</code></td>
+                <td><span class="cell-no">NotSupported</span></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-no">NotSupported</span></td>
+                <td><span class="cell-yes"></span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">setTransport</code></td>
+                <td><span class="cell-noop">always available</span></td>
+                <td><span class="cell-placeholder">placeholder ※</span></td>
+                <td><span class="cell-noop">always available</span></td>
+                <td><span class="cell-noop">always available</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <ul class="footnote-list">
+          <li><span class="fn-marker">†</span> App-to-App binds the MasterApp service per call; explicit <code class="inline-code">connect</code> / <code class="inline-code">disconnect</code> are accepted as no-ops, and <code class="inline-code">isConnected</code> returns <code class="inline-code">true</code> only while a call is in flight.</li>
+          <li><span class="fn-marker">◊</span> The MasterApp Messenger protocol exposes neither a server-side cancel nor a status reconciliation endpoint. <code class="inline-code">cancel</code> raises <code class="inline-code">NotSupported</code>; <code class="inline-code">checkStatus</code> raises <code class="inline-code">NotSupported</code> on App-to-App (other transports route the call through the SDK's in-memory operation registry).</li>
+          <li><span class="fn-marker">‡</span> PADController discovery is transport-specific: Bluetooth ✓; USB and Serial enumerate the device list known to PADController.</li>
+          <li><span class="fn-marker">※</span> TCP direct is a v1 placeholder (delta D24): wire protocol is greenfield and unspecified; calls may raise <code class="inline-code">NotSupported</code> until the adapter ships.</li>
+          <li><span class="fn-marker">✚</span> Cloud <code class="inline-code">doTransaction</code> resolves with <code class="inline-code">TransactionStatus.Pending</code> (delta D23(g)); the merchant drives settlement via <code class="inline-code">checkStatus</code>. Cloud <code class="inline-code">cancel</code> / <code class="inline-code">checkStatus</code> require a <code class="inline-code">*Options::Cloud</code> extras object; see the per-method docs.</li>
+        </ul>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 2. TransactionType × Transport -->
+      <section class="matrix-section" id="txtype-transport">
+        <h2 class="matrix-section-title">TransactionType × Transport (v1)</h2>
+        <p class="matrix-section-desc">
+          If a transport does <strong>not</strong> support a given <code class="inline-code">TransactionType</code>, the SDK raises
+          <code class="inline-code">SdkError.NotSupported</code> synchronously from <code class="inline-code">doTransaction</code> — no callback fires.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Operation</th>
+                <th>App-to-App</th>
+                <th>Cloud</th>
+                <th>PADController</th>
+                <th>TCP ※</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code class="inline-code">Sale</code></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-yes"></span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">Refund</code></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-yes"></span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">Void</code></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-yes"></span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">PreAuth</code></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-yes"></span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">Capture</code> <small>(post-auth)</small></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-yes"></span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">BalanceInquiry</code> <small>(NCMC)</small></td>
+                <td><span class="cell-yes"></span></td>
+                <td><span class="cell-no">NotSupported</span></td>
+                <td><span class="cell-noop">varies by terminal</span></td>
+                <td><span class="cell-yes"></span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 3. TransportOptions -->
+      <section class="matrix-section" id="transport-options">
+        <h2 class="matrix-section-title">TransportOptions × Transport</h2>
+        <p class="matrix-section-desc">
+          <code class="inline-code">TransactionRequest.transportOptions</code> is a discriminated union. You must pass
+          <strong>the variant matching the active transport</strong> or the SDK raises
+          <code class="inline-code">SdkError.InvalidInput</code> synchronously.
+        </p>
+
+        <div class="options-card">
+          <div class="options-card-header">
+            <span class="transport-pill tp-a2a" style="padding:4px 10px;font-size:12px"><span class="tp-dot"></span>App-to-App</span>
+            <code>TransportOptions::AppToApp</code>
+          </div>
+          <div class="options-card-body">
+            <p>All fields are optional: <code class="inline-code">gstIn?</code>, <code class="inline-code">gstBrkUp?</code>, <code class="inline-code">serviceId?</code>, <code class="inline-code">serviceMi?</code>, <code class="inline-code">isTransitMode?</code>, <code class="inline-code">paymentMode?</code>, <code class="inline-code">serviceData?</code></p>
+          </div>
+        </div>
+
+        <div class="options-card">
+          <div class="options-card-header">
+            <span class="transport-pill tp-cloud" style="padding:4px 10px;font-size:12px"><span class="tp-dot"></span>Cloud</span>
+            <code>TransportOptions::Cloud</code>
+          </div>
+          <div class="options-card-body">
+            <p><strong>Required:</strong> <code class="inline-code">transactionNumber</code>, <code class="inline-code">sequenceNumber</code></p>
+            <p><strong>Optional:</strong> <code class="inline-code">allowedPaymentMode?</code>, <code class="inline-code">autoCancelDurationInMinutes?</code>, <code class="inline-code">forceCancelOnBack?</code>, <code class="inline-code">merchantStorePosCode?</code></p>
+          </div>
+        </div>
+
+        <div class="options-card">
+          <div class="options-card-header">
+            <span class="transport-pill tp-pad" style="padding:4px 10px;font-size:12px"><span class="tp-dot"></span>PADController</span>
+            <code>TransportOptions::PadController</code>
+          </div>
+          <div class="options-card-body">
+            <p>Placeholder: <code class="inline-code">extras: Map&lt;String, String&gt;?</code> — concrete typed fields will be promoted from <code class="inline-code">extras</code> as the CSV column set stabilises.</p>
+          </div>
+        </div>
+
+        <div class="options-card">
+          <div class="options-card-header">
+            <span class="transport-pill tp-tcp" style="padding:4px 10px;font-size:12px"><span class="tp-dot"></span>TCP</span>
+            <code>TransportOptions (TCP)</code>
+          </div>
+          <div class="options-card-body">
+            <p>Not yet specified. Supplying a mismatched variant raises <code class="inline-code">SdkError.InvalidInput</code> with a diagnostic detail.</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 4. CancelOptions -->
+      <section class="matrix-section" id="cancel-options">
+        <h2 class="matrix-section-title">CancelOptions × Transport</h2>
+        <p class="matrix-section-desc">
+          <code class="inline-code">PineBillingSdk.cancel(eventId, options)</code> — the <code class="inline-code">options</code> argument varies by transport.
+          Supplying <code class="inline-code">Cloud</code> on a non-Cloud transport, or omitting it on Cloud, raises <code class="inline-code">SdkError.InvalidInput</code>.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Active Transport</th>
+                <th>options</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>App-to-App</td>
+                <td><span class="cell-no">NotSupported</span> — options ignored</td>
+              </tr>
+              <tr>
+                <td>Cloud</td>
+                <td><code class="inline-code">CancelOptions::Cloud { amount }</code> — <strong>required</strong></td>
+              </tr>
+              <tr>
+                <td>PADController</td>
+                <td><code class="inline-code">null</code></td>
+              </tr>
+              <tr>
+                <td>TCP</td>
+                <td><code class="inline-code">null</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 5. CheckStatusOptions -->
+      <section class="matrix-section" id="checkstatus-options">
+        <h2 class="matrix-section-title">CheckStatusOptions × Transport</h2>
+        <p class="matrix-section-desc">
+          <code class="inline-code">PineBillingSdk.checkStatus(eventId, options)</code> — options vary by transport.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Active Transport</th>
+                <th>options</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>App-to-App</td>
+                <td><span class="cell-no">NotSupported</span> — options ignored</td>
+              </tr>
+              <tr>
+                <td>Cloud</td>
+                <td><code class="inline-code">CheckStatusOptions::Cloud { merchantStorePosCode }</code> — <strong>required</strong></td>
+              </tr>
+              <tr>
+                <td>PADController</td>
+                <td><code class="inline-code">null</code> (answered from in-memory state)</td>
+              </tr>
+              <tr>
+                <td>TCP</td>
+                <td><code class="inline-code">null</code> (answered from in-memory state)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 6. allowedPaymentModes -->
+      <section class="matrix-section" id="payment-modes">
+        <h2 class="matrix-section-title"><code style="font-size:inherit">allowedPaymentModes</code> semantics by transport</h2>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Transport</th>
+                <th>Behaviour</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>App-to-App</td>
+                <td>Forwarded to the terminal verbatim.</td>
+              </tr>
+              <tr>
+                <td>Cloud</td>
+                <td><strong>Ignored</strong> in v1. Use <code class="inline-code">TransportOptions::Cloud.allowedPaymentMode</code> (opaque string code) instead.</td>
+              </tr>
+              <tr>
+                <td>PADController</td>
+                <td>Forwarded if the underlying CSV column for that mode is in scope.</td>
+              </tr>
+              <tr>
+                <td>TCP</td>
+                <td>Behaviour TBD with the adapter.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 7. Legend -->
+      <section class="matrix-section" id="legend">
+        <h2 class="matrix-section-title">Reading this matrix</h2>
+        <p class="matrix-section-desc">
+          Write your code defensively: catch <code class="inline-code">NotSupported</code> and fall back to a transport that does support the capability.
+          This matrix is also the behaviour that the SDK's CI tests guard — what you see is what you get.
+        </p>
+        <div class="legend-grid">
+          <div class="legend-item"><span class="cell-yes" style="gap:6px"></span> Supported and tested</div>
+          <div class="legend-item"><span class="cell-no">NotSupported</span> &nbsp;Raises <code class="inline-code">SdkError.NotSupported</code> at call time</div>
+          <div class="legend-item"><span class="cell-noop" style="font-style:normal">no-op</span> &nbsp;Returns successfully; does no work</div>
+          <div class="legend-item"><span class="cell-placeholder">placeholder</span> &nbsp;Raises <code class="inline-code">NotSupported</code> until adapter ships</div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="doc-footer">
+        <div class="doc-footer-inner">
+          <div class="footer-left">
+            <div class="brand">
+              <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
+                <rect width="32" height="32" rx="8" fill="#635bff"/>
+                <path d="M8 20l6-12 4 8 3-4 3 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="brand-name">Pinelabs SDK</span>
+            </div>
+            <p class="footer-note">Document version: <code class="inline-code">1.0</code></p>
+          </div>
+          <div class="footer-links">
+            <a href="../index">Home</a>
+            <a href="#method-transport">Method Matrix</a>
+            <a href="#txtype-transport">TransactionType Matrix</a>
+            <a href="#transport-options">TransportOptions</a>
+            <a href="#legend">Legend</a>
+          </div>
+        </div>
+      </footer>
+
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="../js/main.js"></script>
+</body>
+</html>

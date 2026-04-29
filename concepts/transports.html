@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Transports — Pinelabs SDK</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    :root {
+      --blue:    #4f8ef7;
+      --blue-bg: rgba(79,142,247,.08);
+      /* fill in the gaps from the shared palette */
+      --ink-700: #253d58;
+      --ink-500: #546275;
+      --ink-300: #9aafc4;
+    }
+
+    .section-intro {
+      font-size: 16px; color: var(--ink-600); line-height: 1.7;
+      margin-bottom: 24px; max-width: 720px;
+    }
+
+    /* ── hero ── */
+    .tp-hero { padding: 48px 0 32px; }
+    .tp-eyebrow {
+      font-size: 12px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--blue); margin-bottom: 10px;
+    }
+    .tp-title {
+      font-size: 38px; font-weight: 800; letter-spacing: -1.3px;
+      line-height: 1.13; margin-bottom: 14px;
+      background: linear-gradient(135deg, var(--ink-900) 35%, var(--blue) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .tp-sub {
+      font-size: 16px; color: var(--ink-600); max-width: 680px;
+      line-height: 1.7; margin-bottom: 0;
+    }
+
+    /* ── callouts ── */
+    .info-callout {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: var(--blue-bg); border: 1.5px solid rgba(79,142,247,.22);
+      border-radius: var(--r-lg); padding: 18px 20px; margin: 20px 0;
+    }
+    .info-callout-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+    .info-callout-body { flex: 1; }
+    .info-callout-body strong { display: block; font-size: 13px; font-weight: 700; color: var(--ink-900); margin-bottom: 5px; }
+    .info-callout-body p { font-size: 14px; color: var(--ink-600); line-height: 1.65; margin: 0; }
+
+    .warn-callout {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: rgba(255,184,48,.08); border: 1.5px solid rgba(255,184,48,.3);
+      border-radius: var(--r-lg); padding: 18px 20px; margin: 20px 0;
+    }
+    .warn-callout-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+    .warn-callout-body { flex: 1; }
+    .warn-callout-body strong { display: block; font-size: 13px; font-weight: 700; color: var(--ink-900); margin-bottom: 5px; }
+    .warn-callout-body p { font-size: 14px; color: var(--ink-600); line-height: 1.65; margin: 0; }
+
+    .danger-callout {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: rgba(255,107,107,.07); border: 1.5px solid rgba(255,107,107,.25);
+      border-radius: var(--r-lg); padding: 18px 20px; margin: 20px 0;
+    }
+    .danger-callout-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+    .danger-callout-body { flex: 1; }
+    .danger-callout-body strong { display: block; font-size: 13px; font-weight: 700; color: var(--coral); margin-bottom: 5px; }
+    .danger-callout-body p { font-size: 14px; color: var(--ink-600); line-height: 1.65; margin: 0; }
+
+    /* ── at-a-glance table ── */
+    .glance-table-wrap { overflow-x: auto; margin: 20px 0; border-radius: var(--r-xl); border: 1px solid var(--ink-100); box-shadow: var(--shadow-sm); }
+    .glance-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    .glance-table th {
+      background: var(--ink-900); color: rgba(255,255,255,.85);
+      font-size: 11px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; padding: 12px 16px; text-align: left;
+      white-space: nowrap;
+    }
+    .glance-table th:first-child { border-radius: var(--r-xl) 0 0 0; }
+    .glance-table th:last-child  { border-radius: 0 var(--r-xl) 0 0; }
+    .glance-table td {
+      padding: 13px 16px; border-bottom: 1px solid var(--ink-100);
+      vertical-align: top; color: var(--ink-700); line-height: 1.55;
+    }
+    .glance-table tr:last-child td { border-bottom: none; }
+    .glance-table tr:nth-child(even) td { background: rgba(99,91,255,.025); }
+    .glance-table td:first-child { font-weight: 700; color: var(--ink-900); white-space: nowrap; }
+    .gt-name { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--ink-900); }
+    .pill-ship {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(0,212,170,.1); color: #0a8a6e; border: 1px solid rgba(0,212,170,.25);
+      font-size: 11px; font-weight: 700; border-radius: 20px; padding: 2px 9px;
+    }
+    .pill-placeholder {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(255,184,48,.1); color: #a07000; border: 1px solid rgba(255,184,48,.3);
+      font-size: 11px; font-weight: 700; border-radius: 20px; padding: 2px 9px;
+    }
+
+    /* ── transport cards ── */
+    .transport-cards { display: flex; flex-direction: column; gap: 24px; margin: 24px 0; }
+    .transport-card {
+      background: var(--white); border: 1px solid var(--ink-100);
+      border-radius: var(--r-xl); box-shadow: var(--shadow-sm); overflow: hidden;
+    }
+    .transport-card-header {
+      display: flex; align-items: center; gap: 16px;
+      padding: 20px 24px 18px; border-bottom: 1px solid var(--ink-100);
+    }
+    .tc-icon {
+      width: 42px; height: 42px; border-radius: var(--r-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .tc-icon--blue   { background: var(--blue-bg); }
+    .tc-icon--teal   { background: rgba(0,212,170,.1); }
+    .tc-icon--purple { background: rgba(99,91,255,.1); }
+    .tc-icon--amber  { background: rgba(255,184,48,.1); }
+    .tc-meta { flex: 1; }
+    .tc-name { font-size: 17px; font-weight: 700; color: var(--ink-900); margin-bottom: 3px; }
+    .tc-tagline { font-size: 13px; color: var(--ink-500); }
+    .tc-status { flex-shrink: 0; }
+    .transport-card-body { padding: 20px 24px; }
+
+    .tc-use-when {
+      display: flex; gap: 10px; align-items: flex-start;
+      background: var(--blue-bg); border: 1px solid rgba(79,142,247,.18);
+      border-radius: var(--r-md); padding: 12px 14px; margin-bottom: 16px;
+    }
+    .tc-use-when-label { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--blue); white-space: nowrap; margin-top: 1px; }
+    .tc-use-when-text  { font-size: 13.5px; color: var(--ink-700); line-height: 1.55; }
+
+    .tc-section-title {
+      font-size: 12px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--ink-400); margin: 16px 0 8px;
+    }
+    .tc-prose { font-size: 14px; color: var(--ink-700); line-height: 1.65; }
+    .tc-prose + .tc-prose { margin-top: 8px; }
+
+    /* prerequisites list — must beat .doc-section ul specificity */
+    .transport-card-body .prereq-list,
+    .prereq-list { margin: 0 !important; padding: 0 !important; list-style: none !important; display: flex; flex-direction: column; gap: 8px; }
+    .transport-card-body .prereq-list li,
+    .prereq-list li {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 13.5px; color: var(--ink-700); line-height: 1.6;
+      margin-bottom: 0 !important;
+    }
+    .transport-card-body .prereq-list li::before,
+    .prereq-list li::before {
+      content: '▸'; color: var(--blue); font-size: 10px; margin-top: 4px; flex-shrink: 0;
+    }
+
+    /* capability chips */
+    .cap-chips { display: flex; flex-wrap: wrap; gap: 7px; margin: 4px 0; }
+    .cap-chip {
+      font-family: var(--font-mono); font-size: 12px; font-weight: 500;
+      padding: 3px 10px; border-radius: 6px;
+      background: rgba(79,142,247,.1); color: var(--blue);
+      border: 1px solid rgba(79,142,247,.2);
+    }
+    .cap-chip--no {
+      background: rgba(150,150,160,.08); color: var(--ink-400);
+      border: 1px solid var(--ink-100); text-decoration: line-through;
+    }
+
+    /* ── decision tree ── */
+    .decision-tree {
+      margin: 24px 0; display: flex; flex-direction: column; align-items: center; gap: 0;
+    }
+    .dt-root {
+      background: var(--ink-900); color: rgba(255,255,255,.9);
+      font-size: 14px; font-weight: 600; padding: 12px 28px;
+      border-radius: var(--r-md); text-align: center;
+    }
+    .dt-arrow { font-size: 18px; color: var(--ink-300); line-height: 1.2; }
+    .dt-row { display: flex; gap: 16px; align-items: flex-start; width: 100%; justify-content: center; }
+    .dt-branch { display: flex; flex-direction: column; align-items: center; gap: 0; flex: 1; max-width: 200px; }
+    .dt-condition {
+      font-size: 12px; font-weight: 700; letter-spacing: .04em; text-align: center;
+      color: var(--ink-500); padding: 6px 0 4px; line-height: 1.35;
+    }
+    .dt-result {
+      text-align: center; padding: 14px 12px; border-radius: var(--r-lg);
+      border: 1.5px solid; font-size: 13px; font-weight: 600; line-height: 1.45;
+      width: 100%;
+    }
+    .dt-result--blue   { background: var(--blue-bg);            border-color: rgba(79,142,247,.3); color: #2b5fcc; }
+    .dt-result--teal   { background: rgba(0,212,170,.08);        border-color: rgba(0,212,170,.3);  color: #0a7a5e; }
+    .dt-result--purple { background: rgba(99,91,255,.08);        border-color: rgba(99,91,255,.25); color: #4842c4; }
+    .dt-result--amber  { background: rgba(255,184,48,.08);       border-color: rgba(255,184,48,.35);color: #9a6800; }
+    .dt-result-name { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
+    .dt-result-sub  { font-size: 12px; font-weight: 400; opacity: .75; }
+
+    /* ── inline code ── */
+    code { font-family: var(--font-mono); font-size: .88em; background: rgba(99,91,255,.07); padding: 1px 5px; border-radius: 4px; color: var(--purple); }
+
+    /* ── see also ── */
+    .see-also { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+    .see-also-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 600; color: var(--purple);
+      background: var(--purple-bg); border: 1px solid rgba(99,91,255,.2);
+      padding: 7px 14px; border-radius: 20px; text-decoration: none;
+      transition: background .15s, border-color .15s;
+    }
+    .see-also-link:hover { background: rgba(99,91,255,.12); border-color: rgba(99,91,255,.35); }
+  </style>
+</head>
+<body>
+
+<!-- ═══ TOP BAR ═══ -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="../index" class="brand">
+      <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" rx="8" fill="#635bff"/>
+        <path d="M8 20l6-12 4 8 3-4 3 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="brand-name">Pinelabs<span class="brand-sub"> SDK</span></span>
+    </a>
+    <nav class="topbar-nav">
+      <a href="../index" class="topbar-link">Home</a>
+      <a href="../init" class="topbar-link">init</a>
+      <a href="../do-transaction" class="topbar-link">doTransaction</a>
+      <a href="../devices" class="topbar-link">Devices</a>
+      <a href="capabilities" class="topbar-link">Capabilities</a>
+    </nav>
+    <div class="topbar-actions">
+      <span class="version-badge">v1.0</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ LAYOUT ═══ -->
+<div class="layout">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-inner">
+
+      <div class="sidebar-section">
+        <p class="sidebar-label">Overview</p>
+        <a href="../index" class="sidebar-link">Introduction</a>
+        <a href="overview" class="sidebar-link">SDK Overview</a>
+      </div>
+
+      <div class="sidebar-section">
+        <p class="sidebar-label">Concepts</p>
+        <a href="capabilities" class="sidebar-link">Capability Matrix</a>
+        <a href="error-handling" class="sidebar-link">Error Handling</a>
+        <a href="lifecycle" class="sidebar-link">Lifecycle &amp; Threading</a>
+        <a href="eventid-and-reconciliation" class="sidebar-link">event_id &amp; Reconciliation</a>
+        <a href="result-payload" class="sidebar-link">TransactionResult</a>
+        <a href="transports.html" class="sidebar-link active">Transports</a>
+        <a href="versioning-and-support" class="sidebar-link">Versioning &amp; Support</a>
+      </div>
+
+      <div class="sidebar-section">
+        <p class="sidebar-label">On this page</p>
+        <a href="#at-a-glance"     class="sidebar-link sidebar-link--sub">At a glance</a>
+        <a href="#app-to-app"      class="sidebar-link sidebar-link--sub">App-to-App</a>
+        <a href="#cloud-rest"      class="sidebar-link sidebar-link--sub">Cloud REST</a>
+        <a href="#padcontroller"   class="sidebar-link sidebar-link--sub">PADController</a>
+        <a href="#tcp-direct"      class="sidebar-link sidebar-link--sub">TCP direct</a>
+        <a href="#how-to-choose"   class="sidebar-link sidebar-link--sub">How to choose</a>
+        <a href="#switching"       class="sidebar-link sidebar-link--sub">Switching transports</a>
+      </div>
+
+      <div class="sidebar-section">
+        <p class="sidebar-label">API Reference</p>
+        <a href="../init" class="sidebar-link">init</a>
+        <a href="../do-transaction" class="sidebar-link">doTransaction</a>
+      </div>
+
+      <div class="sidebar-section">
+        <p class="sidebar-label">Hardware</p>
+        <a href="../devices" class="sidebar-link">Supported Devices</a>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="content" id="main-content">
+
+    <!-- HERO -->
+    <div class="tp-hero">
+      <div class="tp-eyebrow">Concepts</div>
+      <h1 class="tp-title">Transports</h1>
+      <p class="tp-sub">
+        A <strong>transport</strong> is the channel between the SDK (running inside your app) and
+        the Pinelabs payment terminal. v1 ships four transports — each with different
+        prerequisites, latency characteristics, and capability footprints.
+      </p>
+
+      <!-- Channel diagram -->
+      <div style="margin:28px 0 0; background:var(--ink-900); border-radius:var(--r-xl); padding:24px 28px; overflow-x:auto;">
+        <pre style="margin:0; font-family:var(--font-mono); font-size:13px; color:rgba(255,255,255,.75); line-height:1.7;">┌────────────────────┐     ┌───────────────────┐
+│ Your app + SDK     │     │ Pinelabs terminal │
+└──────────┬─────────┘     └─────────┬─────────┘
+           │                         │
+           │  one of …               │
+           │                         │
+   ┌───────┴────┐  ┌──────────┐  ┌───┴─────────┐  ┌───────────────┐
+   │ App-to-App │  │ Cloud    │  │PADController │  │ TCP direct    │
+   │ (Android   │  │ REST     │  │(BT/USB/Ser.) │  │ (LAN; v1     │
+   │  IPC)      │  │ (HTTPS)  │  │              │  │  placeholder) │
+   └────────────┘  └──────────┘  └─────────────┘  └───────────────┘</pre>
+      </div>
+
+      <div class="info-callout" style="margin-top:20px">
+        <span class="info-callout-icon">📋</span>
+        <div class="info-callout-body">
+          <strong>This page is a decision guide.</strong>
+          <p>For the formal per-feature breakdown, see the <a href="capabilities" style="color:var(--blue)">Capability Matrix</a>.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ─── 01  AT A GLANCE ─── -->
+    <section class="doc-section" id="at-a-glance">
+      <div class="section-header">
+        <span class="section-number">01</span>
+        <h2 class="section-title">At a glance</h2>
+      </div>
+      <p class="section-intro">Four transports ship in v1. Three are production-ready; one is a forward-compatibility placeholder.</p>
+
+      <div class="glance-table-wrap">
+        <table class="glance-table">
+          <thead>
+            <tr>
+              <th>Transport</th>
+              <th>Where the terminal is</th>
+              <th>OS / prereq</th>
+              <th>Latency</th>
+              <th>v1 status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="gt-name">App-to-App</span></td>
+              <td>Same Android device, running MasterApp</td>
+              <td>Android 5.0+ (API 21)</td>
+              <td>~100–300 ms IPC + cardholder time</td>
+              <td><span class="pill-ship">✓ Shipping</span></td>
+            </tr>
+            <tr>
+              <td><span class="gt-name">Cloud REST</span></td>
+              <td>Anywhere reachable from Pinelabs cloud</td>
+              <td>Any platform with HTTPS egress</td>
+              <td>~500 ms upload + cardholder time + poll</td>
+              <td><span class="pill-ship">✓ Shipping (Phase 7a)</span></td>
+            </tr>
+            <tr>
+              <td><span class="gt-name">PADController</span></td>
+              <td>Same host, via BT / USB / Serial</td>
+              <td>Linux / Android / Windows / macOS</td>
+              <td>~50–200 ms link + cardholder time</td>
+              <td><span class="pill-ship">✓ Shipping (Phase 7c)</span></td>
+            </tr>
+            <tr>
+              <td><span class="gt-name">TCP direct</span></td>
+              <td>LAN-reachable terminal</td>
+              <td>Any platform with TCP egress to LAN</td>
+              <td>TBD</td>
+              <td><span class="pill-placeholder">⏳ Placeholder</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ─── 02  TRANSPORT DETAILS ─── -->
+    <section class="doc-section" id="app-to-app">
+      <div class="section-header">
+        <span class="section-number">02</span>
+        <h2 class="section-title">Transport details</h2>
+      </div>
+      <p class="section-intro">Each transport below covers its use-case, how it works internally, prerequisites, capability footprint, and threading model.</p>
+
+      <div class="transport-cards">
+
+        <!-- App-to-App -->
+        <div class="transport-card" id="app-to-app-card">
+          <div class="transport-card-header">
+            <div class="tc-icon tc-icon--blue">📱</div>
+            <div class="tc-meta">
+              <div class="tc-name">App-to-App</div>
+              <div class="tc-tagline">Android IPC to MasterApp — same device</div>
+            </div>
+            <div class="tc-status"><span class="pill-ship">✓ Shipping</span></div>
+          </div>
+          <div class="transport-card-body">
+
+            <div class="tc-use-when">
+              <div class="tc-use-when-label">Use&nbsp;when</div>
+              <div class="tc-use-when-text">Your app runs on a Pinelabs all-in-one Android device (or any Android terminal where MasterApp is the system-side payment host).</div>
+            </div>
+
+            <div class="tc-section-title">How it works</div>
+            <p class="tc-prose">
+              The SDK binds to the MasterApp <code>Messenger</code> service
+              (<code>com.pinelabs.masterapp.SERVER</code>), sends a JSON envelope as a
+              <code>Bundle</code>, awaits a single reply, and unbinds. You receive a typed
+              <code>TransactionResult</code> — you never see the JSON, the Bundle, or the IPC.
+            </p>
+
+            <div class="tc-section-title">Prerequisites</div>
+            <ul class="prereq-list">
+              <li><strong>MasterApp</strong> must be installed on the device (Pinelabs ships it on every in-store terminal). If absent, calls fail with <code>SdkException.TransportUnavailable</code> — the detail mentions "MasterApp not installed".</li>
+              <li>Your <code>AndroidManifest.xml</code> must declare the package query so Android 11+ doesn't filter it out:
+                <div style="margin-top:8px">
+                  <div class="code-block" data-lang="xml" style="font-size:13px">
+                    <div class="code-header"><span class="code-lang">XML</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                    <pre><code class="language-xml">&lt;queries&gt;
+    &lt;package android:name="com.pinelabs.masterapp" /&gt;
+&lt;/queries&gt;</code></pre>
+                  </div>
+                </div>
+              </li>
+              <li><code>SdkConfig.applicationId</code> must be set to the <strong>Pinelabs-provisioned identifier</strong> for your installing package. The MasterService validates it server-side for <code>MethodId="1001"</code> Sale; it bypasses validation for <code>MethodId="1002"</code> test-print.</li>
+              <li><code>SdkConfig.appToApp</code> must carry <code>userId</code> and <code>version = "1.0"</code> (the production <code>MASTERAPP_API_VERSION</code>). Other values are rejected by MasterService.</li>
+            </ul>
+
+            <div class="tc-section-title">Capability footprint</div>
+            <div class="cap-chips">
+              <span class="cap-chip">doTransaction</span>
+              <span class="cap-chip">testPrint</span>
+              <span class="cap-chip--no cap-chip">cancel</span>
+              <span class="cap-chip--no cap-chip">discoverTerminals</span>
+              <span class="cap-chip--no cap-chip">diagnostics</span>
+            </div>
+            <p class="tc-prose" style="margin-top:10px;font-size:13px">
+              <code>connect</code> / <code>disconnect</code> are accepted as no-ops.
+              <code>isConnected()</code> returns <code>true</code> only while a call is in flight.
+            </p>
+
+            <div class="tc-section-title">Threading</div>
+            <p class="tc-prose">The SDK binds the service per call on a worker thread — bind / send / await / unbind happen synchronously inside one <code>doTransaction</code>. There is no long-lived connection.</p>
+          </div>
+        </div>
+
+        <!-- Cloud REST -->
+        <div class="transport-card" id="cloud-rest">
+          <div class="transport-card-header">
+            <div class="tc-icon tc-icon--teal">☁️</div>
+            <div class="tc-meta">
+              <div class="tc-name">Cloud REST</div>
+              <div class="tc-tagline">HTTPS upload to Pinelabs cloud — any platform</div>
+            </div>
+            <div class="tc-status"><span class="pill-ship">✓ Shipping (Phase 7a)</span></div>
+          </div>
+          <div class="transport-card-body">
+
+            <div class="tc-use-when" style="background:rgba(0,212,170,.07);border-color:rgba(0,212,170,.2)">
+              <div class="tc-use-when-label" style="color:var(--teal)">Use&nbsp;when</div>
+              <div class="tc-use-when-text">Your app runs anywhere with HTTPS egress and the terminal is reachable from the Pinelabs cloud. Typical for multi-store retail back-offices, call-center pay-by-link, and headless billing services.</div>
+            </div>
+
+            <div class="tc-section-title">How it works</div>
+            <p class="tc-prose">
+              The SDK posts an <code>UploadBilledTransaction</code> body to the configured
+              <code>cloudBaseUrl</code>. On <code>ResponseCode == 0</code> the listener fires
+              <code>onSuccess(TransactionResult { status = Pending, transactionId = PlutusTransactionReferenceID, … })</code>.
+              The merchant then drives the rest of the lifecycle via
+              <code>checkStatus(eventId, CheckStatusOptions.Cloud(merchantStorePosCode))</code>
+              until the state moves to <code>Completed</code> or <code>Failed</code>.
+            </p>
+            <div class="warn-callout" style="margin-top:12px">
+              <span class="warn-callout-icon">⚠️</span>
+              <div class="warn-callout-body">
+                <strong>No auto-poll in v1</strong>
+                <p>The SDK does not automatically poll <code>checkStatus</code>. Your app is responsible for polling until terminal state resolves.</p>
+              </div>
+            </div>
+
+            <div class="tc-section-title">Prerequisites</div>
+            <ul class="prereq-list">
+              <li><code>SdkConfig.transport = Cloud</code> and <code>SdkConfig.cloudBaseUrl = "https://&lt;env&gt;.pinelabs.example"</code> — no trailing slash; one URL per environment, supplied by Pinelabs ops at integration time.</li>
+              <li><code>cloudConnectTimeoutMs</code> (default 30 s) and <code>cloudReadTimeoutMs</code> (default 60 s) — tune for your network.</li>
+              <li>Every <code>doTransaction</code> requires <code>transportOptions = TransportOptions.Cloud(transactionNumber, sequenceNumber, …)</code>. Both fields are <strong>required</strong> — the Pinelabs server uses them as part of its idempotency key.</li>
+              <li>Every <code>cancel</code> requires <code>cancelOptions = CancelOptions.Cloud(amount)</code>.</li>
+              <li>Every <code>checkStatus</code> requires <code>options = CheckStatusOptions.Cloud(merchantStorePosCode)</code>.</li>
+            </ul>
+
+            <div class="warn-callout">
+              <span class="warn-callout-icon">⚠️</span>
+              <div class="warn-callout-body">
+                <strong><code>allowedPaymentModes</code> ignored in v1</strong>
+                <p>The typed-enum-to-cloud-code mapping is not yet published. Pass the opaque code via <code>CloudTransactionOptions.allowedPaymentMode</code> (commonly <code>"10"</code>).</p>
+              </div>
+            </div>
+
+            <div class="tc-section-title">Capability footprint</div>
+            <div class="cap-chips">
+              <span class="cap-chip">doTransaction</span>
+              <span class="cap-chip">cancel</span>
+              <span class="cap-chip">checkStatus</span>
+              <span class="cap-chip">testPrint</span>
+              <span class="cap-chip--no cap-chip">discoverTerminals</span>
+              <span class="cap-chip--no cap-chip">connect / disconnect</span>
+              <span class="cap-chip--no cap-chip">diagnostics</span>
+            </div>
+
+            <div class="tc-section-title">Threading</div>
+            <p class="tc-prose">Every Cloud call is a synchronous blocking HTTP exchange bounded by the configured timeouts. Call from a worker thread or wrap in your language-idiomatic async primitive (e.g. Kotlin coroutine, Java <code>ExecutorService</code>).</p>
+          </div>
+        </div>
+
+        <!-- PADController -->
+        <div class="transport-card" id="padcontroller">
+          <div class="transport-card-header">
+            <div class="tc-icon tc-icon--purple">🖥️</div>
+            <div class="tc-meta">
+              <div class="tc-name">PADController</div>
+              <div class="tc-tagline">TCP loopback to local PADController service — BT / USB / Serial</div>
+            </div>
+            <div class="tc-status"><span class="pill-ship">✓ Shipping (Phase 7c)</span></div>
+          </div>
+          <div class="transport-card-body">
+
+            <div class="tc-use-when" style="background:rgba(99,91,255,.07);border-color:rgba(99,91,255,.2)">
+              <div class="tc-use-when-label" style="color:var(--purple)">Use&nbsp;when</div>
+              <div class="tc-use-when-text">The terminal is physically attached to or paired with the host machine — Bluetooth headless terminal, USB-tethered PIN pad, or RS-232 cable in a back-office.</div>
+            </div>
+
+            <div class="tc-section-title">How it works</div>
+            <p class="tc-prose">
+              The SDK frames a CSV payload with the PADController binary header
+              (Source ID <code>0x1000</code>, FuncCode <code>0x0997</code> / <code>0x1997</code>,
+              length, body, <code>0xFF</code> terminator), opens a TCP loopback to the local
+              PADController process, sends the frame, receives the reply, parses the CSV, and
+              returns a <code>TransactionResult</code>. Frame limit: 2048 bytes.
+            </p>
+            <div class="info-callout" style="margin-top:12px">
+              <span class="info-callout-icon">🔒</span>
+              <div class="info-callout-body">
+                <strong>Wire format is not a public API</strong>
+                <p>The CSV frame format is documented internally for SDK maintainers. It is never exposed to merchant code.</p>
+              </div>
+            </div>
+
+            <div class="tc-section-title">Prerequisites</div>
+            <ul class="prereq-list">
+              <li>PADController binary must be running on the host as a local service.</li>
+              <li>For <strong>Bluetooth</strong>: the terminal must be paired at the OS level before <code>discoverTerminals()</code> returns it.</li>
+              <li>For <strong>USB / Serial</strong>: the device path or COM port must be reachable; OS-level drivers must be installed.</li>
+            </ul>
+
+            <div class="tc-section-title">Capability footprint</div>
+            <p class="tc-prose" style="margin-bottom:8px">The broadest in v1:</p>
+            <div class="cap-chips">
+              <span class="cap-chip">doTransaction</span>
+              <span class="cap-chip">cancel</span>
+              <span class="cap-chip">checkStatus</span>
+              <span class="cap-chip">testPrint</span>
+              <span class="cap-chip">discoverTerminals</span>
+              <span class="cap-chip">connect / disconnect</span>
+              <span class="cap-chip">ping</span>
+              <span class="cap-chip">runSelfTest</span>
+              <span class="cap-chip">getLogs</span>
+              <span class="cap-chip">getTerminalInfo</span>
+            </div>
+
+            <div class="tc-section-title">Threading</div>
+            <p class="tc-prose">PADController opens a one-shot TCP loopback connection per transaction. <code>connect()</code> validates that PADController is reachable; <code>isConnected()</code> reflects that liveness.</p>
+          </div>
+        </div>
+
+        <!-- TCP direct -->
+        <div class="transport-card" id="tcp-direct">
+          <div class="transport-card-header">
+            <div class="tc-icon tc-icon--amber">🔌</div>
+            <div class="tc-meta">
+              <div class="tc-name">TCP direct</div>
+              <div class="tc-tagline">LAN-direct to terminal — placeholder only</div>
+            </div>
+            <div class="tc-status"><span class="pill-placeholder">⏳ Placeholder</span></div>
+          </div>
+          <div class="transport-card-body">
+            <div class="danger-callout">
+              <span class="danger-callout-icon">🚫</span>
+              <div class="danger-callout-body">
+                <strong>Do not plan a v1 integration on TCP direct</strong>
+                <p>The wire protocol is greenfield and will be designed at implementation time. Calls to <code>setTransport(Tcp)</code> in v1 raise <code>SdkException.NotSupported</code>. Use App-to-App, Cloud REST, or PADController.</p>
+              </div>
+            </div>
+            <p class="tc-prose">
+              The capability matrix includes TCP rows for forward compatibility only. All TCP capabilities currently return <code>NotSupported</code>.
+            </p>
+          </div>
+        </div>
+
+      </div><!-- /transport-cards -->
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ─── 03  HOW TO CHOOSE ─── -->
+    <section class="doc-section" id="how-to-choose">
+      <div class="section-header">
+        <span class="section-number">03</span>
+        <h2 class="section-title">How to choose</h2>
+      </div>
+      <p class="section-intro">Three questions lead you to the right transport for your environment.</p>
+
+      <div class="decision-tree">
+        <div class="dt-root">Where does your app run?</div>
+        <div class="dt-arrow">↓</div>
+        <div class="dt-row">
+          <div class="dt-branch">
+            <div class="dt-condition">Pinelabs Android<br>all-in-one device</div>
+            <div class="dt-arrow">↓</div>
+            <div class="dt-result dt-result--blue">
+              <div class="dt-result-name">App-to-App</div>
+              <div class="dt-result-sub">MasterApp IPC</div>
+            </div>
+          </div>
+          <div class="dt-branch">
+            <div class="dt-condition">Server / desktop<br>near the terminal</div>
+            <div class="dt-arrow">↓</div>
+            <div class="dt-result dt-result--purple">
+              <div class="dt-result-name">PADController</div>
+              <div class="dt-result-sub">BT / USB / Serial</div>
+            </div>
+          </div>
+          <div class="dt-branch">
+            <div class="dt-condition">Headless service<br>or cloud — no LAN</div>
+            <div class="dt-arrow">↓</div>
+            <div class="dt-result dt-result--teal">
+              <div class="dt-result-name">Cloud REST</div>
+              <div class="dt-result-sub">HTTPS upload + poll</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-callout">
+        <span class="info-callout-icon">🔄</span>
+        <div class="info-callout-body">
+          <strong>Runtime switching is supported</strong>
+          <p>
+            You can switch transports at runtime with <code>setTransport(…)</code> — the SDK disconnects
+            the current transport (if any) before swapping. Useful when you want App-to-App on a
+            Pinelabs device and Cloud when running the same code on a tablet.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ─── 04  SWITCHING TRANSPORTS ─── -->
+    <section class="doc-section" id="switching">
+      <div class="section-header">
+        <span class="section-number">04</span>
+        <h2 class="section-title">Switching transports</h2>
+      </div>
+      <p class="section-intro">
+        Configure all transports you may use at construction time. Call
+        <code>setTransport(…)</code> on a worker thread when you want to swap.
+        <code>setTransport</code> raises <code>SdkException.InvalidInput</code> if the target
+        transport requires config you did not supply at construction
+        (e.g. <code>AppToApp</code> without <code>appToApp</code>, or <code>Cloud</code> without <code>cloudBaseUrl</code>).
+      </p>
+
+      <!-- language tabs -->
+      <div class="lang-tabs" data-tabs="tr-tabs">
+        <button class="lang-tab active" onclick="switchTab(this,'tr-tabs')" data-lang="kotlin">Kotlin</button>
+        <button class="lang-tab"        onclick="switchTab(this,'tr-tabs')" data-lang="java">Java</button>
+      </div>
+
+      <div class="code-block" id="tr-tabs-kotlin-switch" data-lang="kotlin">
+        <div class="code-header"><span class="code-lang">Kotlin</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><code class="language-kotlin">val sdk = PineBillingSdk(
+    config = SdkConfig(
+        defaultTimeoutMs = 60_000,
+        transport = TransportType.AppToApp,
+        appToApp = AppToAppConfig(
+            userId  = "POS-42",
+            version = "1.0",
+        ),
+        applicationId = "MERCHANT_PROVISIONED_ID",
+        cloudBaseUrl  = "https://uat.pinelabs.example",
+    ),
+)
+
+// Later, on a worker thread — swap to Cloud
+sdk.setTransport(TransportType.Cloud)  // cloudBaseUrl already configured
+
+sdk.doTransaction(
+    request = TransactionRequest(
+        transactionType = TransactionType.Sale,
+        invoiceNo       = "INV-001",
+        billingRefNo    = "BILL-001",
+        amount          = 9900uL,
+        transportOptions = TransportOptions.Cloud(
+            transactionNumber = 1,
+            sequenceNumber    = 1,
+        ),
+    ),
+    listener = myListener,
+)</code></pre>
+      </div>
+
+      <div class="code-block hidden" id="tr-tabs-java-switch" data-lang="java">
+        <div class="code-header"><span class="code-lang">Java</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><code class="language-java">PineBillingSdk sdk = new PineBillingSdk(
+    new SdkConfig.Builder()
+        .defaultTimeoutMs(60_000)
+        .transport(TransportType.APP_TO_APP)
+        .appToApp(new AppToAppConfig("POS-42", "1.0"))
+        .applicationId("MERCHANT_PROVISIONED_ID")
+        .cloudBaseUrl("https://uat.pinelabs.example")
+        .build()
+);
+
+// Later, on a worker thread — swap to Cloud
+sdk.setTransport(TransportType.CLOUD);  // cloudBaseUrl already configured
+
+TransactionRequest request = new TransactionRequest.Builder()
+    .transactionType(TransactionType.SALE)
+    .invoiceNo("INV-001")
+    .billingRefNo("BILL-001")
+    .amount(9900L)
+    .transportOptions(new TransportOptions.Cloud(1, 1))
+    .build();
+
+sdk.doTransaction(request, myListener);</code></pre>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- FOOTER -->
+    <div class="doc-footer">
+      <div class="doc-footer-title">See also</div>
+      <div class="see-also">
+        <a href="capabilities" class="see-also-link">📊 Capability Matrix</a>
+        <a href="lifecycle"    class="see-also-link">🔄 Lifecycle &amp; Threading</a>
+        <a href="overview"     class="see-also-link">🗺️ SDK Overview</a>
+        <a href="../init"                  class="see-also-link">⚙️ init API</a>
+        <a href="../do-transaction"        class="see-also-link">💳 doTransaction API</a>
+      </div>
+    </div>
+
+  </main>
+</div><!-- /layout -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../js/main.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => { hljs.highlightAll(); });
+</script>
+</body>
+</html>

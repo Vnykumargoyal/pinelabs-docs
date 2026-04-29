@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>event_id &amp; Reconciliation — Pinelabs SDK</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    /* ── hero ── */
+    .rc-hero { padding: 48px 0 32px; }
+    .rc-eyebrow {
+      font-size: 12px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--teal); margin-bottom: 10px;
+    }
+    .rc-title {
+      font-size: 36px; font-weight: 800; letter-spacing: -1.2px;
+      line-height: 1.15; margin-bottom: 14px;
+      background: linear-gradient(135deg, var(--ink-900) 0%, var(--teal) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .rc-sub {
+      font-size: 16px; color: var(--ink-600); max-width: 680px;
+      line-height: 1.65; margin-bottom: 28px;
+    }
+
+    /* ── key rule callout ── */
+    .rule-callout {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: linear-gradient(135deg, rgba(0,212,170,.07) 0%, rgba(99,91,255,.07) 100%);
+      border: 1.5px solid rgba(0,212,170,.3);
+      border-radius: var(--r-lg); padding: 18px 20px; margin: 20px 0;
+    }
+    .rule-callout-icon {
+      font-size: 22px; flex-shrink: 0; margin-top: 1px;
+    }
+    .rule-callout-body { flex: 1; }
+    .rule-callout-body strong {
+      display: block; font-size: 13px; font-weight: 700;
+      color: var(--ink-900); margin-bottom: 5px;
+    }
+    .rule-callout-body p {
+      font-size: 14px; color: var(--ink-600); line-height: 1.65; margin: 0;
+    }
+
+    /* ── warning callout ── */
+    .warn-callout {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: rgba(255,184,48,.08);
+      border: 1.5px solid rgba(255,184,48,.35);
+      border-radius: var(--r-lg); padding: 18px 20px; margin: 20px 0;
+    }
+    .warn-callout-icon { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+    .warn-callout-body { flex: 1; }
+    .warn-callout-body strong {
+      display: block; font-size: 13px; font-weight: 700;
+      color: var(--ink-900); margin-bottom: 5px;
+    }
+    .warn-callout-body p {
+      font-size: 14px; color: var(--ink-600); line-height: 1.65; margin: 0;
+    }
+
+    /* ── lifecycle state diagram ── */
+    .state-diagram {
+      margin: 24px 0; padding: 32px 24px;
+      background: var(--white); border: 1px solid var(--ink-100);
+      border-radius: var(--r-xl); box-shadow: var(--shadow-sm);
+      overflow-x: auto;
+    }
+    .state-row {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0; margin-bottom: 0;
+    }
+    .state-node {
+      display: flex; flex-direction: column; align-items: center;
+      text-align: center; flex-shrink: 0;
+    }
+    .state-box {
+      padding: 10px 20px; border-radius: var(--r-md);
+      font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+      border: 2px solid; white-space: nowrap;
+    }
+    .state-box--pending  { background: var(--purple-bg); border-color: var(--purple); color: var(--purple); }
+    .state-box--inflight { background: rgba(0,212,170,.1); border-color: var(--teal); color: #009e7e; }
+    .state-box--done     { background: rgba(0,212,170,.1); border-color: var(--teal); color: #009e7e; }
+    .state-box--failed   { background: rgba(255,107,107,.1); border-color: var(--coral); color: #c0392b; }
+    .state-box--cancelled{ background: rgba(255,184,48,.12); border-color: var(--amber); color: #a07800; }
+    .state-box--unknown  { background: var(--ink-50); border-color: var(--ink-200); color: var(--ink-400); }
+    .state-desc {
+      font-size: 11px; color: var(--ink-400); margin-top: 6px; max-width: 140px; line-height: 1.4;
+    }
+    .state-arrow {
+      display: flex; flex-direction: column; align-items: center;
+      flex-shrink: 0; padding: 0 8px;
+    }
+    .state-arrow-line {
+      width: 32px; height: 2px; background: var(--ink-200);
+    }
+    .state-arrow-head { color: var(--ink-200); font-size: 14px; margin-top: -4px; }
+    .state-arrow-label {
+      font-size: 10px; color: var(--ink-400); margin-top: 3px; white-space: nowrap;
+    }
+    .state-col { display: flex; flex-direction: column; align-items: center; gap: 0; }
+    .state-vline { width: 2px; height: 28px; background: var(--ink-200); }
+    .state-fork { display: flex; align-items: flex-start; justify-content: center; gap: 16px; margin-top: 0; }
+    .state-fork-branch { display: flex; flex-direction: column; align-items: center; gap: 0; }
+    .state-fork-label {
+      font-size: 10px; color: var(--ink-400); margin-bottom: 4px; white-space: nowrap;
+    }
+    .unknown-row {
+      display: flex; align-items: center; justify-content: center;
+      gap: 12px; margin-top: 20px; padding-top: 18px;
+      border-top: 1px dashed var(--ink-100);
+    }
+    .unknown-label { font-size: 12px; color: var(--ink-400); }
+
+    /* ── generic table ── */
+    .rc-table-wrap {
+      overflow-x: auto; margin: 16px 0;
+      border-radius: var(--r-lg); border: 1px solid var(--ink-100);
+      box-shadow: var(--shadow-sm);
+    }
+    .rc-table {
+      width: 100%; border-collapse: collapse; font-size: 14px;
+      background: var(--white);
+    }
+    .rc-table thead tr { background: var(--ink-900); }
+    .rc-table thead th {
+      text-align: left; padding: 12px 18px;
+      font-size: 11px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: rgba(255,255,255,.5); border-bottom: none;
+    }
+    .rc-table tbody tr { border-bottom: 1px solid var(--ink-50); transition: background .12s; }
+    .rc-table tbody tr:last-child { border-bottom: none; }
+    .rc-table tbody tr:hover td { background: var(--ink-50); }
+    .rc-table td {
+      padding: 13px 18px; vertical-align: top;
+      border-bottom: none; color: var(--ink-600); font-size: 14px; line-height: 1.55;
+    }
+    .rc-table td:first-child {
+      font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+      color: var(--ink-900); white-space: nowrap;
+    }
+    .rc-table td strong { color: var(--ink-800); }
+
+    /* ── transport pill badges ── */
+    .transport-pill {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      letter-spacing: .04em; padding: 2px 8px; border-radius: 20px;
+      background: var(--purple-bg); color: var(--purple); margin: 1px 2px;
+    }
+    .transport-pill--cloud { background: rgba(0,212,170,.12); color: #009e7e; }
+    .transport-pill--unsup { background: rgba(255,107,107,.1); color: #c0392b; }
+
+    /* ── step list ── */
+    .step-list {
+      list-style: none; padding: 0; margin: 16px 0;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .step-list li {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: var(--white); border: 1px solid var(--ink-100);
+      border-radius: var(--r-md); padding: 14px 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .step-num {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--ink-900); color: var(--white);
+      font-size: 12px; font-weight: 700; display: flex;
+      align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+    }
+    .step-content { flex: 1; font-size: 14px; color: var(--ink-600); line-height: 1.6; }
+    .step-content strong { color: var(--ink-900); }
+
+    /* ── idempotency key-value grid ── */
+    .retry-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0;
+    }
+    .retry-card {
+      background: var(--white); border: 1px solid var(--ink-100);
+      border-radius: var(--r-lg); padding: 16px 18px; box-shadow: var(--shadow-sm);
+    }
+    .retry-card-title {
+      font-size: 12px; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; margin-bottom: 8px;
+    }
+    .retry-card-title--yes { color: #009e7e; }
+    .retry-card-title--no  { color: #c0392b; }
+    .retry-card ul {
+      list-style: none; padding: 0; margin: 0;
+      display: flex; flex-direction: column; gap: 5px;
+    }
+    .retry-card li {
+      font-size: 13px; color: var(--ink-600); padding: 5px 10px;
+      border-radius: var(--r-sm); font-family: var(--font-mono); font-weight: 500;
+    }
+    .retry-card--yes li { background: rgba(0,212,170,.08); }
+    .retry-card--no  li { background: rgba(255,107,107,.08); }
+
+    @media (max-width: 640px) {
+      .rc-title { font-size: 26px; }
+      .retry-grid { grid-template-columns: 1fr; }
+      .state-diagram { padding: 20px 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="../index" class="brand">
+        <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="#635bff"/>
+          <path d="M8 20l6-12 4 8 3-4 3 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="brand-name">Pinelabs<span class="brand-sub"> SDK</span></span>
+      </a>
+      <nav class="topbar-nav">
+        <a href="../index" class="topbar-link">Home</a>
+        <a href="../init" class="topbar-link">init</a>
+        <a href="../do-transaction" class="topbar-link">doTransaction</a>
+        <a href="../devices" class="topbar-link">Devices</a>
+        <a href="capabilities" class="topbar-link">Capabilities</a>
+      </nav>
+      <div class="topbar-actions">
+        <span class="version-badge">v1.0</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-inner">
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">Overview</p>
+          <a href="../index" class="sidebar-link">Introduction</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">Concepts</p>
+          <a href="overview" class="sidebar-link">SDK Overview</a>
+          <a href="capabilities" class="sidebar-link">Capability Matrix</a>
+          <a href="error-handling" class="sidebar-link">Error Handling</a>
+          <a href="lifecycle" class="sidebar-link">Lifecycle &amp; Threading</a>
+          <a href="eventid-and-reconciliation" class="sidebar-link active">event_id &amp; Reconciliation</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">On this page</p>
+          <a href="#allocation" class="sidebar-link sidebar-link--sub">Who allocates event_id</a>
+          <a href="#lifecycle" class="sidebar-link sidebar-link--sub">Lifecycle states</a>
+          <a href="#persistence" class="sidebar-link sidebar-link--sub">Persistence contract</a>
+          <a href="#unknown" class="sidebar-link sidebar-link--sub">OperationState.Unknown</a>
+          <a href="#transport" class="sidebar-link sidebar-link--sub">Semantics by transport</a>
+          <a href="#idempotency" class="sidebar-link sidebar-link--sub">Idempotency</a>
+          <a href="#cancel" class="sidebar-link sidebar-link--sub">cancel semantics</a>
+          <a href="#workflow" class="sidebar-link sidebar-link--sub">Reconciliation workflow</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">API Reference</p>
+          <a href="../init" class="sidebar-link">init</a>
+          <a href="../do-transaction" class="sidebar-link">doTransaction</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">Hardware</p>
+          <a href="../devices" class="sidebar-link">Supported Devices</a>
+        </div>
+
+      </div>
+    </aside>
+
+    <main class="content" id="main-content">
+
+      <!-- Hero -->
+      <section class="rc-hero" id="intro">
+        <p class="rc-eyebrow">Concepts · v1</p>
+        <h1 class="rc-title">event_id &amp; Reconciliation</h1>
+        <p class="rc-sub">
+          Every transaction the SDK handles is identified by an <code class="inline-code">event_id</code> —
+          a UUIDv4 allocated by the SDK on <code class="inline-code">doTransaction</code> and handed back
+          via <code class="inline-code">TransactionListener.onStarted</code>. This page explains what
+          that ID is for and exactly how to use it for crash-recovery and bookkeeping.
+        </p>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- Global language switcher — controls all code blocks on this page -->
+      <div class="lang-tabs" data-tabs="recon-tabs" style="margin-bottom: 0;">
+        <button class="lang-tab active" data-lang="kotlin" onclick="switchTab(this,'recon-tabs')">Kotlin</button>
+        <button class="lang-tab"        data-lang="java"   onclick="switchTab(this,'recon-tabs')">Java</button>
+      </div>
+
+      <!-- §01 Who allocates -->
+      <section class="doc-section" id="allocation">
+        <div class="section-header">
+          <span class="section-number">01</span>
+          <h2>Who allocates the <code style="font-size:inherit;font-family:var(--font-mono)">event_id</code></h2>
+        </div>
+        <p>
+          <strong>The SDK. Always.</strong> You never construct it, you never guess it,
+          you do not get to pick the format. <code class="inline-code">onStarted</code> fires before
+          <code class="inline-code">onSuccess</code> / <code class="inline-code">onFailure</code> iff the SDK
+          accepted the call.
+        </p>
+
+        <div class="warn-callout">
+          <div class="warn-callout-icon">⚠️</div>
+          <div class="warn-callout-body">
+            <strong>No event_id when the call fails synchronously</strong>
+            <p>
+              If <code class="inline-code">doTransaction</code> raises
+              <code class="inline-code">SdkException</code> synchronously
+              (e.g. <code class="inline-code">InvalidInput</code>, <code class="inline-code">TransportUnavailable</code>
+              during bind), no <code class="inline-code">event_id</code> is allocated and no callback fires.
+            </p>
+          </div>
+        </div>
+
+        <div class="code-block" id="recon-tabs-kotlin-alloc" data-lang="kotlin">
+          <div class="code-block-header">
+            <span class="code-lang">Kotlin</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-kotlin">sdk.doTransaction(request, object : TransactionListener {
+    override fun onStarted(eventId: String) {
+        // SDK allocated a UUIDv4 for this operation.
+        // Persist it NOW (see §03) before showing any UI.
+        db.insertOpInFlight(orderId = currentOrderId, eventId = eventId)
+    }
+    override fun onSuccess(result: TransactionResult) { /* … */ }
+    override fun onFailure(error: SdkException) { /* … */ }
+})</code></pre>
+        </div>
+
+        <div class="code-block hidden" id="recon-tabs-java-alloc" data-lang="java">
+          <div class="code-block-header">
+            <span class="code-lang">Java</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-java">sdk.doTransaction(request, new TransactionListener() {
+    @Override public void onStarted(String eventId) {
+        // SDK allocated a UUIDv4 for this operation.
+        // Persist it NOW (see §03) before showing any UI.
+        db.insertOpInFlight(currentOrderId, eventId);
+    }
+    @Override public void onSuccess(TransactionResult result) { /* … */ }
+    @Override public void onFailure(SdkException error) { /* … */ }
+});</code></pre>
+        </div>
+
+      <div class="divider"></div>
+
+      <!-- §02 Lifecycle states -->
+      <section class="doc-section" id="lifecycle">
+        <div class="section-header">
+          <span class="section-number">02</span>
+          <h2>Lifecycle states</h2>
+        </div>
+        <p>
+          Each <code class="inline-code">event_id</code> passes through one of these states.
+          Query the current state at any time with <code class="inline-code">checkStatus(eventId, options)</code>.
+        </p>
+
+        <!-- Visual state diagram -->
+        <div class="state-diagram">
+          <div class="state-col">
+
+            <div class="state-node">
+              <div class="state-box state-box--pending">Pending</div>
+              <div class="state-desc">SDK accepted, transport not yet engaged</div>
+            </div>
+
+            <div class="state-vline"></div>
+
+            <div class="state-node">
+              <div class="state-box state-box--inflight">InFlight</div>
+              <div class="state-desc">Transport engaged, awaiting terminal reply</div>
+            </div>
+
+            <div class="state-vline"></div>
+
+            <div class="state-fork">
+              <div class="state-fork-branch">
+                <div class="state-fork-label">success</div>
+                <div class="state-box state-box--done">Completed</div>
+              </div>
+              <div class="state-fork-branch">
+                <div class="state-fork-label">failure</div>
+                <div class="state-box state-box--failed">Failed</div>
+              </div>
+              <div class="state-fork-branch">
+                <div class="state-fork-label">cancel</div>
+                <div class="state-box state-box--cancelled">Cancelled</div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="unknown-row">
+            <div class="state-box state-box--unknown">Unknown</div>
+            <div class="unknown-label">
+              SDK has no record of this id — process restarted, never allocated, or registry purged.
+              See <a href="#unknown">§04</a>.
+            </div>
+          </div>
+        </div>
+
+        <div class="code-block" id="recon-tabs-kotlin-lifecycle" data-lang="kotlin">
+          <div class="code-block-header">
+            <span class="code-lang">Kotlin</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-kotlin">val status = sdk.checkStatus(eventId, options)
+when (status.state) {
+    OperationState.Pending,
+    OperationState.InFlight   -> showSpinner()
+    OperationState.Completed  -> renderResult(status.result!!)
+    OperationState.Failed     -> showError(status.failureDetail, status.terminalResponseCode)
+    OperationState.Cancelled  -> showCancelled()
+    OperationState.Unknown    -> handleUnknown(eventId)   // see §04
+}</code></pre>
+        </div>
+
+        <div class="code-block hidden" id="recon-tabs-java-lifecycle" data-lang="java">
+          <div class="code-block-header">
+            <span class="code-lang">Java</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-java">OperationStatus status = sdk.checkStatus(eventId, options);
+switch (status.getState()) {
+    case Pending:
+    case InFlight:   showSpinner(); break;
+    case Completed:  renderResult(status.getResult()); break;
+    case Failed:     showError(status.getFailureDetail(),
+                               status.getTerminalResponseCode()); break;
+    case Cancelled:  showCancelled(); break;
+    case Unknown:    handleUnknown(eventId); break;   // see §04
+}</code></pre>
+        </div>
+
+      <div class="divider"></div>
+
+      <!-- §03 Persistence contract -->
+      <section class="doc-section" id="persistence">
+        <div class="section-header">
+          <span class="section-number">03</span>
+          <h2>The persistence contract</h2>
+        </div>
+        <p>This is the rule that keeps you reconciled:</p>
+
+        <div class="rule-callout">
+          <div class="rule-callout-icon">📌</div>
+          <div class="rule-callout-body">
+            <strong>Persist event_id to durable storage in onStarted — before any UI update</strong>
+            <p>
+              Also persist the terminal-state outcome together with the same ID in
+              <code class="inline-code">onSuccess</code> / <code class="inline-code">onFailure</code>.
+              If your app crashes between <code class="inline-code">onStarted</code> and the terminal
+              callback, the <code class="inline-code">event_id</code> is the <em>only</em> thing that lets
+              you discover what really happened — the customer's card may have been charged.
+            </p>
+          </div>
+        </div>
+
+        <div class="code-block" id="recon-tabs-kotlin-persist" data-lang="kotlin">
+          <div class="code-block-header">
+            <span class="code-lang">Kotlin</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-kotlin">val listener = object : TransactionListener {
+
+    override fun onStarted(eventId: String) {
+        // ✅ Persist BEFORE updating UI
+        db.insertOpInFlight(
+            orderId    = currentOrderId,
+            eventId    = eventId,
+            startedAt  = now()
+        )
+        runOnUiThread { disablePayButton() }
+    }
+
+    override fun onSuccess(result: TransactionResult) {
+        // ✅ Mark terminal state with outcome
+        db.markOpCompleted(
+            eventId = result.eventId,
+            txnId   = result.transactionId
+        )
+        runOnUiThread { showSuccess(result) }
+    }
+
+    override fun onFailure(error: SdkException) {
+        // ✅ Persist failure detail for back-office
+        db.markOpFailed(
+            eventId = currentEventId,
+            error   = error.toString()
+        )
+        runOnUiThread {
+            when (error) {
+                is SdkException.TransactionFailed    -> showDecline(error.detail, error.terminalResponseCode)
+                is SdkException.Timeout,
+                is SdkException.TransportUnavailable -> showAmbiguous()   // call checkStatus!
+                is SdkException.InvalidInput         -> log.error("Programmer error: ${error.detail}")
+                is SdkException.Internal             -> log.error("SDK error: ${error.detail}")
+                is SdkException.NotInitialized       -> log.error("SDK not initialised")
+            }
+        }
+    }
+}</code></pre>
+        </div>
+
+        <div class="code-block hidden" id="recon-tabs-java-persist" data-lang="java">
+          <div class="code-block-header">
+            <span class="code-lang">Java</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-java">TransactionListener listener = new TransactionListener() {
+
+    @Override
+    public void onStarted(String eventId) {
+        // ✅ Persist BEFORE updating UI
+        db.insertOpInFlight(currentOrderId, eventId, now());
+        runOnUiThread(() -> disablePayButton());
+    }
+
+    @Override
+    public void onSuccess(TransactionResult result) {
+        // ✅ Mark terminal state with outcome
+        db.markOpCompleted(result.getEventId(), result.getTransactionId());
+        runOnUiThread(() -> showSuccess(result));
+    }
+
+    @Override
+    public void onFailure(SdkException error) {
+        // ✅ Persist failure detail for back-office
+        db.markOpFailed(currentEventId, error.toString());
+        runOnUiThread(() -> {
+            if (error instanceof SdkException.TransactionFailed e) {
+                showDecline(e.getDetail(), e.getTerminalResponseCode());
+            } else if (error instanceof SdkException.Timeout
+                    || error instanceof SdkException.TransportUnavailable) {
+                showAmbiguous();   // call checkStatus!
+            } else if (error instanceof SdkException.InvalidInput e) {
+                log.error("Programmer error: " + e.getDetail());
+            } else if (error instanceof SdkException.Internal e) {
+                log.error("SDK error: " + e.getDetail());
+            } else if (error instanceof SdkException.NotInitialized) {
+                log.error("SDK not initialised");
+            }
+        });
+    }
+};</code></pre>
+        </div>
+
+      <div class="divider"></div>
+
+      <!-- §04 Unknown -->
+      <section class="doc-section" id="unknown">
+        <div class="section-header">
+          <span class="section-number">04</span>
+          <h2><code style="font-size:inherit;font-family:var(--font-mono)">OperationState.Unknown</code> — what to do</h2>
+        </div>
+        <p>
+          <code class="inline-code">Unknown</code> is returned in three legitimate situations.
+          It is <strong>not</strong> an error from the SDK's view —
+          <code class="inline-code">checkStatus</code> returns it cleanly without raising
+          <code class="inline-code">InvalidInput</code>.
+        </p>
+
+        <div class="rc-table-wrap">
+          <table class="rc-table">
+            <thead>
+              <tr>
+                <th>Situation</th>
+                <th>Recovery</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>SDK was restarted</td>
+                <td>
+                  The in-memory registry was wiped. The op may have completed at the terminal
+                  before the crash.<br><br>
+                  <strong>App-to-App / PADController / TCP:</strong> irrecoverable via SDK — reconcile
+                  via Pinelabs back-office reports keyed by
+                  <code class="inline-code">billingRefNo</code> / <code class="inline-code">invoiceNo</code> /
+                  <code class="inline-code">referenceId</code>.<br><br>
+                  <strong>Cloud:</strong> call
+                  <code class="inline-code">checkStatus(eventId)</code> again — the cloud server
+                  is the source of truth, not the SDK's in-memory registry.
+                </td>
+              </tr>
+              <tr>
+                <td>ID from a different SDK instance</td>
+                <td>
+                  Two SDK instances ran in the same process; the ID came from the other one.
+                  Consolidate to a single SDK instance per the lifecycle guide.
+                </td>
+              </tr>
+              <tr>
+                <td>Memory pressure / explicit purge</td>
+                <td>
+                  Long-lived processes may purge completed ops from the registry over time.
+                  Treat identically to the restart case above.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- §05 Transport semantics -->
+      <section class="doc-section" id="transport">
+        <div class="section-header">
+          <span class="section-number">05</span>
+          <h2><code style="font-size:inherit;font-family:var(--font-mono)">event_id</code> semantics by transport</h2>
+        </div>
+        <p>
+          The ID you pass to <code class="inline-code">cancel</code> and
+          <code class="inline-code">checkStatus</code> differs by transport:
+        </p>
+
+        <div class="rc-table-wrap">
+          <table class="rc-table">
+            <thead>
+              <tr>
+                <th>Transport</th>
+                <th>What event_id means for cancel / checkStatus</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="transport-pill">App-to-App</span></td>
+                <td>
+                  The SDK-allocated UUIDv4 from <code class="inline-code">onStarted</code>.
+                  <strong>Both <code class="inline-code">cancel</code> and
+                  <code class="inline-code">checkStatus</code> raise
+                  <code class="inline-code">NotSupported</code></strong> — the protocol does not
+                  expose them.
+                </td>
+              </tr>
+              <tr>
+                <td><span class="transport-pill transport-pill--cloud">Cloud</span></td>
+                <td>
+                  The <code class="inline-code">PlutusTransactionReferenceID</code> returned by
+                  Upload, <strong>not</strong> the SDK UUIDv4. The SDK mirrors the cloud
+                  reference into <code class="inline-code">TransactionResult.transaction_id</code> on
+                  the <code class="inline-code">Pending</code> callback — pass that value to
+                  <code class="inline-code">cancel</code> / <code class="inline-code">checkStatus</code>.
+                  <strong>Persisting the <code class="inline-code">transaction_id</code> from the Cloud
+                  Pending callback is just as critical as persisting the
+                  <code class="inline-code">event_id</code>.</strong>
+                </td>
+              </tr>
+              <tr>
+                <td><span class="transport-pill">PADController</span></td>
+                <td>The SDK-allocated UUIDv4.</td>
+              </tr>
+              <tr>
+                <td><span class="transport-pill">TCP</span></td>
+                <td>The SDK-allocated UUIDv4.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p style="margin-top:14px;font-size:14px;color:var(--ink-600)">
+          This asymmetry exists because the cloud server has its own opaque identifier that
+          the SDK cannot translate back into a UUIDv4 after a restart.
+        </p>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- §06 Idempotency -->
+      <section class="doc-section" id="idempotency">
+        <div class="section-header">
+          <span class="section-number">06</span>
+          <h2>Idempotency</h2>
+        </div>
+        <p>
+          The SDK does <strong>not</strong> auto-retry. If
+          <code class="inline-code">onFailure(Timeout)</code> fires, your app decides what to do
+          based on retryability:
+        </p>
+
+        <div class="retry-grid">
+          <div class="retry-card retry-card--yes">
+            <div class="retry-card-title retry-card-title--yes">✓ Retryable — re-issue doTransaction</div>
+            <ul>
+              <li>TransportUnavailable</li>
+              <li>Timeout</li>
+              <li>NotConnected</li>
+              <li>TransportError</li>
+            </ul>
+          </div>
+          <div class="retry-card retry-card--no">
+            <div class="retry-card-title retry-card-title--no">✗ Terminal — do not re-issue</div>
+            <ul>
+              <li>TransactionFailed</li>
+              <li>InvalidInput</li>
+              <li>NotSupported</li>
+              <li>OperationInProgress</li>
+              <li>Cancelled</li>
+              <li>Internal</li>
+            </ul>
+          </div>
+        </div>
+
+        <p style="font-size:14px;color:var(--ink-600);margin-top:4px">
+          When you re-issue, each attempt gets a <strong>new</strong>
+          <code class="inline-code">event_id</code>. Some integrators reuse the merchant
+          <code class="inline-code">referenceId</code> / <code class="inline-code">billingRefNo</code>
+          across attempts so back-office reconciliation can identify them as one logical order.
+        </p>
+
+        <div class="rule-callout" style="margin-top:20px">
+          <div class="rule-callout-icon">☁️</div>
+          <div class="rule-callout-body">
+            <strong>Cloud server-side idempotency key</strong>
+            <p>
+              <code class="inline-code">CloudTransactionOptions.transactionNumber</code> is the
+              Pinelabs server-side idempotency key. Re-uploading with the same
+              <code class="inline-code">transactionNumber</code> returns the original Pinelabs
+              reference without re-charging the card — use this if your retry is within the
+              window the cloud server still remembers.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- §07 cancel semantics -->
+      <section class="doc-section" id="cancel">
+        <div class="section-header">
+          <span class="section-number">07</span>
+          <h2><code style="font-size:inherit;font-family:var(--font-mono)">cancel</code> semantics</h2>
+        </div>
+        <p>
+          <code class="inline-code">cancel(eventId, options)</code> is <strong>best-effort</strong>:
+        </p>
+
+        <div class="convention-grid">
+          <div class="convention-item">
+            <div class="convention-icon">✅</div>
+            <div>
+              <strong>Cancel succeeded</strong> — if the transport supports a server-side cancel
+              and the terminal has not yet committed, the eventual outcome moves to
+              <code class="inline-code">OperationState.Cancelled</code>.
+            </div>
+          </div>
+          <div class="convention-item">
+            <div class="convention-icon">⚡</div>
+            <div>
+              <strong>Cancel is a no-op</strong> — if the terminal has already committed (the card
+              was charged), <code class="inline-code">cancel</code> does nothing. The outcome remains
+              <code class="inline-code">Completed</code> / <code class="inline-code">Success</code>.
+            </div>
+          </div>
+        </div>
+
+        <div class="warn-callout" style="margin-top:16px">
+          <div class="warn-callout-icon">⚠️</div>
+          <div class="warn-callout-body">
+            <strong>Always wait for the terminal-state callback</strong>
+            <p>
+              Treat <code class="inline-code">cancel</code> as advisory. Your code
+              <strong>must</strong> wait for
+              <code class="inline-code">onSuccess</code> / <code class="inline-code">onFailure</code>
+              or poll <code class="inline-code">checkStatus</code> to confirm the final outcome.
+              The SDK never silently auto-cancels.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- §08 Practical workflow -->
+      <section class="doc-section" id="workflow">
+        <div class="section-header">
+          <span class="section-number">08</span>
+          <h2>Practical reconciliation workflow</h2>
+        </div>
+        <p>
+          The happy path and the crash-recovery path, step by step:
+        </p>
+
+        <p style="font-size:13px;font-weight:700;color:var(--ink-400);letter-spacing:.06em;text-transform:uppercase;margin:20px 0 10px">
+          Happy path
+        </p>
+        <ol class="step-list">
+          <li>
+            <div class="step-num">1</div>
+            <div class="step-content">User taps <strong>"Charge ₹X"</strong>. App inserts a pending order row with merchant order ID and shows a spinner.</div>
+          </li>
+          <li>
+            <div class="step-num">2</div>
+            <div class="step-content">App calls <strong><code class="inline-code">sdk.doTransaction(req, listener)</code></strong>. If a synchronous exception is thrown, show an error and stop.</div>
+          </li>
+          <li>
+            <div class="step-num">3</div>
+            <div class="step-content"><strong><code class="inline-code">listener.onStarted(eventId)</code></strong> fires → update the order row with <code class="inline-code">event_id</code> and <code class="inline-code">startedAt</code>. Persist to durable storage before touching the UI.</div>
+          </li>
+          <li>
+            <div class="step-num">4</div>
+            <div class="step-content"><strong><code class="inline-code">onSuccess(result)</code></strong> or <strong><code class="inline-code">onFailure(error)</code></strong> fires → update the row with the terminal-state outcome; print receipt or show error; close.</div>
+          </li>
+        </ol>
+
+        <p style="font-size:13px;font-weight:700;color:var(--ink-400);letter-spacing:.06em;text-transform:uppercase;margin:24px 0 10px">
+          Crash recovery (on app restart)
+        </p>
+        <ol class="step-list">
+          <li>
+            <div class="step-num">1</div>
+            <div class="step-content">On startup, fetch all order rows with state <strong>Pending</strong> or <strong>InFlight</strong>.</div>
+          </li>
+          <li>
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <strong>App-to-App / PADController / TCP:</strong> the in-memory registry was wiped — these IDs are irrecoverable via the SDK. Mark them <em>"needs back-office reconciliation"</em> and resolve via Pinelabs reports keyed by <code class="inline-code">billingRefNo</code> / <code class="inline-code">invoiceNo</code>.
+            </div>
+          </li>
+          <li>
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <strong>Cloud:</strong> read the persisted <code class="inline-code">transaction_id</code> (cloud ref) from the row; call <code class="inline-code">sdk.checkStatus(transactionId, CheckStatusOptions.Cloud(…))</code>; update the row from the result.
+            </div>
+          </li>
+        </ol>
+
+        <div class="code-block" id="recon-tabs-kotlin-workflow" data-lang="kotlin" style="margin-top:20px">
+          <div class="code-block-header">
+            <span class="code-lang">Kotlin — startup reconciliation</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-kotlin">// Called once at app startup
+fun reconcilePendingOps(sdk: PinelabsSdk) {
+    val stuckRows = db.queryOpsInFlight()  // Pending or InFlight rows
+
+    for (row in stuckRows) {
+        when (row.transport) {
+            Transport.CLOUD -> {
+                // Cloud server is the source of truth
+                val cloudRef = row.transactionId
+                    ?: continue.also { markNeedsManualReconciliation(row) }
+
+                val status = sdk.checkStatus(
+                    eventId = cloudRef,
+                    options = CheckStatusOptions.Cloud(/* … */)
+                )
+                when (status.state) {
+                    OperationState.Completed -> db.markOpCompleted(row, status.result!!)
+                    OperationState.Failed    -> db.markOpFailed(row, status.failureDetail)
+                    OperationState.Cancelled -> db.markOpCancelled(row)
+                    else                     -> markNeedsManualReconciliation(row)
+                }
+            }
+            else -> {
+                // App-to-App / PADController / TCP: irrecoverable via SDK
+                markNeedsManualReconciliation(row)
+            }
+        }
+    }
+}</code></pre>
+        </div>
+
+        <div class="code-block hidden" id="recon-tabs-java-workflow" data-lang="java" style="margin-top:20px">
+          <div class="code-block-header">
+            <span class="code-lang">Java — startup reconciliation</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-java">// Called once at app startup
+void reconcilePendingOps(PinelabsSdk sdk) {
+    List&lt;OpRow&gt; stuckRows = db.queryOpsInFlight();  // Pending or InFlight rows
+
+    for (OpRow row : stuckRows) {
+        if (row.transport == Transport.CLOUD) {
+            // Cloud server is the source of truth
+            String cloudRef = row.transactionId;
+            if (cloudRef == null) {
+                markNeedsManualReconciliation(row);
+                continue;
+            }
+            OperationStatus status = sdk.checkStatus(
+                cloudRef,
+                new CheckStatusOptions.Cloud(/* … */)
+            );
+            switch (status.getState()) {
+                case Completed: db.markOpCompleted(row, status.getResult()); break;
+                case Failed:    db.markOpFailed(row, status.getFailureDetail()); break;
+                case Cancelled: db.markOpCancelled(row); break;
+                default:        markNeedsManualReconciliation(row); break;
+            }
+        } else {
+            // App-to-App / PADController / TCP: irrecoverable via SDK
+            markNeedsManualReconciliation(row);
+        }
+    }
+}</code></pre>
+        </div>
+
+        <div class="see-also" style="margin-top:28px">
+          <strong>See also:</strong>
+          <a href="error-handling">Error handling reference</a> ·
+          <a href="../do-transaction">doTransaction reference</a> ·
+          <a href="capabilities">Capability matrix</a>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="doc-footer">
+        <div class="doc-footer-inner">
+          <div class="footer-left">
+            <div class="brand">
+              <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
+                <rect width="32" height="32" rx="8" fill="#635bff"/>
+                <path d="M8 20l6-12 4 8 3-4 3 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="brand-name">Pinelabs SDK</span>
+            </div>
+            <p class="footer-note">Document version: <code class="inline-code">1.0</code></p>
+          </div>
+          <div class="footer-links">
+            <a href="../index">Home</a>
+            <a href="#allocation">event_id</a>
+            <a href="#lifecycle">Lifecycle</a>
+            <a href="#persistence">Persistence</a>
+            <a href="#workflow">Workflow</a>
+            <a href="capabilities">Capabilities</a>
+          </div>
+        </div>
+      </footer>
+
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="../js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TransactionResult Payload — Pinelabs SDK</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    /* ── hero ── */
+    .rp-hero { padding: 48px 0 32px; }
+    .rp-eyebrow {
+      font-size: 12px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--coral); margin-bottom: 10px;
+    }
+    .rp-title {
+      font-size: 38px; font-weight: 800; letter-spacing: -1.3px;
+      line-height: 1.13; margin-bottom: 14px;
+      background: linear-gradient(135deg, var(--ink-900) 35%, var(--coral) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .rp-sub {
+      font-size: 16px; color: var(--ink-600); max-width: 680px;
+      line-height: 1.7; margin-bottom: 0;
+    }
+
+    /* ── callouts ── */
+    .info-callout {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: var(--purple-bg); border: 1.5px solid rgba(99,91,255,.2);
+      border-radius: var(--r-lg); padding: 18px 20px; margin: 20px 0;
+    }
+    .info-callout-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+    .info-callout-body { flex: 1; }
+    .info-callout-body strong { display: block; font-size: 13px; font-weight: 700; color: var(--ink-900); margin-bottom: 5px; }
+    .info-callout-body p { font-size: 14px; color: var(--ink-600); line-height: 1.65; margin: 0; }
+
+    .warn-callout {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: rgba(255,184,48,.08); border: 1.5px solid rgba(255,184,48,.3);
+      border-radius: var(--r-lg); padding: 18px 20px; margin: 20px 0;
+    }
+    .warn-callout-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+    .warn-callout-body { flex: 1; }
+    .warn-callout-body strong { display: block; font-size: 13px; font-weight: 700; color: var(--ink-900); margin-bottom: 5px; }
+    .warn-callout-body p { font-size: 14px; color: var(--ink-600); line-height: 1.65; margin: 0; }
+
+    /* ── field reference table ── */
+    .field-table-wrap {
+      overflow-x: auto; margin: 20px 0;
+      border-radius: var(--r-lg); border: 1px solid var(--ink-100);
+      box-shadow: var(--shadow-sm);
+    }
+    .field-table {
+      width: 100%; border-collapse: collapse; font-size: 14px;
+      background: var(--white);
+    }
+    .field-table thead tr { background: var(--ink-900); }
+    .field-table thead th {
+      text-align: left; padding: 12px 16px;
+      font-size: 11px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: rgba(255,255,255,.5); border-bottom: none;
+    }
+    .field-table tbody tr { border-bottom: 1px solid var(--ink-50); transition: background .12s; }
+    .field-table tbody tr:last-child { border-bottom: none; }
+    .field-table tbody tr:hover td { background: var(--ink-50); }
+    .field-table td {
+      padding: 13px 16px; vertical-align: top;
+      color: var(--ink-600); font-size: 13px; line-height: 1.6; border: none;
+    }
+    /* field name col */
+    .field-table td:nth-child(1) {
+      font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+      color: var(--ink-900); white-space: nowrap; width: 175px;
+    }
+    /* type col */
+    .field-table td:nth-child(2) { width: 130px; }
+    /* when populated col */
+    .field-table td:nth-child(3) { width: 200px; }
+
+    /* ── type badges ── */
+    .type-badge {
+      display: inline-block; font-family: var(--font-mono); font-size: 11px;
+      font-weight: 700; padding: 2px 8px; border-radius: 20px; white-space: nowrap;
+    }
+    .type-badge--always   { background: rgba(0,212,170,.12); color: #009e7e; }
+    .type-badge--optional { background: var(--ink-50); color: var(--ink-400); border: 1px solid var(--ink-100); }
+    .type-badge--map      { background: var(--purple-bg); color: var(--purple); }
+
+    /* ── when-populated pill ── */
+    .when-pill {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      letter-spacing: .03em; padding: 2px 8px; border-radius: 20px; white-space: nowrap;
+    }
+    .when-pill--always     { background: rgba(0,212,170,.12); color: #009e7e; }
+    .when-pill--transport  { background: var(--purple-bg); color: var(--purple); }
+    .when-pill--request    { background: rgba(255,184,48,.12); color: #a07800; }
+    .when-pill--acquirer   { background: var(--ink-50); color: var(--ink-600); border: 1px solid var(--ink-100); }
+
+    /* ── chargeSlip transport cards ── */
+    .slip-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 12px; margin: 20px 0;
+    }
+    .slip-card {
+      background: var(--white); border: 1px solid var(--ink-100);
+      border-radius: var(--r-xl); overflow: hidden; box-shadow: var(--shadow-sm);
+    }
+    .slip-card-head {
+      padding: 14px 18px 10px; border-bottom: 1px solid var(--ink-50);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .slip-icon {
+      width: 32px; height: 32px; border-radius: var(--r-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0;
+    }
+    .slip-icon--a2a   { background: var(--purple-bg); }
+    .slip-icon--pad   { background: rgba(255,184,48,.12); }
+    .slip-icon--cloud { background: rgba(0,212,170,.12); }
+    .slip-icon--tcp   { background: var(--ink-50); }
+    .slip-transport-name { font-size: 13px; font-weight: 700; color: var(--ink-900); }
+    .slip-card-body { padding: 13px 18px; font-size: 13px; color: var(--ink-600); line-height: 1.6; }
+    .slip-empty { font-style: italic; color: var(--ink-300, #aab7c4); }
+
+    /* ── metadata sub-sections ── */
+    .meta-section {
+      margin: 16px 0;
+      background: var(--white); border: 1px solid var(--ink-100);
+      border-radius: var(--r-xl); overflow: hidden; box-shadow: var(--shadow-sm);
+    }
+    .meta-section-head {
+      padding: 16px 20px; background: var(--ink-50);
+      border-bottom: 1px solid var(--ink-100);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .meta-section-icon { font-size: 18px; }
+    .meta-section-title { font-size: 14px; font-weight: 700; color: var(--ink-900); }
+    .meta-section-sub   { font-size: 12px; color: var(--ink-400); margin-top: 1px; }
+    .meta-table {
+      width: 100%; border-collapse: collapse; font-size: 13px;
+    }
+    .meta-table thead tr { background: var(--ink-900); }
+    .meta-table thead th {
+      text-align: left; padding: 10px 18px;
+      font-size: 10px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: rgba(255,255,255,.45); border: none;
+    }
+    .meta-table tbody tr { border-bottom: 1px solid var(--ink-50); }
+    .meta-table tbody tr:last-child { border-bottom: none; }
+    .meta-table tbody tr:hover td { background: var(--ink-50); }
+    .meta-table td {
+      padding: 11px 18px; vertical-align: top;
+      color: var(--ink-600); border: none; line-height: 1.55;
+    }
+    .meta-table td:first-child {
+      font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+      color: var(--ink-900); white-space: nowrap; width: 200px;
+    }
+    .meta-table td:nth-child(2) {
+      font-family: var(--font-mono); font-size: 12px; color: var(--ink-400);
+      white-space: nowrap; width: 180px;
+    }
+    .meta-stabilising {
+      padding: 14px 20px; font-size: 13px; color: var(--ink-600);
+      line-height: 1.65; background: var(--ink-50);
+    }
+
+    /* ── forward compat list ── */
+    .compat-list {
+      list-style: none; padding: 0; margin: 16px 0;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .compat-list li {
+      display: flex; gap: 12px; align-items: flex-start;
+      background: var(--white); border: 1px solid var(--ink-100);
+      border-radius: var(--r-md); padding: 13px 16px;
+      box-shadow: var(--shadow-sm); font-size: 14px; color: var(--ink-600); line-height: 1.6;
+    }
+    .compat-icon {
+      font-size: 15px; flex-shrink: 0; margin-top: 1px;
+    }
+
+    /* ── dark-header generic table ── */
+    .rp-table-wrap {
+      overflow-x: auto; margin: 16px 0;
+      border-radius: var(--r-lg); border: 1px solid var(--ink-100);
+      box-shadow: var(--shadow-sm);
+    }
+    .rp-table {
+      width: 100%; border-collapse: collapse; font-size: 14px;
+      background: var(--white);
+    }
+    .rp-table thead tr { background: var(--ink-900); }
+    .rp-table thead th {
+      text-align: left; padding: 12px 18px;
+      font-size: 11px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: rgba(255,255,255,.5); border: none;
+    }
+    .rp-table tbody tr { border-bottom: 1px solid var(--ink-50); transition: background .12s; }
+    .rp-table tbody tr:last-child { border-bottom: none; }
+    .rp-table tbody tr:hover td { background: var(--ink-50); }
+    .rp-table td { padding: 13px 18px; vertical-align: top; color: var(--ink-600); font-size: 14px; line-height: 1.6; border: none; }
+    .rp-table td:first-child { font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--ink-900); white-space: nowrap; }
+
+    @media (max-width: 680px) {
+      .rp-title  { font-size: 26px; }
+      .slip-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="../index" class="brand">
+        <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="#635bff"/>
+          <path d="M8 20l6-12 4 8 3-4 3 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="brand-name">Pinelabs<span class="brand-sub"> SDK</span></span>
+      </a>
+      <nav class="topbar-nav">
+        <a href="../index" class="topbar-link">Home</a>
+        <a href="../init" class="topbar-link">init</a>
+        <a href="../do-transaction" class="topbar-link">doTransaction</a>
+        <a href="../devices" class="topbar-link">Devices</a>
+        <a href="capabilities" class="topbar-link">Capabilities</a>
+      </nav>
+      <div class="topbar-actions">
+        <span class="version-badge">v1.0</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-inner">
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">Overview</p>
+          <a href="../index" class="sidebar-link">Introduction</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">Concepts</p>
+          <a href="overview" class="sidebar-link">SDK Overview</a>
+          <a href="capabilities" class="sidebar-link">Capability Matrix</a>
+          <a href="error-handling" class="sidebar-link">Error Handling</a>
+          <a href="lifecycle" class="sidebar-link">Lifecycle &amp; Threading</a>
+          <a href="eventid-and-reconciliation" class="sidebar-link">event_id &amp; Reconciliation</a>
+          <a href="result-payload" class="sidebar-link active">TransactionResult</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">On this page</p>
+          <a href="#field-ref"      class="sidebar-link sidebar-link--sub">Field reference</a>
+          <a href="#charge-slip"    class="sidebar-link sidebar-link--sub">chargeSlipPrintData</a>
+          <a href="#metadata"       class="sidebar-link sidebar-link--sub">Metadata keys</a>
+          <a href="#reading"        class="sidebar-link sidebar-link--sub">Reading the result</a>
+          <a href="#compat"         class="sidebar-link sidebar-link--sub">Forward compatibility</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">API Reference</p>
+          <a href="../init" class="sidebar-link">init</a>
+          <a href="../do-transaction" class="sidebar-link">doTransaction</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">Hardware</p>
+          <a href="../devices" class="sidebar-link">Supported Devices</a>
+        </div>
+
+      </div>
+    </aside>
+
+    <main class="content" id="main-content">
+
+      <!-- ── Hero ── -->
+      <section class="rp-hero" id="intro">
+        <p class="rp-eyebrow">Concepts · v1</p>
+        <h1 class="rp-title">TransactionResult payload</h1>
+        <p class="rp-sub">
+          <code class="inline-code">TransactionResult</code> is the curated, normalised view of a
+          successful terminal-state transaction. Every field, when it is populated, transport
+          variations, and how to use the most-frequently-misunderstood one —
+          <code class="inline-code">chargeSlipPrintData</code>.
+        </p>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ── §01 Field reference ── -->
+      <section class="doc-section" id="field-ref">
+        <div class="section-header">
+          <span class="section-number">01</span>
+          <h2>Field reference</h2>
+        </div>
+        <p>
+          Fields marked <span class="when-pill when-pill--always">Always</span> are guaranteed on
+          every <code class="inline-code">onSuccess</code> callback.
+          All others are <code class="inline-code">String?</code> — null if not returned by the terminal or transport.
+        </p>
+
+        <div class="field-table-wrap">
+          <table class="field-table">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>When populated</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>eventId</td>
+                <td><span class="type-badge type-badge--always">String</span></td>
+                <td><span class="when-pill when-pill--always">Always</span></td>
+                <td>The same UUIDv4 delivered via <code class="inline-code">onStarted</code>. For a Cloud <code class="inline-code">Pending</code> callback this is the SDK event id; the cloud reference is in <code class="inline-code">transactionId</code>.</td>
+              </tr>
+              <tr>
+                <td>status</td>
+                <td><span class="type-badge type-badge--always">TransactionStatus</span></td>
+                <td><span class="when-pill when-pill--always">Always</span></td>
+                <td><code class="inline-code">Success</code>, <code class="inline-code">Failed</code>, or <code class="inline-code">Pending</code> (Cloud <code class="inline-code">doTransaction</code> only — delta D23(g)).</td>
+              </tr>
+              <tr>
+                <td>billingRefNo</td>
+                <td><span class="type-badge type-badge--optional">String?</span></td>
+                <td><span class="when-pill when-pill--request">Request echo</span></td>
+                <td>Echo of <code class="inline-code">TransactionRequest.billingRefNo</code>. Use this to pair results to requests without a side map.</td>
+              </tr>
+              <tr>
+                <td>referenceId</td>
+                <td><span class="type-badge type-badge--optional">String?</span></td>
+                <td><span class="when-pill when-pill--request">Request echo</span></td>
+                <td>Echo of <code class="inline-code">TransactionRequest.referenceId</code> when supplied.</td>
+              </tr>
+              <tr>
+                <td>transactionId</td>
+                <td><span class="type-badge type-badge--optional">String?</span></td>
+                <td><span class="when-pill when-pill--transport">Transport</span></td>
+                <td>App-to-App: terminal <code class="inline-code">PlutusTransactionLogID</code>. Cloud: <code class="inline-code">PlutusTransactionReferenceID</code>. PADController: terminal-assigned id. Use as the immutable terminal-side identifier in reports.</td>
+              </tr>
+              <tr>
+                <td>rrn</td>
+                <td><span class="type-badge type-badge--optional">String?</span></td>
+                <td><span class="when-pill when-pill--acquirer">Acquirer</span></td>
+                <td>Retrieval Reference Number — the acquirer's id for the card transaction.</td>
+              </tr>
+              <tr>
+                <td>authCode</td>
+                <td><span class="type-badge type-badge--optional">String?</span></td>
+                <td><span class="when-pill when-pill--acquirer">Acquirer</span></td>
+                <td>The acquirer's authorisation code. Present on approved card transactions.</td>
+              </tr>
+              <tr>
+                <td>amount</td>
+                <td><span class="type-badge type-badge--optional">String?</span></td>
+                <td><span class="when-pill when-pill--transport">Terminal echo</span></td>
+                <td>String, <strong>not</strong> numeric — formatting varies by terminal. Compare to your request <code class="inline-code">amount</code> only after parsing.</td>
+              </tr>
+              <tr>
+                <td>maskedPan</td>
+                <td><span class="type-badge type-badge--optional">String?</span></td>
+                <td><span class="when-pill when-pill--transport">Card txn</span></td>
+                <td>E.g. <code class="inline-code">411111XXXXXX1111</code>. Never the full PAN.</td>
+              </tr>
+              <tr>
+                <td>cardHolderName</td>
+                <td><span class="type-badge type-badge--optional">String?</span></td>
+                <td><span class="when-pill when-pill--acquirer">Card data</span></td>
+                <td>May be padded with whitespace by older terminals; the SDK trims.</td>
+              </tr>
+              <tr>
+                <td>cardType</td>
+                <td><span class="type-badge type-badge--optional">String?</span></td>
+                <td><span class="when-pill when-pill--transport">Terminal</span></td>
+                <td>E.g. <code class="inline-code">VISA</code>, <code class="inline-code">MASTERCARD</code>, <code class="inline-code">RUPAY</code>. Free-form — do not parse for business logic.</td>
+              </tr>
+              <tr>
+                <td>acquirer</td>
+                <td><span class="type-badge type-badge--optional">String?</span></td>
+                <td><span class="when-pill when-pill--transport">Terminal</span></td>
+                <td>Bank or scheme acquirer code.</td>
+              </tr>
+              <tr>
+                <td>merchantId</td>
+                <td><span class="type-badge type-badge--optional">String?</span></td>
+                <td><span class="when-pill when-pill--transport">Transport</span></td>
+                <td>App-to-App: terminal-derived. Cloud / PADController: echoed from request when set. Use to cross-reference back-office records.</td>
+              </tr>
+              <tr>
+                <td>terminalId</td>
+                <td><span class="type-badge type-badge--optional">String?</span></td>
+                <td><span class="when-pill when-pill--transport">Transport</span></td>
+                <td>App-to-App: terminal-derived. Cloud / PADController: echoed from request when set.</td>
+              </tr>
+              <tr>
+                <td>invoiceNo</td>
+                <td><span class="type-badge type-badge--optional">String?</span></td>
+                <td><span class="when-pill when-pill--transport">Terminal echo</span></td>
+                <td>App-to-App returns it as a numeric string (e.g. <code class="inline-code">"42"</code>).</td>
+              </tr>
+              <tr>
+                <td>batchNo</td>
+                <td><span class="type-badge type-badge--optional">String?</span></td>
+                <td><span class="when-pill when-pill--acquirer">Terminal</span></td>
+                <td>The acquirer's batch number for end-of-day settlement.</td>
+              </tr>
+              <tr>
+                <td>date</td>
+                <td><span class="type-badge type-badge--optional">String?</span></td>
+                <td><span class="when-pill when-pill--transport">Terminal</span></td>
+                <td>Format varies by terminal — commonly <code class="inline-code">YYYYMMDD</code>.</td>
+              </tr>
+              <tr>
+                <td>time</td>
+                <td><span class="type-badge type-badge--optional">String?</span></td>
+                <td><span class="when-pill when-pill--transport">Terminal</span></td>
+                <td>Format varies — commonly <code class="inline-code">HHmmss</code>, 24-hour.</td>
+              </tr>
+              <tr>
+                <td>chargeSlipPrintData</td>
+                <td><span class="type-badge type-badge--optional">String?</span></td>
+                <td><span class="when-pill when-pill--transport">Transport</span></td>
+                <td>Content differs per transport — see <a href="#charge-slip">§02</a>. Never parse generically.</td>
+              </tr>
+              <tr>
+                <td>responseCode</td>
+                <td><span class="type-badge type-badge--optional">String?</span></td>
+                <td><span class="when-pill when-pill--always">Success path</span></td>
+                <td>Raw acquirer / terminal response code. App-to-App: <code class="inline-code">"0"</code> on success.</td>
+              </tr>
+              <tr>
+                <td>responseMessage</td>
+                <td><span class="type-badge type-badge--optional">String?</span></td>
+                <td><span class="when-pill when-pill--always">Success path</span></td>
+                <td>Raw acquirer / terminal message, e.g. <code class="inline-code">"APPROVED"</code>.</td>
+              </tr>
+              <tr>
+                <td>metadata</td>
+                <td><span class="type-badge type-badge--map">Map&lt;String,String&gt;?</span></td>
+                <td><span class="when-pill when-pill--transport">Transport extras</span></td>
+                <td>Transport-specific fields the SDK could not promote to typed fields. Keys follow <code class="inline-code">&lt;scope&gt;.&lt;name&gt;</code> convention. See <a href="#metadata">§03</a>.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ── §02 chargeSlipPrintData ── -->
+      <section class="doc-section" id="charge-slip">
+        <div class="section-header">
+          <span class="section-number">02</span>
+          <h2><code style="font-size:inherit;font-family:var(--font-mono)">chargeSlipPrintData</code> — what it actually is</h2>
+        </div>
+        <p>
+          The name is historical. The field carries <strong>different content on different transports</strong>.
+          Treat it as a transport-specific opaque string — never parse it generically.
+        </p>
+
+        <div class="slip-grid">
+
+          <div class="slip-card">
+            <div class="slip-card-head">
+              <div class="slip-icon slip-icon--a2a">📱</div>
+              <div class="slip-transport-name">App-to-App</div>
+            </div>
+            <div class="slip-card-body">
+              Contains the Pinelabs <code class="inline-code">PlutusVersion</code> returned by
+              MasterApp (e.g. <code class="inline-code">"1.2.3"</code>).<br><br>
+              The terminal itself prints the slip — the SDK does <strong>not</strong> return slip text.
+            </div>
+          </div>
+
+          <div class="slip-card">
+            <div class="slip-card-head">
+              <div class="slip-icon slip-icon--pad">🔌</div>
+              <div class="slip-transport-name">PADController</div>
+            </div>
+            <div class="slip-card-body">
+              A vendor slip body that you can hand to a printer driver if your integration
+              includes one.<br><br>
+              Format is terminal-model-dependent.
+            </div>
+          </div>
+
+          <div class="slip-card">
+            <div class="slip-card-head">
+              <div class="slip-icon slip-icon--cloud">☁️</div>
+              <div class="slip-transport-name">Cloud REST</div>
+            </div>
+            <div class="slip-card-body">
+              <span class="slip-empty">Not populated.</span><br><br>
+              The cloud transport has no slip-printing semantics.
+            </div>
+          </div>
+
+          <div class="slip-card">
+            <div class="slip-card-head">
+              <div class="slip-icon slip-icon--tcp">🌐</div>
+              <div class="slip-transport-name">TCP direct</div>
+            </div>
+            <div class="slip-card-body">
+              <span class="slip-empty">Defined by the future TCP adapter.</span><br><br>
+              Treat as undefined in v1.
+            </div>
+          </div>
+
+        </div>
+
+        <div class="warn-callout">
+          <div class="warn-callout-icon">⚠️</div>
+          <div class="warn-callout-body">
+            <strong>The terminal's printer is the canonical slip surface</strong>
+            <p>
+              If you need to print a separate copy of the slip from your own POS, do not assume
+              <code class="inline-code">chargeSlipPrintData</code> is renderable text. On
+              App-to-App it is a version string, not receipt copy.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ── §03 Metadata keys ── -->
+      <section class="doc-section" id="metadata">
+        <div class="section-header">
+          <span class="section-number">03</span>
+          <h2>Metadata keys</h2>
+        </div>
+        <p>
+          <code class="inline-code">TransactionResult.metadata</code> collects extras the SDK
+          could not promote to a typed field. Keys follow a
+          <code class="inline-code">&lt;scope&gt;.&lt;name&gt;</code> namespacing convention
+          so future additions don't collide.
+        </p>
+
+        <!-- NCMC -->
+        <div class="meta-section">
+          <div class="meta-section-head">
+            <div class="meta-section-icon">🚇</div>
+            <div>
+              <div class="meta-section-title">App-to-App — NCMC fields</div>
+              <div class="meta-section-sub">prefix: <code style="font-family:var(--font-mono);font-size:11px">ncmc.*</code> · National Common Mobility Card transit transactions</div>
+            </div>
+          </div>
+          <table class="meta-table">
+            <thead>
+              <tr>
+                <th>Key</th>
+                <th>Source field</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>ncmc.serviceID</td>
+                <td>Detail.serviceID</td>
+                <td>Issuer-assigned service id.</td>
+              </tr>
+              <tr>
+                <td>ncmc.serviceMI</td>
+                <td>Detail.serviceMI</td>
+                <td>NCMC merchant identifier.</td>
+              </tr>
+              <tr>
+                <td>ncmc.isTransitMode</td>
+                <td>Detail.isTransitMode</td>
+                <td><code class="inline-code">"true"</code> / <code class="inline-code">"false"</code> — boolean rendered as a string for stable cross-language semantics.</td>
+              </tr>
+              <tr>
+                <td>ncmc.paymentMode</td>
+                <td>Detail.paymentMode</td>
+                <td>NCMC payment-mode code (free-form pass-through).</td>
+              </tr>
+              <tr>
+                <td>ncmc.serviceData</td>
+                <td>Detail.serviceData</td>
+                <td>Free-form NCMC service payload.</td>
+              </tr>
+              <tr>
+                <td>ncmc.AppId</td>
+                <td>Detail.AppId</td>
+                <td>NCMC application id.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Cloud -->
+        <div class="meta-section">
+          <div class="meta-section-head">
+            <div class="meta-section-icon">☁️</div>
+            <div>
+              <div class="meta-section-title">Cloud — raw TransactionData</div>
+              <div class="meta-section-sub">prefix: <code style="font-family:var(--font-mono);font-size:11px">cloud.transactionData.*</code></div>
+            </div>
+          </div>
+          <div class="meta-stabilising" style="background:var(--white)">
+            When the cloud server returns its <code class="inline-code">TransactionData</code> object
+            on a status response, every leaf field is flattened under
+            <code class="inline-code">cloud.transactionData.*</code> (delta D23(j)).
+            Null on <code class="inline-code">status = Pending</code>.
+            Keys are <strong>stable across releases</strong>.
+          </div>
+        </div>
+
+        <!-- PADController -->
+        <div class="meta-section">
+          <div class="meta-section-head">
+            <div class="meta-section-icon">🔌</div>
+            <div>
+              <div class="meta-section-title">PADController — stabilising</div>
+              <div class="meta-section-sub">prefix: <code style="font-family:var(--font-mono);font-size:11px">pad.&lt;columnName&gt;</code></div>
+            </div>
+          </div>
+          <div class="meta-stabilising">
+            PADController returns CSV columns, most of which are promoted to typed fields.
+            Until the column set is locked, any unrecognised column is preserved verbatim
+            under <code class="inline-code">pad.&lt;columnName&gt;</code> to avoid data loss
+            for early adopters.
+          </div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ── §04 Reading the result ── -->
+      <section class="doc-section" id="reading">
+        <div class="section-header">
+          <span class="section-number">04</span>
+          <h2>Reading the result</h2>
+        </div>
+        <p>Canonical pattern inside <code class="inline-code">onSuccess</code>:</p>
+
+        <div class="lang-tabs" data-tabs="rp-tabs">
+          <button class="lang-tab active" data-lang="kotlin" onclick="switchTab(this,'rp-tabs')">Kotlin</button>
+          <button class="lang-tab"        data-lang="java"   onclick="switchTab(this,'rp-tabs')">Java</button>
+        </div>
+
+        <div class="code-block" id="rp-tabs-kotlin-read" data-lang="kotlin">
+          <div class="code-block-header">
+            <span class="code-lang">Kotlin</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-kotlin">override fun onSuccess(result: TransactionResult) {
+    val printable = buildString {
+        appendLine("Status  : ${result.status}")
+        appendLine("Order   : ${result.billingRefNo}")
+        result.transactionId?.let  { appendLine("Txn id  : $it") }
+        result.rrn?.let            { appendLine("RRN     : $it") }
+        result.authCode?.let       { appendLine("Auth    : $it") }
+        result.maskedPan?.let      { appendLine("Card    : $it (${result.cardType ?: "—"})") }
+        appendLine("Amount  : ${result.amount ?: "?"}")
+        appendLine("MID/TID : ${result.merchantId} / ${result.terminalId}")
+    }
+
+    // ✅ Persist terminal state before touching UI
+    db.markOpCompleted(
+        eventId       = result.eventId,
+        transactionId = result.transactionId,
+        body          = printable
+    )
+
+    // ✅ Marshal to UI thread
+    runOnUiThread { renderReceipt(printable) }
+}
+
+// NCMC check
+val isTransit = result.metadata?.get("ncmc.isTransitMode") == "true"</code></pre>
+        </div>
+
+        <div class="code-block hidden" id="rp-tabs-java-read" data-lang="java">
+          <div class="code-block-header">
+            <span class="code-lang">Java</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-java">@Override
+public void onSuccess(TransactionResult result) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("Status  : ").append(result.getStatus()).append('\n');
+    sb.append("Order   : ").append(result.getBillingRefNo()).append('\n');
+    if (result.getTransactionId() != null)
+        sb.append("Txn id  : ").append(result.getTransactionId()).append('\n');
+    if (result.getRrn() != null)
+        sb.append("RRN     : ").append(result.getRrn()).append('\n');
+    if (result.getAuthCode() != null)
+        sb.append("Auth    : ").append(result.getAuthCode()).append('\n');
+    if (result.getMaskedPan() != null)
+        sb.append("Card    : ").append(result.getMaskedPan())
+          .append(" (").append(result.getCardType() != null ? result.getCardType() : "—").append(")\n");
+    sb.append("Amount  : ").append(result.getAmount() != null ? result.getAmount() : "?").append('\n');
+    sb.append("MID/TID : ").append(result.getMerchantId())
+      .append(" / ").append(result.getTerminalId());
+
+    String printable = sb.toString();
+
+    // ✅ Persist terminal state before touching UI
+    db.markOpCompleted(result.getEventId(), result.getTransactionId(), printable);
+
+    // ✅ Marshal to UI thread
+    runOnUiThread(() -> renderReceipt(printable));
+}
+
+// NCMC check
+Map&lt;String, String&gt; meta = result.getMetadata();
+boolean isTransit = meta != null &amp;&amp; "true".equals(meta.get("ncmc.isTransitMode"));</code></pre>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- ── §05 Forward compatibility ── -->
+      <section class="doc-section" id="compat">
+        <div class="section-header">
+          <span class="section-number">05</span>
+          <h2>Forward compatibility</h2>
+        </div>
+
+        <ul class="compat-list">
+          <li>
+            <span class="compat-icon">➕</span>
+            <span>
+              <strong>New typed fields may be added</strong> to <code class="inline-code">TransactionResult</code>
+              as Pinelabs ops publishes new terminal capabilities.
+              Existing typed fields will <strong>not</strong> be removed without a major version bump.
+            </span>
+          </li>
+          <li>
+            <span class="compat-icon">🔑</span>
+            <span>
+              <strong>New <code class="inline-code">metadata</code> keys may be added at any time.</strong>
+              Existing keys will not change semantics or be removed without a major version bump.
+              Always use a null / absent check before reading any key.
+            </span>
+          </li>
+          <li>
+            <span class="compat-icon">🚫</span>
+            <span>
+              <strong><code class="inline-code">status</code> will not gain new variants in the v1 line.</strong>
+              If Pinelabs introduces a new lifecycle state, it ships in v2.
+              Exhaustive <code class="inline-code">when</code> / <code class="inline-code">switch</code>
+              on <code class="inline-code">TransactionStatus</code> is safe within v1.
+            </span>
+          </li>
+        </ul>
+
+        <div class="see-also" style="margin-top:24px">
+          <strong>See also:</strong>
+          <a href="error-handling">Error handling reference</a> ·
+          <a href="eventid-and-reconciliation">event_id &amp; Reconciliation</a> ·
+          <a href="../do-transaction">doTransaction reference</a>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="doc-footer">
+        <div class="doc-footer-inner">
+          <div class="footer-left">
+            <div class="brand">
+              <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
+                <rect width="32" height="32" rx="8" fill="#635bff"/>
+                <path d="M8 20l6-12 4 8 3-4 3 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="brand-name">Pinelabs SDK</span>
+            </div>
+            <p class="footer-note">Document version: <code class="inline-code">1.0</code></p>
+          </div>
+          <div class="footer-links">
+            <a href="../index">Home</a>
+            <a href="#field-ref">Fields</a>
+            <a href="#charge-slip">chargeSlip</a>
+            <a href="#metadata">Metadata</a>
+            <a href="#reading">Reading</a>
+            <a href="#compat">Compat</a>
+          </div>
+        </div>
+      </footer>
+
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="../js/main.js"></script>
+</body>
+</html>

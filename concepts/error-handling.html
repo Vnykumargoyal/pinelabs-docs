@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Error Handling — Pinelabs SDK</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    /* ── page-specific ── */
+    .eh-hero { padding: 48px 0 32px; }
+    .eh-eyebrow {
+      font-size: 12px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--purple); margin-bottom: 10px;
+    }
+    .eh-title {
+      font-size: 36px; font-weight: 800; letter-spacing: -1.2px;
+      line-height: 1.15; margin-bottom: 14px;
+      background: linear-gradient(135deg, var(--ink-900) 0%, var(--coral) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .eh-sub {
+      font-size: 16px; color: var(--ink-600); max-width: 680px;
+      line-height: 1.65; margin-bottom: 28px;
+    }
+
+    /* ── delivery channel pills ── */
+    .channel-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 36px; }
+    .channel-pill {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 16px; border-radius: 24px; font-size: 13px; font-weight: 600;
+      border: 1px solid var(--ink-100); background: var(--white);
+      box-shadow: var(--shadow-sm);
+    }
+    .cp-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .cp-sync .cp-dot   { background: var(--purple); }
+    .cp-async .cp-dot  { background: var(--teal); }
+
+    /* ── taxonomy table cell styles ── */
+    .cell-sync  { color: var(--purple); font-weight: 700; font-size: 13px; }
+    .cell-async { color: #009e7e; font-weight: 700; font-size: 13px; }
+    .cell-dash  { color: var(--ink-200); font-size: 13px; }
+
+    /* ── variant cards ── */
+    .variant-card {
+      background: var(--white); border: 1px solid var(--ink-100);
+      border-radius: var(--r-xl); overflow: hidden;
+      margin-bottom: 20px; box-shadow: var(--shadow-sm);
+    }
+    .variant-header {
+      padding: 18px 24px 14px;
+      border-bottom: 1px solid var(--ink-100);
+      display: flex; align-items: flex-start;
+      justify-content: space-between; flex-wrap: wrap; gap: 10px;
+    }
+    .variant-name {
+      font-family: var(--font-mono); font-size: 18px; font-weight: 700;
+      color: var(--ink-900);
+    }
+    .variant-name .vn-detail {
+      font-size: 14px; color: var(--ink-400); font-weight: 400;
+    }
+    .variant-tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .tag-sync {
+      font-size: 11px; font-weight: 700; letter-spacing: .04em;
+      text-transform: uppercase; padding: 3px 8px; border-radius: 20px;
+      background: var(--purple-bg); color: var(--purple);
+    }
+    .tag-async {
+      font-size: 11px; font-weight: 700; letter-spacing: .04em;
+      text-transform: uppercase; padding: 3px 8px; border-radius: 20px;
+      background: rgba(0,212,170,.12); color: #009e7e;
+    }
+    .tag-retry-yes  { background: rgba(0,212,170,.12); color: #009e7e; }
+    .tag-retry-no   { background: rgba(255,107,107,.1); color: #c0392b; }
+    .tag-retry-cond { background: rgba(255,184,48,.12); color: #a07800; }
+    .tag-retry-yes, .tag-retry-no, .tag-retry-cond {
+      font-size: 11px; font-weight: 700; letter-spacing: .04em;
+      text-transform: uppercase; padding: 3px 8px; border-radius: 20px;
+    }
+
+    .variant-body { padding: 20px 24px; }
+    .variant-body p { font-size: 14px; color: var(--ink-600); line-height: 1.65; margin-bottom: 10px; }
+    .variant-body p:last-child { margin-bottom: 0; }
+
+    .trigger-list {
+      list-style: none; padding: 0; margin: 10px 0 14px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .trigger-list li {
+      font-size: 13px; color: var(--ink-600); padding: 8px 12px;
+      background: var(--ink-50); border-left: 3px solid var(--ink-100);
+      border-radius: 0 var(--r-sm) var(--r-sm) 0; line-height: 1.55;
+    }
+
+    .recovery-box {
+      display: flex; gap: 10px; align-items: flex-start;
+      background: rgba(99,91,255,.06); border: 1px solid rgba(99,91,255,.15);
+      border-radius: var(--r-md); padding: 12px 14px; margin-top: 14px;
+    }
+    .recovery-label {
+      font-size: 11px; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--purple); flex-shrink: 0; margin-top: 1px;
+    }
+    .recovery-text { font-size: 14px; color: var(--ink-600); line-height: 1.6; }
+
+    /* ── retryability cheat sheet ── */
+    .retry-table-wrap {
+      overflow-x: auto;
+      margin: 16px 0;
+      border-radius: var(--r-lg);
+      border: 1px solid var(--ink-100);
+      box-shadow: var(--shadow-sm);
+    }
+    .retry-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      background: var(--white);
+    }
+    .retry-table thead tr {
+      background: var(--ink-900);
+    }
+    .retry-table thead th {
+      text-align: left;
+      padding: 12px 18px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      border-bottom: none;
+    }
+    .retry-table tbody tr {
+      border-bottom: 1px solid var(--ink-50);
+      transition: background 0.12s;
+    }
+    .retry-table tbody tr:last-child { border-bottom: none; }
+    .retry-table tbody tr:hover td { background: var(--ink-50); }
+    .retry-table td {
+      padding: 13px 18px;
+      vertical-align: middle;
+      border-bottom: none;
+      color: var(--ink-600);
+    }
+    .retry-table td:first-child {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink-900);
+      white-space: nowrap;
+      width: 220px;
+    }
+    .retry-table td:nth-child(2) {
+      width: 130px;
+      text-align: center;
+    }
+    .retry-table td:last-child {
+      font-size: 13px;
+      color: var(--ink-400);
+    }
+
+    /* ── language tab section ── */
+    .lang-matrix { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+    .lang-row {
+      display: flex; gap: 0;
+      background: var(--white); border: 1px solid var(--ink-100);
+      border-radius: var(--r-md); overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .lang-label {
+      font-size: 12px; font-weight: 700; letter-spacing: .04em;
+      text-transform: uppercase; color: var(--ink-400);
+      background: var(--ink-50); border-right: 1px solid var(--ink-100);
+      padding: 10px 14px; min-width: 72px; display: flex;
+      align-items: center; flex-shrink: 0;
+    }
+    .lang-desc {
+      font-size: 13px; color: var(--ink-600); padding: 10px 14px; line-height: 1.5;
+    }
+
+    @media (max-width: 600px) {
+      .eh-title { font-size: 26px; }
+      .lang-row { flex-direction: column; }
+      .lang-label { border-right: none; border-bottom: 1px solid var(--ink-100); }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="../index" class="brand">
+        <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="#635bff"/>
+          <path d="M8 20l6-12 4 8 3-4 3 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="brand-name">Pinelabs<span class="brand-sub"> SDK</span></span>
+      </a>
+      <nav class="topbar-nav">
+        <a href="../index" class="topbar-link">Home</a>
+        <a href="../init" class="topbar-link">init</a>
+        <a href="../do-transaction" class="topbar-link">doTransaction</a>
+        <a href="../devices" class="topbar-link">Devices</a>
+        <a href="capabilities" class="topbar-link">Capabilities</a>
+      </nav>
+      <div class="topbar-actions">
+        <span class="version-badge">v1.0</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-inner">
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">Overview</p>
+          <a href="../index" class="sidebar-link">Introduction</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">Concepts</p>
+          <a href="overview" class="sidebar-link">SDK Overview</a>
+          <a href="capabilities" class="sidebar-link">Capability Matrix</a>
+          <a href="error-handling" class="sidebar-link active">Error Handling</a>
+          <a href="lifecycle" class="sidebar-link">Lifecycle &amp; Threading</a>
+          <a href="eventid-and-reconciliation" class="sidebar-link">event_id &amp; Reconciliation</a>
+          <a href="result-payload" class="sidebar-link">TransactionResult</a>
+          <a href="transports.html" class="sidebar-link">Transports</a>
+          <a href="versioning-and-support" class="sidebar-link">Versioning &amp; Support</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">On this page</p>
+          <a href="#taxonomy" class="sidebar-link sidebar-link--sub">SdkError taxonomy</a>
+          <a href="#invalid-input" class="sidebar-link sidebar-link--sub">InvalidInput</a>
+          <a href="#transport-unavailable" class="sidebar-link sidebar-link--sub">TransportUnavailable</a>
+          <a href="#timeout" class="sidebar-link sidebar-link--sub">Timeout</a>
+          <a href="#transaction-failed" class="sidebar-link sidebar-link--sub">TransactionFailed</a>
+          <a href="#internal" class="sidebar-link sidebar-link--sub">Internal</a>
+          <a href="#not-connected" class="sidebar-link sidebar-link--sub">NotConnected</a>
+          <a href="#op-in-progress" class="sidebar-link sidebar-link--sub">OperationInProgress</a>
+          <a href="#cancelled" class="sidebar-link sidebar-link--sub">Cancelled</a>
+          <a href="#transport-error" class="sidebar-link sidebar-link--sub">TransportError</a>
+          <a href="#not-supported" class="sidebar-link sidebar-link--sub">NotSupported</a>
+          <a href="#retryability" class="sidebar-link sidebar-link--sub">Retryability cheat sheet</a>
+          <a href="#pattern" class="sidebar-link sidebar-link--sub">Top-level pattern</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">API Reference</p>
+          <a href="../init" class="sidebar-link">init</a>
+          <a href="../do-transaction" class="sidebar-link">doTransaction</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">Hardware</p>
+          <a href="../devices" class="sidebar-link">Supported Devices</a>
+        </div>
+
+      </div>
+    </aside>
+
+    <main class="content" id="main-content">
+
+      <!-- Hero -->
+      <section class="eh-hero" id="intro">
+        <p class="eh-eyebrow">Concepts · v1</p>
+        <h1 class="eh-title">Error Handling</h1>
+        <p class="eh-sub">
+          Every failure surfaces as a typed <code class="inline-code">SdkError</code> variant.
+          This page is the reference for what each variant means, when it fires, how to recover,
+          and whether you'll see it synchronously thrown or asynchronously delivered via a listener.
+        </p>
+
+        <div class="channel-row">
+          <div class="channel-pill cp-sync">
+            <span class="cp-dot"></span>Synchronously thrown — no callback fires
+          </div>
+          <div class="channel-pill cp-async">
+            <span class="cp-dot"></span>Async via <code class="inline-code">onFailure(error)</code> on worker thread
+          </div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- Taxonomy table -->
+      <section class="doc-section" id="taxonomy">
+        <div class="section-header">
+          <span class="section-number">01</span>
+          <h2>The <code style="font-size:inherit;font-family:var(--font-mono)">SdkError</code> taxonomy</h2>
+        </div>
+        <p>Two delivery channels exist for listener-based methods (<code class="inline-code">doTransaction</code>, <code class="inline-code">testPrint</code>, <code class="inline-code">discoverTerminals</code>):</p>
+        <div class="convention-grid" style="margin-bottom:24px">
+          <div class="convention-item">
+            <div class="convention-icon">⚡</div>
+            <div><strong>Synchronously thrown</strong> — the call raises before any callback fires. Caused by input validation, invalid SDK state (<code class="inline-code">NotConnected</code>, <code class="inline-code">OperationInProgress</code>, <code class="inline-code">NotSupported</code>), or the transport refusing to start. <strong>No callback fires.</strong></div>
+          </div>
+          <div class="convention-item">
+            <div class="convention-icon">🔄</div>
+            <div><strong>Async via listener</strong> — the call returns; later <code class="inline-code">onFailure(error)</code> fires on the worker thread. Covers all transport, terminal, timeout, and cancellation outcomes after the SDK has accepted the call.</div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Variant</th>
+                <th>Carries</th>
+                <th>Synchronous?</th>
+                <th>Async via listener?</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code class="inline-code">InvalidInput(detail)</code></td>
+                <td>Short, non-PII description</td>
+                <td><span class="cell-sync">✓</span></td>
+                <td><span class="cell-dash">—</span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">TransportUnavailable(detail)</code></td>
+                <td>Diagnostic (e.g. "MasterApp not installed")</td>
+                <td><span class="cell-sync">✓ bind step</span></td>
+                <td><span class="cell-async">✓ mid-flight</span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">Timeout(detail)</code></td>
+                <td>Stage name</td>
+                <td><span class="cell-dash">—</span></td>
+                <td><span class="cell-async">✓</span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">TransactionFailed(detail, terminalResponseCode?)</code></td>
+                <td>Raw acquirer/terminal message + code</td>
+                <td><span class="cell-dash">—</span></td>
+                <td><span class="cell-async">✓</span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">Internal(detail)</code></td>
+                <td>Diagnostic; SDK-side defect</td>
+                <td><span class="cell-sync">✓ or ✓</span></td>
+                <td><span class="cell-async">✓</span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">NotConnected()</code></td>
+                <td>—</td>
+                <td><span class="cell-sync">✓</span></td>
+                <td><span class="cell-dash">—</span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">OperationInProgress(activeEventId)</code></td>
+                <td>Id of the in-flight op</td>
+                <td><span class="cell-sync">✓</span></td>
+                <td><span class="cell-dash">—</span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">Cancelled()</code></td>
+                <td>—</td>
+                <td><span class="cell-dash">—</span></td>
+                <td><span class="cell-async">✓</span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">TransportError(detail)</code></td>
+                <td>Mid-flight transport failure</td>
+                <td><span class="cell-dash">—</span></td>
+                <td><span class="cell-async">✓</span></td>
+              </tr>
+              <tr>
+                <td><code class="inline-code">NotSupported(detail)</code></td>
+                <td>Method name (do not parse)</td>
+                <td><span class="cell-sync">✓</span></td>
+                <td><span class="cell-dash">—</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- Variant-by-variant reference -->
+      <section class="doc-section" id="variants">
+        <div class="section-header">
+          <span class="section-number">02</span>
+          <h2>Variant-by-variant reference</h2>
+        </div>
+
+        <!-- InvalidInput -->
+        <div class="variant-card" id="invalid-input">
+          <div class="variant-header">
+            <div class="variant-name">InvalidInput <span class="vn-detail">(detail)</span></div>
+            <div class="variant-tags">
+              <span class="tag-sync">Sync</span>
+              <span class="tag-retry-no">Not retryable</span>
+            </div>
+          </div>
+          <div class="variant-body">
+            <p>Fires when caller-supplied input fails validation. Always synchronous; never via a listener.</p>
+            <p><strong>Common triggers:</strong></p>
+            <ul class="trigger-list">
+              <li><code class="inline-code">amount &lt;= 0</code> or <code class="inline-code">amount &gt; 99_999_999</code></li>
+              <li><code class="inline-code">billingRefNo</code> is blank after trim</li>
+              <li><code class="inline-code">currency</code> (when set) is not exactly 3 ASCII uppercase letters</li>
+              <li><code class="inline-code">originalEventId</code> is missing for <code class="inline-code">Refund</code> / <code class="inline-code">Void</code> / <code class="inline-code">Capture</code>, or supplied for <code class="inline-code">Sale</code> / <code class="inline-code">PreAuth</code> / <code class="inline-code">BalanceInquiry</code></li>
+              <li><code class="inline-code">referenceId</code> longer than 64 chars</li>
+              <li><code class="inline-code">metadata</code> has more than 10 entries, or any value longer than 256 chars</li>
+              <li><code class="inline-code">transportOptions</code> variant does not match the active transport</li>
+              <li>On Cloud, <code class="inline-code">transportOptions</code> is null (the <code class="inline-code">transactionNumber</code> / <code class="inline-code">sequenceNumber</code> keys are mandatory)</li>
+              <li><code class="inline-code">cancel</code> / <code class="inline-code">checkStatus</code> options mismatch the active transport</li>
+            </ul>
+            <div class="recovery-box">
+              <span class="recovery-label">Recovery</span>
+              <span class="recovery-text">Fix the caller's input. Treat as a programmer-side bug; never retry blindly.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TransportUnavailable -->
+        <div class="variant-card" id="transport-unavailable">
+          <div class="variant-header">
+            <div class="variant-name">TransportUnavailable <span class="vn-detail">(detail)</span></div>
+            <div class="variant-tags">
+              <span class="tag-sync">Sync</span>
+              <span class="tag-async">Async</span>
+              <span class="tag-retry-yes">Retryable (backoff)</span>
+            </div>
+          </div>
+          <div class="variant-body">
+            <p>Fires when the active transport could not be reached or bound at the start of a call (synchronous), or the transport reports the link is gone (asynchronous, mid-flight).</p>
+            <p><strong>Common triggers:</strong></p>
+            <ul class="trigger-list">
+              <li><strong>App-to-App:</strong> MasterApp not installed, <code class="inline-code">bindService</code> failure, service died mid-flight</li>
+              <li><strong>Cloud:</strong> TCP-connect failure to <code class="inline-code">cloudBaseUrl</code>, DNS failure</li>
+              <li><strong>PADController:</strong> local PADController service not running, named pipe unreachable</li>
+            </ul>
+            <div class="recovery-box">
+              <span class="recovery-label">Recovery</span>
+              <span class="recovery-text">Surface "The terminal is not available" to the user. Retry with backoff. For App-to-App, prompt the user to install MasterApp from the Pinelabs Developer Portal.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeout -->
+        <div class="variant-card" id="timeout">
+          <div class="variant-header">
+            <div class="variant-name">Timeout <span class="vn-detail">(detail)</span></div>
+            <div class="variant-tags">
+              <span class="tag-async">Async only</span>
+              <span class="tag-retry-cond">Conditional</span>
+            </div>
+          </div>
+          <div class="variant-body">
+            <p>Fires when the SDK awaited a reply for longer than the configured timeout. Always asynchronous via the listener.</p>
+            <p><code class="inline-code">detail</code> names the stage: <code class="inline-code">service-bind</code>, <code class="inline-code">messenger-reply</code>, <code class="inline-code">http-read</code>, <code class="inline-code">tcp-read</code>, <code class="inline-code">pad-frame-reply</code>, etc.</p>
+            <div class="callout callout--warning">
+              <div class="callout-icon">⚠️</div>
+              <div>
+                <p class="callout-title">Ambiguous commit state</p>
+                <p>The request <strong>may or may not</strong> have committed at the terminal. Do <strong>not</strong> silently retry a charge-issuing operation (<code class="inline-code">Sale</code>, <code class="inline-code">PreAuth</code>, <code class="inline-code">Capture</code>) without a <code class="inline-code">checkStatus</code> confirmation that the original did not commit.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TransactionFailed -->
+        <div class="variant-card" id="transaction-failed">
+          <div class="variant-header">
+            <div class="variant-name">TransactionFailed <span class="vn-detail">(detail, terminalResponseCode?)</span></div>
+            <div class="variant-tags">
+              <span class="tag-async">Async only</span>
+              <span class="tag-retry-no">Not retryable</span>
+            </div>
+          </div>
+          <div class="variant-body">
+            <p>Fires when the terminal returned a non-success response. Always asynchronous via the listener.</p>
+            <ul class="trigger-list">
+              <li><code class="inline-code">detail</code> — raw acquirer/terminal message. Pass through to logs and diagnostic UI verbatim.</li>
+              <li><code class="inline-code">terminalResponseCode</code> — raw acquirer code (e.g. <code class="inline-code">"05"</code>, <code class="inline-code">"51"</code>, <code class="inline-code">"1023"</code>). The SDK does not classify these into retryable buckets.</li>
+            </ul>
+            <div class="recovery-box">
+              <span class="recovery-label">Recovery</span>
+              <span class="recovery-text">Show the terminal's message to the cashier; let them decide whether to retry, accept cash, or ask for another card.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Internal -->
+        <div class="variant-card" id="internal">
+          <div class="variant-header">
+            <div class="variant-name">Internal <span class="vn-detail">(detail)</span></div>
+            <div class="variant-tags">
+              <span class="tag-sync">Sync</span>
+              <span class="tag-async">Async</span>
+              <span class="tag-retry-no">Not retryable</span>
+            </div>
+          </div>
+          <div class="variant-body">
+            <p>Fires when the SDK or its bindings hit a defect — malformed reply, panic in the Rust core, encoding error.</p>
+            <div class="recovery-box">
+              <span class="recovery-label">Recovery</span>
+              <span class="recovery-text">Report to Pinelabs SDK support with the <code class="inline-code">detail</code>, your <code class="inline-code">event_id</code>, and a log capture. Do not silently retry — this is a bug, not a transient.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- NotConnected -->
+        <div class="variant-card" id="not-connected">
+          <div class="variant-header">
+            <div class="variant-name">NotConnected <span class="vn-detail">()</span></div>
+            <div class="variant-tags">
+              <span class="tag-sync">Sync</span>
+              <span class="tag-retry-yes">Retryable (after connect)</span>
+            </div>
+          </div>
+          <div class="variant-body">
+            <p>Fires when a transport that requires a separate connect step (PADController, TCP) is in a disconnected state. Always synchronous.</p>
+            <div class="recovery-box">
+              <span class="recovery-label">Recovery</span>
+              <span class="recovery-text">Call <code class="inline-code">connect(terminal)</code> first, then retry.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- OperationInProgress -->
+        <div class="variant-card" id="op-in-progress">
+          <div class="variant-header">
+            <div class="variant-name">OperationInProgress <span class="vn-detail">(activeEventId)</span></div>
+            <div class="variant-tags">
+              <span class="tag-sync">Sync</span>
+              <span class="tag-retry-no">Not retryable</span>
+            </div>
+          </div>
+          <div class="variant-body">
+            <p>Fires when the caller invoked a listener-based method while another op is in flight on the same SDK instance. Always synchronous.</p>
+            <div class="callout callout--note">
+              <div class="callout-icon">📝</div>
+              <div>
+                <p class="callout-title">This is a UI bug</p>
+                <p>The trigger control was not disabled on <code class="inline-code">onStarted</code>. The SDK refuses to silently queue concurrent ops to avoid double-charge bugs. Disable the trigger control and wait for the in-flight op to complete.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cancelled -->
+        <div class="variant-card" id="cancelled">
+          <div class="variant-header">
+            <div class="variant-name">Cancelled <span class="vn-detail">()</span></div>
+            <div class="variant-tags">
+              <span class="tag-async">Async only</span>
+              <span class="tag-retry-cond">Caller-driven</span>
+            </div>
+          </div>
+          <div class="variant-body">
+            <p>Fires when the caller successfully cancelled an in-flight op that did not commit at the terminal. Asynchronous via the listener.</p>
+            <div class="recovery-box">
+              <span class="recovery-label">Recovery</span>
+              <span class="recovery-text">Show "Cancelled" to the user. Do not auto-retry. Re-issue with a new <code class="inline-code">event_id</code> if the user wants to try again.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TransportError -->
+        <div class="variant-card" id="transport-error">
+          <div class="variant-header">
+            <div class="variant-name">TransportError <span class="vn-detail">(detail)</span></div>
+            <div class="variant-tags">
+              <span class="tag-async">Async only</span>
+              <span class="tag-retry-cond">Conditional</span>
+            </div>
+          </div>
+          <div class="variant-body">
+            <p>Fires when the underlying transport failed mid-stream — socket reset, IPC <code class="inline-code">linkToDeath</code>, HTTP body truncated. Asynchronous via the listener.</p>
+            <div class="recovery-box">
+              <span class="recovery-label">Recovery</span>
+              <span class="recovery-text">Treat like <code class="inline-code">Timeout</code> — the request may or may not have committed. Do not silently retry charge-issuing operations without a <code class="inline-code">checkStatus</code>.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- NotSupported -->
+        <div class="variant-card" id="not-supported">
+          <div class="variant-header">
+            <div class="variant-name">NotSupported <span class="vn-detail">(detail)</span></div>
+            <div class="variant-tags">
+              <span class="tag-sync">Sync</span>
+              <span class="tag-retry-no">Not retryable</span>
+            </div>
+          </div>
+          <div class="variant-body">
+            <p>Fires when the active transport does not implement the called capability (e.g. <code class="inline-code">cancel</code> on App-to-App, <code class="inline-code">discoverTerminals</code> on Cloud). Always synchronous.</p>
+            <div class="callout callout--info">
+              <div class="callout-icon">💡</div>
+              <div>
+                <p><code class="inline-code">detail</code> is a human-readable diagnostic naming the method. <strong>Do not parse it programmatically</strong> — its casing and wording vary by language binding (e.g. Kotlin: <code class="inline-code">"checkStatus is not supported on AppToApp"</code>; Python: <code class="inline-code">"check_status is not supported on AppToApp"</code>). Use <code class="inline-code">setTransport</code> to switch to a transport that supports the capability, or guard the call with the <a href="capabilities">capability matrix</a>.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- Retryability cheat sheet -->
+      <section class="doc-section" id="retryability">
+        <div class="section-header">
+          <span class="section-number">03</span>
+          <h2>Retryability cheat sheet</h2>
+        </div>
+        <div class="retry-table-wrap">
+          <table class="retry-table">
+            <thead>
+              <tr>
+                <th>Error Variant</th>
+                <th>Retryable?</th>
+                <th>Reason / Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>InvalidInput</td>
+                <td><span class="badge badge--no">No</span></td>
+                <td>Programmer error — fix the input, never retry blindly</td>
+              </tr>
+              <tr>
+                <td>TransportUnavailable</td>
+                <td><span class="badge badge--yes">Yes</span></td>
+                <td>Transient link issue — retry with exponential backoff</td>
+              </tr>
+              <tr>
+                <td>Timeout</td>
+                <td><span class="badge badge--depends">Maybe</span></td>
+                <td>Call may have committed — verify with <code class="inline-code">checkStatus</code> before retrying a charge</td>
+              </tr>
+              <tr>
+                <td>TransactionFailed</td>
+                <td><span class="badge badge--no">No</span></td>
+                <td>Card declined by acquirer — surface message to cashier</td>
+              </tr>
+              <tr>
+                <td>Internal</td>
+                <td><span class="badge badge--no">No</span></td>
+                <td>SDK defect — report with <code class="inline-code">detail</code> and <code class="inline-code">event_id</code> to Pinelabs support</td>
+              </tr>
+              <tr>
+                <td>NotConnected</td>
+                <td><span class="badge badge--yes">Yes</span></td>
+                <td>Call <code class="inline-code">connect(terminal)</code> first, then retry</td>
+              </tr>
+              <tr>
+                <td>OperationInProgress</td>
+                <td><span class="badge badge--no">No</span></td>
+                <td>UI bug — disable trigger on <code class="inline-code">onStarted</code>; wait for in-flight op</td>
+              </tr>
+              <tr>
+                <td>Cancelled</td>
+                <td><span class="badge badge--depends">Caller-driven</span></td>
+                <td>Re-issue with a fresh <code class="inline-code">event_id</code> if the user wants to retry</td>
+              </tr>
+              <tr>
+                <td>TransportError</td>
+                <td><span class="badge badge--depends">Maybe</span></td>
+                <td>Treat like <code class="inline-code">Timeout</code> — verify commit state before retrying</td>
+              </tr>
+              <tr>
+                <td>NotSupported</td>
+                <td><span class="badge badge--no">No</span></td>
+                <td>Wrong transport — switch with <code class="inline-code">setTransport</code> or check the <a href="capabilities">capability matrix</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- Top-level pattern -->
+      <section class="doc-section" id="pattern">
+        <div class="section-header">
+          <span class="section-number">04</span>
+          <h2>Top-level <code style="font-size:inherit;font-family:var(--font-mono)">try/catch</code> pattern</h2>
+        </div>
+        <p>Catch synchronous errors at the call site, and handle asynchronous errors inside your listener. Never mix the two.</p>
+
+        <div class="lang-tabs" data-tabs="pattern-tabs">
+          <button class="lang-tab active" data-lang="kotlin"  onclick="switchTab(this,'pattern-tabs')">Kotlin</button>
+          <button class="lang-tab"        data-lang="swift"   onclick="switchTab(this,'pattern-tabs')">Swift</button>
+          <button class="lang-tab"        data-lang="python"  onclick="switchTab(this,'pattern-tabs')">Python</button>
+          <button class="lang-tab"        data-lang="nodejs"  onclick="switchTab(this,'pattern-tabs')">Node.js</button>
+          <button class="lang-tab"        data-lang="c"       onclick="switchTab(this,'pattern-tabs')">C</button>
+        </div>
+
+        <!-- Kotlin -->
+        <div class="code-block" id="pattern-tabs-kotlin" data-lang="kotlin">
+          <div class="code-block-header">
+            <span class="code-lang">Kotlin</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-kotlin">fun chargeOrder(orderId: String, amountPaise: ULong) {
+    // ── Sync error: SDK must be initialised before use ───────────
+    try {
+        sdk.doTransaction(buildRequest(orderId, amountPaise), uiListener)
+    } catch (e: SdkException.NotInitialized) {
+        log.error("Call PinelabsSdk.init() before doTransaction()")
+    } catch (e: SdkException.InvalidInput) {
+        log.error("Programmer error: ${e.detail}")
+    } catch (e: SdkException) {
+        toast("Could not start: $e")
+    }
+}
+
+// ── Async errors: handle inside the listener ─────────────────
+val uiListener = object : TransactionListener {
+    override fun onStarted(eventId: String) {
+        runOnUiThread { disablePayButton() }
+    }
+    override fun onSuccess(result: TransactionResult) {
+        runOnUiThread { showSuccess(result) }
+    }
+    override fun onFailure(error: SdkException) {
+        runOnUiThread {
+            when (error) {
+                is SdkException.TransactionFailed    -> showDecline(error.detail, error.terminalResponseCode)
+                is SdkException.Timeout              -> showAmbiguous()   // check status!
+                is SdkException.TransportUnavailable -> showAmbiguous()   // check status!
+                is SdkException.InvalidInput         -> log.error("Programmer error: ${error.detail}")
+                is SdkException.Internal             -> log.error("SDK error: ${error.detail}")
+                is SdkException.NotInitialized       -> log.error("SDK not initialised")
+            }
+        }
+    }
+}</code></pre>
+        </div>
+
+        <!-- Swift -->
+        <div class="code-block hidden" id="pattern-tabs-swift" data-lang="swift">
+          <div class="code-block-header">
+            <span class="code-lang">Swift</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-swift">func chargeOrder(orderId: String, amountPaise: Int64) {
+    // ── Sync errors: catch here ──────────────────────────────
+    do {
+        try sdk.doTransaction(buildRequest(orderId: orderId, amount: amountPaise),
+                              listener: uiListener)
+    } catch let e as SdkError.OperationInProgress {
+        showToast("Already processing: \(e.activeEventId)")
+    } catch let e as SdkError.InvalidInput {
+        logger.error("Programmer error: \(e.detail)")
+    } catch {
+        showToast("Could not start: \(error)")
+    }
+}
+
+// ── Async errors: handle inside the listener ─────────────────
+class UiListener: TransactionListener {
+    func onStarted(eventId: String) {
+        DispatchQueue.main.async { self.disablePayButton() }  // prevent OperationInProgress
+    }
+    func onSuccess(result: TransactionResult) {
+        DispatchQueue.main.async { self.showSuccess(result) }
+    }
+    func onFailure(error: SdkError) {
+        DispatchQueue.main.async {
+            switch error {
+            case .transactionFailed(let detail, _): self.showDecline(detail)
+            case .timeout:                          self.showAmbiguous()   // check status!
+            case .transportError:                   self.showAmbiguous()   // check status!
+            case .cancelled:                        self.showCancelled()
+            case .transportUnavailable(let detail): self.showTerminalGone(detail)
+            default:                                self.showGenericError(error)
+            }
+        }
+    }
+}</code></pre>
+        </div>
+
+        <!-- Python -->
+        <div class="code-block hidden" id="pattern-tabs-python" data-lang="python">
+          <div class="code-block-header">
+            <span class="code-lang">Python</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-python">def charge_order(order_id: str, amount_paise: int) -> None:
+    # ── Sync errors: catch here ──────────────────────────────
+    try:
+        sdk.do_transaction(build_request(order_id, amount_paise), ui_listener)
+    except SdkError.OperationInProgress as e:
+        show_toast(f"Already processing: {e.active_event_id}")
+    except SdkError.InvalidInput as e:
+        logger.error(f"Programmer error: {e.detail}")
+    except SdkError as e:
+        show_toast(f"Could not start: {e}")
+
+
+# ── Async errors: handle inside the listener ─────────────────
+class UiListener(TransactionListener):
+    def on_started(self, event_id: str) -> None:
+        run_on_main(disable_pay_button)   # prevent OperationInProgress
+
+    def on_success(self, result: TransactionResult) -> None:
+        run_on_main(lambda: show_success(result))
+
+    def on_failure(self, error: SdkError) -> None:
+        if isinstance(error, SdkError.TransactionFailed):
+            run_on_main(lambda: show_decline(error.detail))
+        elif isinstance(error, (SdkError.Timeout, SdkError.TransportError)):
+            run_on_main(show_ambiguous)   # check status!
+        elif isinstance(error, SdkError.Cancelled):
+            run_on_main(show_cancelled)
+        elif isinstance(error, SdkError.TransportUnavailable):
+            run_on_main(lambda: show_terminal_gone(error.detail))
+        else:
+            run_on_main(lambda: show_generic_error(error))
+
+
+ui_listener = UiListener()</code></pre>
+        </div>
+
+        <!-- Node.js -->
+        <div class="code-block hidden" id="pattern-tabs-nodejs" data-lang="nodejs">
+          <div class="code-block-header">
+            <span class="code-lang">Node.js</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-javascript">function chargeOrder(orderId, amountPaise) {
+    // ── Sync errors: catch here ──────────────────────────────
+    try {
+        sdk.doTransaction(buildRequest(orderId, amountPaise), {
+            // ── Async errors: handle inside the listener ─────
+            onStarted(eventId) {
+                disablePayButton();      // prevent OperationInProgress
+            },
+            onSuccess(result) {
+                showSuccess(result);
+            },
+            onFailure(error) {
+                if (error instanceof SdkError.TransactionFailed) {
+                    showDecline(error.detail);
+                } else if (error instanceof SdkError.Timeout ||
+                           error instanceof SdkError.TransportError) {
+                    showAmbiguous();     // check status!
+                } else if (error instanceof SdkError.Cancelled) {
+                    showCancelled();
+                } else if (error instanceof SdkError.TransportUnavailable) {
+                    showTerminalGone(error.detail);
+                } else {
+                    showGenericError(error);
+                }
+            }
+        });
+    } catch (e) {
+        if (e instanceof SdkError.OperationInProgress) {
+            showToast(`Already processing: ${e.activeEventId}`);
+        } else if (e instanceof SdkError.InvalidInput) {
+            console.error(`Programmer error: ${e.detail}`);
+        } else {
+            showToast(`Could not start: ${e}`);
+        }
+    }
+}</code></pre>
+        </div>
+
+        <!-- C -->
+        <div class="code-block hidden" id="pattern-tabs-c" data-lang="c">
+          <div class="code-block-header">
+            <span class="code-lang">C</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-c">/* ── Async callbacks (wired at startup) ─────────────────────── */
+static void on_started(const char *event_id, void *ctx) {
+    disable_pay_button();              /* prevent OperationInProgress */
+}
+
+static void on_success(const pine_billing_result_t *result, void *ctx) {
+    show_success(result);
+}
+
+static void on_failure(const pine_billing_error_t *err, void *ctx) {
+    switch (err->variant) {
+    case PINE_BILLING_ERR_TRANSACTION_FAILED:
+        show_decline(err->detail);     break;
+    case PINE_BILLING_ERR_TIMEOUT:
+    case PINE_BILLING_ERR_TRANSPORT_ERROR:
+        show_ambiguous();              break; /* check status! */
+    case PINE_BILLING_ERR_CANCELLED:
+        show_cancelled();              break;
+    case PINE_BILLING_ERR_TRANSPORT_UNAVAILABLE:
+        show_terminal_gone(err->detail); break;
+    default:
+        show_generic_error(err);       break;
+    }
+}
+
+static const pine_billing_callbacks_t ui_callbacks = {
+    .on_started = on_started,
+    .on_success = on_success,
+    .on_failure = on_failure,
+};
+
+/* ── Call site — sync errors: check return status ───────────── */
+void charge_order(const char *order_id, int64_t amount_paise) {
+    pine_billing_request_t *req = build_request(order_id, amount_paise);
+    pine_billing_error_t    err = {0};
+
+    pine_billing_status_t s =
+        pine_billing_do_transaction(sdk, req, &ui_callbacks, &err);
+
+    if (s != PINE_BILLING_OK) {
+        switch (err.variant) {
+        case PINE_BILLING_ERR_OPERATION_IN_PROGRESS:
+            show_toast("Already processing"); break;
+        case PINE_BILLING_ERR_INVALID_INPUT:
+            log_error("Programmer error: %s", err.detail); break;
+        default:
+            show_toast("Could not start");
+        }
+        pine_billing_error_free(&err);
+    }
+    pine_billing_request_free(req);
+}</code></pre>
+        </div>
+
+        <div class="see-also">
+          <strong>See also:</strong>
+          <a href="capabilities">Capability matrix</a> ·
+          <a href="../do-transaction">doTransaction reference</a> ·
+          <a href="../init">init reference</a>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="doc-footer">
+        <div class="doc-footer-inner">
+          <div class="footer-left">
+            <div class="brand">
+              <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
+                <rect width="32" height="32" rx="8" fill="#635bff"/>
+                <path d="M8 20l6-12 4 8 3-4 3 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="brand-name">Pinelabs SDK</span>
+            </div>
+            <p class="footer-note">Document version: <code class="inline-code">1.0</code></p>
+          </div>
+          <div class="footer-links">
+            <a href="../index">Home</a>
+            <a href="#taxonomy">Taxonomy</a>
+            <a href="#retryability">Retryability</a>
+            <a href="#pattern">Pattern</a>
+            <a href="capabilities">Capabilities</a>
+          </div>
+        </div>
+      </footer>
+
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="../js/main.js"></script>
+</body>
+</html>

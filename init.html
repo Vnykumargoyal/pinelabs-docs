@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>init — Pinelabs Common SDK</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="index" class="brand">
+        <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="#635bff"/>
+          <path d="M8 20l6-12 4 8 3-4 3 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="brand-name">Pinelabs<span class="brand-sub"> SDK</span></span>
+      </a>
+      <nav class="topbar-nav">
+        <a href="index" class="topbar-link">Home</a>
+        <a href="init" class="topbar-link">init</a>
+        <a href="do-transaction" class="topbar-link">doTransaction</a>
+      </nav>
+      <div class="topbar-actions">
+        <span class="version-badge">v0.1.0</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-inner">
+        <div class="sidebar-section">
+          <p class="sidebar-label">API Reference</p>
+          <a href="index" class="sidebar-link">Overview</a>
+          <a href="init" class="sidebar-link active">init</a>
+          <a href="do-transaction" class="sidebar-link">doTransaction</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="content" id="main-content">
+
+      <section class="doc-section">
+        <div class="api-card" id="31-init">
+          <div class="api-card-header">
+            <div class="api-card-title-row">
+              <h3 class="api-name"><code>init</code></h3>
+              <div class="api-badges">
+                <span class="badge badge--stable">stable</span>
+                <span class="badge badge--since">Since 0.1.0</span>
+                <span class="badge badge--category">lifecycle</span>
+              </div>
+            </div>
+            <p class="api-tagline">Initialize the SDK singleton for the current process.</p>
+          </div>
+
+          <div class="api-card-body">
+            <h4>Description</h4>
+            <p><code class="inline-code">init</code> constructs the SDK, creates the MasterApp IPC transport, and wires a single-thread worker executor for transaction dispatch. It <strong>must</strong> be called before any other SDK API.</p>
+            <p><code class="inline-code">init</code> takes <strong>identity and infrastructure</strong> configuration only — merchant <code class="inline-code">appId</code>, operator <code class="inline-code">userId</code>, host app <code class="inline-code">version</code>, and the IPC <code class="inline-code">timeoutSecs</code>. Per-transaction fields belong on each <a href="do-transaction"><code class="inline-code">TransactionRequest</code></a>.</p>
+            <p>The method is <strong>idempotent</strong>: a second call with any arguments returns the first-created instance.</p>
+
+            <div class="callout callout--note">
+              <div class="callout-icon">📝</div>
+              <div><code class="inline-code">init</code> itself does <strong>not</strong> bind to MasterApp or perform I/O. Binding is lazy per transaction. Transport-related failures surface on <code class="inline-code">doTransaction</code> as <code class="inline-code">TransportUnavailable</code>.</div>
+            </div>
+
+            <h4>Signatures</h4>
+            <div class="lang-tabs" data-tabs="init-sigs">
+              <button class="lang-tab active" data-lang="kotlin" onclick="switchTab(this,'init-sigs')">Kotlin</button>
+              <button class="lang-tab" data-lang="java" onclick="switchTab(this,'init-sigs')">Java</button>
+            </div>
+            <div class="code-block" id="init-sigs-kotlin" data-lang="kotlin">
+              <div class="code-block-header">
+                <span class="code-lang">Kotlin</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+<pre><code class="language-kotlin">fun PinelabsSdk.Companion.init(
+    context: Context,
+    appId: String,
+    userId: String,
+    version: String,
+    timeoutSecs: Int = 60
+): PinelabsSdk</code></pre>
+            </div>
+            <div class="code-block hidden" id="init-sigs-java" data-lang="java">
+              <div class="code-block-header">
+                <span class="code-lang">Java</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+<pre><code class="language-java">public static PinelabsSdk init(
+    Context context,
+    String  appId,
+    String  userId,
+    String  version,
+    int     timeoutSecs   /* default: 60 */
+)</code></pre>
+            </div>
+
+            <h4>Parameters</h4>
+            <div class="table-wrap">
+              <table class="params-table">
+                <thead><tr><th>Name</th><th>Type</th><th>Required</th><th>Default</th><th>Description</th></tr></thead>
+                <tbody>
+                  <tr><td><code class="inline-code">context</code></td><td><code class="inline-code">android.content.Context</code></td><td><span class="required">✓</span></td><td>—</td><td>Any <code class="inline-code">Context</code>. The SDK retains <code class="inline-code">context.applicationContext</code> only.</td></tr>
+                  <tr><td><code class="inline-code">appId</code></td><td><code class="inline-code">String</code></td><td><span class="required">✓</span></td><td>—</td><td>Merchant application identifier supplied by Pinelabs. Sent as <code class="inline-code">Header.ApplicationId</code>. Must be non-blank.</td></tr>
+                  <tr><td><code class="inline-code">userId</code></td><td><code class="inline-code">String</code></td><td><span class="required">✓</span></td><td>—</td><td>Operator / user identifier. Sent as <code class="inline-code">Header.UserId</code>. Must be non-blank.</td></tr>
+                  <tr><td><code class="inline-code">version</code></td><td><code class="inline-code">String</code></td><td><span class="required">✓</span></td><td>—</td><td>Host-app version string. Sent as <code class="inline-code">Header.VersionNo</code>. Must be non-blank.</td></tr>
+                  <tr><td><code class="inline-code">timeoutSecs</code></td><td><code class="inline-code">Int</code></td><td><span class="optional">✕</span></td><td><code class="inline-code">60</code></td><td>Max seconds to wait for a MasterApp reply. Range: <code class="inline-code">1..600</code>.</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h4>Returns</h4>
+            <div class="return-box">
+              <code class="inline-code">PinelabsSdk</code> — Initialized SDK handle.
+            </div>
+
+            <h4>Errors</h4>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Exception</th><th>When</th></tr></thead>
+                <tbody>
+                  <tr><td><code class="inline-code">IllegalArgumentException</code></td><td><code class="inline-code">appId</code>, <code class="inline-code">userId</code>, or <code class="inline-code">version</code> is blank, or <code class="inline-code">timeoutSecs</code> is outside <code class="inline-code">1..600</code>.</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h4>Example</h4>
+            <div class="lang-tabs" data-tabs="init-sigs">
+              <button class="lang-tab active" data-lang="kotlin" onclick="switchTab(this,'init-sigs')">Kotlin</button>
+              <button class="lang-tab" data-lang="java" onclick="switchTab(this,'init-sigs')">Java</button>
+            </div>
+            <div class="code-block" data-lang="kotlin">
+              <div class="code-block-header">
+                <span class="code-lang">Kotlin</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+<pre><code class="language-kotlin">import com.pinelabs.sdk.PinelabsSdk
+
+val sdk = PinelabsSdk.init(
+    context     = applicationContext,
+    appId       = "1001",
+    userId      = "operator-01",
+    version     = "1.0",
+    timeoutSecs = 60,
+)</code></pre>
+            </div>
+            <div class="code-block hidden" data-lang="java">
+              <div class="code-block-header">
+                <span class="code-lang">Java</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+<pre><code class="language-java">import com.pinelabs.sdk.PinelabsSdk;
+
+String appId       = "1001";
+String userId      = "operator-01";
+String version     = "1.0";
+int    timeoutSecs = 60;
+
+PinelabsSdk sdk = PinelabsSdk.init(
+    getApplicationContext(),
+    appId,
+    userId,
+    version,
+    timeoutSecs
+);</code></pre>
+            </div>
+
+            <div class="see-also">
+              <strong>See also:</strong>
+              <a href="do-transaction"><code class="inline-code">doTransaction</code></a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

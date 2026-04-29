@@ -1,13 +1,713 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pinelabs-docs</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pinelabs Common SDK — API Reference</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- Top Nav Bar -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand">
+        <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="#635bff"/>
+          <path d="M8 20l6-12 4 8 3-4 3 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="brand-name">Pinelabs<span class="brand-sub"> SDK</span></span>
+      </a>
+      <nav class="topbar-nav">
+        <a href="#1-getting-started" class="topbar-link">Getting Started</a>
+        <a href="#3-api-reference" class="topbar-link">API Reference</a>
+        <a href="devices" class="topbar-link">Devices</a>
+        <a href="#4-type-reference" class="topbar-link">Types</a>
+        <a href="#5-error-reference" class="topbar-link">Errors</a>
+      </nav>
+      <div class="topbar-actions">
+        <span class="version-badge">v0.1.0</span>
+        <button class="btn-primary" onclick="window.open('https://github.com','_blank')">GitHub</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-inner">
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">Overview</p>
+          <a href="#intro" class="sidebar-link active">Introduction</a>
+          <a href="#1-getting-started" class="sidebar-link">Getting Started</a>
+          <a href="#installation" class="sidebar-link sidebar-link--sub">Installation</a>
+          <a href="#runtime-prerequisites" class="sidebar-link sidebar-link--sub">Runtime Prerequisites</a>
+          <a href="#2-conventions" class="sidebar-link">Conventions</a>
+          <a href="concepts/capabilities" class="sidebar-link">Capability Matrix</a>
+          <a href="concepts/error-handling" class="sidebar-link">Error Handling</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">API Reference</p>
+          <a href="#3-api-reference" class="sidebar-link">Overview</a>
+          <a href="init" class="sidebar-link sidebar-link--sub">init</a>
+          <a href="do-transaction" class="sidebar-link sidebar-link--sub">doTransaction</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">Hardware</p>
+          <a href="devices" class="sidebar-link">Supported Devices</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">Types & Errors</p>
+          <a href="#4-type-reference" class="sidebar-link">Type Reference</a>
+          <a href="#pinelabssdk" class="sidebar-link sidebar-link--sub">PinelabsSdk</a>
+          <a href="#transactionrequest" class="sidebar-link sidebar-link--sub">TransactionRequest</a>
+          <a href="#transactionresult" class="sidebar-link sidebar-link--sub">TransactionResult</a>
+          <a href="#transactionlistener" class="sidebar-link sidebar-link--sub">TransactionListener</a>
+          <a href="#transactiontype" class="sidebar-link sidebar-link--sub">TransactionType</a>
+          <a href="#5-error-reference" class="sidebar-link">Error Reference</a>
+          <a href="#sdkexception" class="sidebar-link sidebar-link--sub">SdkException</a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="sidebar-label">Internals</p>
+          <a href="#6-wire-protocol-informational" class="sidebar-link">Wire Protocol</a>
+          <a href="#7-troubleshooting" class="sidebar-link">Troubleshooting</a>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="content" id="main-content">
+
+      <!-- Hero -->
+      <section class="hero stripe-hero" id="intro">
+        <div class="hero-badge">
+          <span class="badge badge--stable">Stable</span>
+          <span class="hero-version">SDK 0.1.0 · Android AAR</span>
+        </div>
+        <h1 class="hero-title">Accept in-store payments<br>with a single integration</h1>
+        <p class="hero-subtitle">Connect your Android merchant app to any Pine Labs POS terminal in minutes — via just two strongly-typed API calls.</p>
+
+        <!-- Stats row (Stripe-style) -->
+        <div class="stats-row">
+          <div class="stat-item">
+            <span class="stat-number">2</span>
+            <span class="stat-label">public API methods</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-number">15+</span>
+            <span class="stat-label">certified POS devices</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-number">5</span>
+            <span class="stat-label">typed error variants</span>
+          </div>
+        </div>
+
+        <!-- CTA buttons -->
+        <div class="hero-cta">
+          <a href="#1-getting-started" class="btn-primary">Get started →</a>
+          <a href="#3-api-reference" class="btn-outline">View API reference</a>
+        </div>
+
+        <!-- Platform pills -->
+        <div class="hero-meta">
+          <div class="meta-pill">
+            <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#635bff" stroke-width="1.5"/><path d="M8 5v3.5l2 2" stroke="#635bff" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Stable release
+          </div>
+          <div class="meta-pill">
+            <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="2" stroke="#635bff" stroke-width="1.5"/><path d="M5 7h6M5 10h4" stroke="#635bff" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Android · AAR
+          </div>
+          <div class="meta-pill">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M8 2l1.5 3 3.5.5-2.5 2.5.5 3.5L8 10l-3 1.5.5-3.5L3 5.5 6.5 5z" stroke="#635bff" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            Kotlin &amp; Java
+          </div>
+          <div class="meta-pill">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M8 3v10" stroke="#635bff" stroke-width="1.5" stroke-linecap="round"/></svg>
+            IPC · MasterApp
+          </div>
+        </div>
+
+        <!-- Quick nav cards -->
+        <div class="hero-cards">
+          <a href="init" class="quick-card">
+            <div class="quick-card-icon">⚡</div>
+            <div>
+              <p class="quick-card-title">init</p>
+              <p class="quick-card-desc">Bootstrap the SDK singleton</p>
+            </div>
+          </a>
+          <a href="do-transaction" class="quick-card">
+            <div class="quick-card-icon">💳</div>
+            <div>
+              <p class="quick-card-title">doTransaction</p>
+              <p class="quick-card-desc">Dispatch a payment to the terminal</p>
+            </div>
+          </a>
+          <a href="#5-error-reference" class="quick-card">
+            <div class="quick-card-icon">🛡️</div>
+            <div>
+              <p class="quick-card-title">Error Handling</p>
+              <p class="quick-card-desc">Sealed SdkException variants</p>
+            </div>
+          </a>
+          <a href="devices" class="quick-card">
+            <div class="quick-card-icon">📱</div>
+            <div>
+              <p class="quick-card-title">Devices</p>
+              <p class="quick-card-desc">15+ certified POS terminals</p>
+            </div>
+          </a>
+          <a href="concepts/capabilities" class="quick-card">
+            <div class="quick-card-icon">🗂️</div>
+            <div>
+              <p class="quick-card-title">Capabilities</p>
+              <p class="quick-card-desc">Method × transport support matrix</p>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- Value Props (Stripe-style) -->
+      <section class="value-props-section">
+        <div class="vp-section-header">
+          <p class="vp-eyebrow">Why Pinelabs SDK</p>
+          <h2 class="vp-heading">Everything you need to go live on Pine Labs hardware</h2>
+        </div>
+        <div class="value-props-grid">
+          <div class="value-prop-card">
+            <div class="vp-icon-wrap vp-purple">⚡</div>
+            <h3 class="vp-title">Simple by design</h3>
+            <p class="vp-desc">Two methods — <code class="inline-code">init</code> and <code class="inline-code">doTransaction</code> — cover the entire integration. No state machine, no XML config.</p>
+            <a href="#3-api-reference" class="vp-link">Explore API →</a>
+          </div>
+          <div class="value-prop-card">
+            <div class="vp-icon-wrap vp-teal">📱</div>
+            <h3 class="vp-title">Hardware-ready</h3>
+            <p class="vp-desc">Certified on 15+ PAX, Newland, Wiseasy, Kozen, and Ingenico terminals. No custom drivers or platform-specific code needed.</p>
+            <a href="devices" class="vp-link">View devices →</a>
+          </div>
+          <div class="value-prop-card">
+            <div class="vp-icon-wrap vp-amber">🛡️</div>
+            <h3 class="vp-title">Type-safe errors</h3>
+            <p class="vp-desc">Five sealed <code class="inline-code">SdkException</code> subtypes with clear recovery guidance — no stringly-typed failures to guess at.</p>
+            <a href="#5-error-reference" class="vp-link">Error reference →</a>
+          </div>
+          <div class="value-prop-card">
+            <div class="vp-icon-wrap vp-green">🔄</div>
+            <h3 class="vp-title">Reliable &amp; idempotent</h3>
+            <p class="vp-desc">Single-threaded worker serializes all transactions. <code class="inline-code">init</code> is safe to call on every app launch — always returns the existing instance.</p>
+            <a href="#2-conventions" class="vp-link">Conventions →</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Developer Highlight (Stripe testimonial-style) -->
+      <section class="dev-highlight">
+        <div class="dev-highlight-inner">
+          <div class="dev-highlight-quote">
+            <div class="dev-quote-icon">💬</div>
+            <p class="dev-quote-text">"Two API calls, fully typed, non-blocking callbacks — and you're live on any Pine Labs terminal. The SDK handles IPC binding lazily, so there's zero overhead calling <code class="inline-code">init</code> at app start."</p>
+            <div class="dev-quote-author">
+              <span class="dev-quote-name">Pinelabs SDK</span>
+              <span class="dev-quote-role">Design principle · v0.1.0</span>
+            </div>
+          </div>
+          <div class="dev-highlight-code">
+            <div class="code-block" style="margin:0">
+              <div class="code-block-header">
+                <span class="code-lang">Kotlin · Quickstart</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+<pre><code class="language-kotlin">// 1 — Init once per process
+val sdk = PinelabsSdk.init(
+    context,
+    appId       = "1001",
+    userId      = "cashier-01",
+    version     = "2.0",
+    timeoutSecs = 120
+)
+
+// 2 — Dispatch a sale (₹99.00 = 9900 paise)
+sdk.doTransaction(
+    TransactionRequest(
+        transactionType = TransactionType.SALE,
+        amount          = 9900uL,
+        billingRefNo    = "ORD-20260429",
+        invoiceNo       = "INV-001"
+    ),
+    object : TransactionListener {
+        override fun onStarted(eventId: String) { /* ack */ }
+        override fun onSuccess(r: TransactionResult) { /* approved */ }
+        override fun onFailure(e: SdkException) { /* handle */ }
+    }
+)</code></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 1. Getting Started -->
+      <section class="doc-section" id="1-getting-started">
+        <div class="section-header">
+          <span class="section-number">01</span>
+          <h2>Getting Started</h2>
+        </div>
+        <p>The Pinelabs Common SDK lets an Android merchant application drive a Pine Labs POS terminal via <strong>app-to-app integration</strong> with the on-device MasterApp (<code class="inline-code">com.pinelabs.masterapp</code>). The SDK abstracts the IPC (<code class="inline-code">Messenger</code> + JSON payload) and exposes a small, strongly-typed Kotlin surface.</p>
+
+        <div class="callout callout--info">
+          <div class="callout-icon">💡</div>
+          <div>
+            <p class="callout-title">Minimum end-to-end flow</p>
+            <ol>
+              <li>Call <a href="init"><code class="inline-code">init</code></a> <strong>once</strong> per process with the merchant identity and timeout.</li>
+              <li>Build a <a href="#transactionrequest"><code class="inline-code">TransactionRequest</code></a>.</li>
+              <li>Call <a href="do-transaction"><code class="inline-code">doTransaction</code></a> with a <a href="#transactionlistener"><code class="inline-code">TransactionListener</code></a>.</li>
+              <li>Handle <code class="inline-code">onStarted</code> (acknowledgement with <code class="inline-code">eventId</code>), <code class="inline-code">onSuccess</code>, or <code class="inline-code">onFailure</code>.</li>
+            </ol>
+          </div>
+        </div>
+
+        <h3 id="installation">Installation</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Platform</th><th>Artifact</th><th>Coordinates</th></tr></thead>
+            <tbody><tr><td><span class="platform-tag">Android</span></td><td>AAR (local file)</td><td><code class="inline-code">pinelabs-sdk-0.1.0.aar</code></td></tr></tbody>
+          </table>
+        </div>
+        <p>Add to <code class="inline-code">app/build.gradle</code>:</p>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-lang">Gradle</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-groovy">android {
+    defaultConfig {
+        minSdk 21
+        ndk { abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64' }
+    }
+}
+
+dependencies {
+    implementation files('libs/pinelabs-sdk-0.1.0.aar')
+    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'net.java.dev.jna:jna:5.14.0@aar'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+}</code></pre>
+        </div>
+
+        <p>ProGuard / R8 keep rules:</p>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-lang">ProGuard</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-plaintext">-keep class uniffi.pinelabs.** { *; }
+-keep class com.pinelabs.sdk.** { *; }
+-keep class com.sun.jna.** { *; }</code></pre>
+        </div>
+
+        <h3 id="runtime-prerequisites">Runtime Prerequisites</h3>
+        <div class="callout callout--warning">
+          <div class="callout-icon">⚠️</div>
+          <div>
+            <ul>
+              <li>MasterApp installed on the terminal, with its service <code class="inline-code">com.pinelabs.masterapp.SERVER</code> exported.</li>
+              <li>The terminal batch must not be locked; settle before new transactions if it is.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 2. Conventions -->
+      <section class="doc-section" id="2-conventions">
+        <div class="section-header">
+          <span class="section-number">02</span>
+          <h2>Conventions</h2>
+        </div>
+        <div class="convention-grid">
+          <div class="convention-item">
+            <div class="convention-icon">💰</div>
+            <div><strong>Amounts</strong> are always in the smallest currency unit (paise for INR). <code class="inline-code">9900</code> = ₹99.00.</div>
+          </div>
+          <div class="convention-item">
+            <div class="convention-icon">🔑</div>
+            <div><strong><code class="inline-code">eventId</code></strong> is a UUIDv4 string generated by the SDK on each <code class="inline-code">doTransaction</code>. Callers never supply one.</div>
+          </div>
+          <div class="convention-item">
+            <div class="convention-icon">🕐</div>
+            <div><strong>Timestamps</strong> on <code class="inline-code">TransactionResult</code> are reported as <code class="inline-code">date</code> (<code class="inline-code">MMDDYYYY</code>) and <code class="inline-code">time</code> (<code class="inline-code">HHmmss</code>) — not ISO‑8601.</div>
+          </div>
+          <div class="convention-item">
+            <div class="convention-icon">🧵</div>
+            <div><strong>Thread model</strong>: listener callbacks are dispatched on <code class="inline-code">pinelabs-sdk-worker</code>. Never perform UI work inside a callback.</div>
+          </div>
+          <div class="convention-item">
+            <div class="convention-icon">🔄</div>
+            <div><strong>Concurrency</strong>: only one operation is in flight per SDK instance. <code class="inline-code">doTransaction</code> calls are serialized on the worker thread.</div>
+          </div>
+          <div class="convention-item">
+            <div class="convention-icon">♻️</div>
+            <div><strong>Initialization</strong>: <code class="inline-code">init</code> is idempotent — repeated calls return the existing instance.</div>
+          </div>
+        </div>
+
+        <h3>Stability badges</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Badge</th><th>Meaning</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge badge--stable">stable</span></td><td>Fully supported; semver-guaranteed from v1.0 onward.</td></tr>
+              <tr><td><span class="badge badge--beta">beta</span></td><td>Functionally complete; signature may change in a minor version.</td></tr>
+              <tr><td><span class="badge badge--experimental">experimental</span></td><td>No guarantees.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 3. API Reference -->
+      <section class="doc-section" id="3-api-reference">
+        <div class="section-header">
+          <span class="section-number">03</span>
+          <h2>API Reference</h2>
+        </div>
+        <p>The SDK exposes two public methods. Click on each to view the full documentation.</p>
+
+        <div class="hero-cards">
+          <a href="init" class="quick-card">
+            <div class="quick-card-icon">⚡</div>
+            <div>
+              <p class="quick-card-title">init</p>
+              <p class="quick-card-desc">Initialize the SDK singleton for the current process. Takes merchant identity and timeout configuration.</p>
+            </div>
+          </a>
+          <a href="do-transaction" class="quick-card">
+            <div class="quick-card-icon">💳</div>
+            <div>
+              <p class="quick-card-title">doTransaction</p>
+              <p class="quick-card-desc">Dispatch a Sale transaction to the connected terminal. Results delivered via TransactionListener.</p>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 4. Type Reference -->
+      <section class="doc-section" id="4-type-reference">
+        <div class="section-header">
+          <span class="section-number">04</span>
+          <h2>Type Reference</h2>
+        </div>
+
+        <div class="type-card" id="pinelabssdk">
+          <h3><code>PinelabsSdk</code></h3>
+          <p>SDK handle returned from <a href="init"><code class="inline-code">init</code></a>. Holds the IPC transport and worker executor. Thread-safe; intended as a process-wide singleton.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Member</th><th>Kind</th><th>Description</th></tr></thead>
+              <tbody><tr><td><code class="inline-code">doTransaction(request, listener)</code></td><td>method</td><td>See <a href="do-transaction">doTransaction</a>.</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="type-card" id="transactionrequest">
+          <h3><code>TransactionRequest</code></h3>
+          <p>Value type consumed by <a href="do-transaction"><code class="inline-code">doTransaction</code></a>. See the <a href="do-transaction">request fields</a> table.</p>
+        </div>
+
+        <div class="type-card" id="transactionresult">
+          <h3><code>TransactionResult</code></h3>
+          <p>Delivered to <code class="inline-code">TransactionListener.onSuccess</code>. All fields except <code class="inline-code">eventId</code> and <code class="inline-code">status</code> are optional. Rely on <code class="inline-code">status</code> as the source of truth.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Field</th><th>Type</th><th>Description</th><th>Source</th></tr></thead>
+              <tbody>
+                <tr><td><code class="inline-code">eventId</code></td><td><code class="inline-code">String</code></td><td>SDK-generated UUIDv4; equals the value delivered in <code class="inline-code">onStarted</code>.</td><td>SDK</td></tr>
+                <tr><td><code class="inline-code">status</code></td><td><a href="#transactionstatus"><code class="inline-code">TransactionStatus</code></a></td><td><code class="inline-code">SUCCESS</code> or <code class="inline-code">FAILED</code>. <code class="inline-code">onSuccess</code> only fires for <code class="inline-code">SUCCESS</code>.</td><td>SDK</td></tr>
+                <tr><td><code class="inline-code">transactionId</code></td><td><code class="inline-code">String?</code></td><td>Pinelabs transaction log ID.</td><td><code class="inline-code">Detail.PlutusTransactionLogID</code></td></tr>
+                <tr><td><code class="inline-code">rrn</code></td><td><code class="inline-code">String?</code></td><td>Retrieval Reference Number.</td><td><code class="inline-code">Detail.RetrievalReferenceNumber</code></td></tr>
+                <tr><td><code class="inline-code">authCode</code></td><td><code class="inline-code">String?</code></td><td>Acquirer approval code.</td><td><code class="inline-code">Detail.ApprovalCode</code></td></tr>
+                <tr><td><code class="inline-code">amount</code></td><td><code class="inline-code">String?</code></td><td>Authorized amount, in paise, as a string.</td><td><code class="inline-code">Detail.AuthAmoutPaise</code></td></tr>
+                <tr><td><code class="inline-code">maskedPan</code></td><td><code class="inline-code">String?</code></td><td>e.g. <code class="inline-code">************0038</code>.</td><td><code class="inline-code">Detail.CardNumber</code></td></tr>
+                <tr><td><code class="inline-code">cardHolderName</code></td><td><code class="inline-code">String?</code></td><td>Trimmed.</td><td><code class="inline-code">Detail.CardholderName</code></td></tr>
+                <tr><td><code class="inline-code">cardType</code></td><td><code class="inline-code">String?</code></td><td>e.g. <code class="inline-code">VISA</code>, <code class="inline-code">MASTERCARD</code>, <code class="inline-code">MAESTRO</code>.</td><td><code class="inline-code">Detail.CardType</code></td></tr>
+                <tr><td><code class="inline-code">acquirer</code></td><td><code class="inline-code">String?</code></td><td>Acquirer bank name.</td><td><code class="inline-code">Detail.AcquirerName</code></td></tr>
+                <tr><td><code class="inline-code">merchantId</code></td><td><code class="inline-code">String?</code></td><td>Merchant ID assigned by the acquirer.</td><td><code class="inline-code">Detail.MerchantId</code></td></tr>
+                <tr><td><code class="inline-code">terminalId</code></td><td><code class="inline-code">String?</code></td><td>Terminal ID of the physical device.</td><td><code class="inline-code">Detail.TerminalId</code></td></tr>
+                <tr><td><code class="inline-code">invoiceNo</code></td><td><code class="inline-code">String?</code></td><td>Invoice number returned by the terminal. May differ from the request value.</td><td><code class="inline-code">Detail.InvoiceNumber</code></td></tr>
+                <tr><td><code class="inline-code">batchNo</code></td><td><code class="inline-code">String?</code></td><td>Current settlement batch.</td><td><code class="inline-code">Detail.BatchNumber</code></td></tr>
+                <tr><td><code class="inline-code">date</code></td><td><code class="inline-code">String?</code></td><td><code class="inline-code">MMDDYYYY</code>.</td><td><code class="inline-code">Detail.TransactionDate</code></td></tr>
+                <tr><td><code class="inline-code">time</code></td><td><code class="inline-code">String?</code></td><td><code class="inline-code">HHmmss</code>.</td><td><code class="inline-code">Detail.TransactionTime</code></td></tr>
+                <tr><td><code class="inline-code">chargeSlipPrintData</code></td><td><code class="inline-code">String?</code></td><td>Opaque payload for printing the charge slip.</td><td><code class="inline-code">Detail.PlutusVersion</code></td></tr>
+                <tr><td><code class="inline-code">responseCode</code></td><td><code class="inline-code">String?</code></td><td><code class="inline-code">"0"</code> on success.</td><td><code class="inline-code">Response.ResponseCode</code></td></tr>
+                <tr><td><code class="inline-code">responseMessage</code></td><td><code class="inline-code">String?</code></td><td>Human-readable status (e.g. <code class="inline-code">APPROVED</code>).</td><td><code class="inline-code">Response.ResponseMsg</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="type-card" id="transactionlistener">
+          <h3><code>TransactionListener</code></h3>
+          <p>All three callbacks run on the SDK worker thread. Exactly one terminal callback (<code class="inline-code">onSuccess</code> <strong>or</strong> <code class="inline-code">onFailure</code>) fires per <code class="inline-code">doTransaction</code> invocation. <code class="inline-code">onStarted</code> always precedes the terminal callback.</p>
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="code-lang">Kotlin</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+<pre><code class="language-kotlin">interface TransactionListener {
+    fun onStarted(eventId: String)
+    fun onSuccess(result: TransactionResult)
+    fun onFailure(error: SdkException)
+}</code></pre>
+          </div>
+        </div>
+
+        <div class="type-card" id="transactiontype">
+          <h3><code>TransactionType</code></h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Variant</th><th>Wire value</th><th>Description</th></tr></thead>
+              <tbody><tr><td><code class="inline-code">SALE</code></td><td><code class="inline-code">4001</code></td><td>Card sale.</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="type-card" id="transactionstatus">
+          <h3><code>TransactionStatus</code></h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Variant</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><code class="inline-code">SUCCESS</code></td><td>Terminal approved the transaction (<code class="inline-code">Response.ResponseCode == 0</code>).</td></tr>
+                <tr><td><code class="inline-code">FAILED</code></td><td>Terminal declined or the SDK could not complete the operation.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 5. Error Reference -->
+      <section class="doc-section" id="5-error-reference">
+        <div class="section-header">
+          <span class="section-number">05</span>
+          <h2>Error Reference</h2>
+        </div>
+        <p>All errors surface through <code class="inline-code">TransactionListener.onFailure(error: SdkException)</code>. The base type is a sealed set; pattern-match on the subclass.</p>
+
+        <div class="type-card" id="sdkexception">
+          <h3><code>SdkException</code></h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Variant</th><th>Fields</th><th>Recoverable</th><th>Meaning</th></tr></thead>
+              <tbody>
+                <tr><td><code class="inline-code">NotInitialized</code></td><td>—</td><td><span class="badge badge--no">No</span></td><td><code class="inline-code">doTransaction</code> was called before <code class="inline-code">init</code>.</td></tr>
+                <tr><td><code class="inline-code">InvalidInput</code></td><td><code class="inline-code">detail: String</code></td><td><span class="badge badge--no">No</span></td><td>Request validation failed (e.g. zero amount, blank reference).</td></tr>
+                <tr><td><code class="inline-code">TransportUnavailable</code></td><td><code class="inline-code">detail: String</code></td><td><span class="badge badge--yes">Yes</span></td><td>MasterApp missing, bind failed, or IPC channel broken. Retry after verifying MasterApp is running.</td></tr>
+                <tr><td><code class="inline-code">Timeout</code></td><td><code class="inline-code">detail: String</code></td><td><span class="badge badge--yes">Yes</span></td><td>No reply within <code class="inline-code">timeoutSecs</code>. Retry; consider a longer timeout for slow networks.</td></tr>
+                <tr><td><code class="inline-code">TransactionFailed</code></td><td><code class="inline-code">detail: String</code>, <code class="inline-code">terminalResponseCode: String?</code></td><td><span class="badge badge--depends">depends</span></td><td>Terminal returned a non-zero response code. <code class="inline-code">detail</code> carries <code class="inline-code">ResponseMsg</code>.</td></tr>
+                <tr><td><code class="inline-code">Internal</code></td><td><code class="inline-code">detail: String</code></td><td><span class="badge badge--no">No</span></td><td>Unexpected condition (e.g. malformed response JSON). Report to Pinelabs with <code class="inline-code">eventId</code>.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h4>Common terminal response codes</h4>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+              <tbody>
+                <tr><td><code class="inline-code">"0"</code></td><td>Approved — delivered as <code class="inline-code">onSuccess</code>, not <code class="inline-code">onFailure</code>.</td></tr>
+                <tr><td><code class="inline-code">"7"</code></td><td>Batch is Locked. Settle the batch on the terminal before retrying.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 6. Wire Protocol -->
+      <section class="doc-section" id="6-wire-protocol-informational">
+        <div class="section-header">
+          <span class="section-number">06</span>
+          <h2>Wire Protocol <span class="section-badge">informational</span></h2>
+        </div>
+        <p>Merchant apps do not need to implement this. It is documented to aid debugging and to make the SDK's contract auditable.</p>
+
+        <h3>Binding</h3>
+        <div class="table-wrap">
+          <table>
+            <tbody>
+              <tr><td><strong>Action</strong></td><td><code class="inline-code">com.pinelabs.masterapp.SERVER</code></td></tr>
+              <tr><td><strong>Package</strong></td><td><code class="inline-code">com.pinelabs.masterapp</code></td></tr>
+              <tr><td><strong>Flags</strong></td><td><code class="inline-code">BIND_AUTO_CREATE</code></td></tr>
+              <tr><td><strong>Reply channel</strong></td><td>Private <code class="inline-code">Messenger</code> backed by a SDK-owned <code class="inline-code">HandlerThread</code>.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Request</h3>
+        <p><code class="inline-code">Message.what = 1001</code>, <code class="inline-code">replyTo = &lt;SDK messenger&gt;</code>, <code class="inline-code">Bundle.MASTERAPPREQUEST</code> = JSON string:</p>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-lang">JSON</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-json">{
+  "Detail": {
+    "BillingRefNo": "TX12345678",
+    "PaymentAmount": 9900,
+    "TransactionType": 4001,
+    "InvoiceNo": "INV-1001"
+  },
+  "Header": {
+    "ApplicationId": "1001",
+    "MethodId": "1001",
+    "UserId": "operator-01",
+    "VersionNo": "1.0"
+  }
+}</code></pre>
+        </div>
+
+        <h3>Response</h3>
+        <p>Reply message carries <code class="inline-code">Bundle.MASTERAPPRESPONSE</code> = JSON string:</p>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-lang">JSON</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+<pre><code class="language-json">{
+  "Detail": {
+    "PlutusTransactionLogID": "100818541",
+    "RetrievalReferenceNumber": "009711708350",
+    "ApprovalCode": "T47933",
+    "AuthAmoutPaise": "9900",
+    "CardNumber": "************0038",
+    "CardholderName": "TEST/AUTO",
+    "CardType": "MAESTRO",
+    "AcquirerName": "HDFC BANK",
+    "MerchantId": "34234824",
+    "TerminalId": "01008024",
+    "InvoiceNumber": 76,
+    "BatchNumber": 32,
+    "TransactionDate": "04242026",
+    "TransactionTime": "113904",
+    "TransactionType": 4001,
+    "PlutusVersion": "..."
+  },
+  "Header": { "ApplicationId": "1001", "ClientId": "2789344" },
+  "Response": {
+    "ResponseCode": 0,
+    "ResponseMsg": "APPROVED",
+    "AppVersion": "23042026"
+  }
+}</code></pre>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 7. Troubleshooting -->
+      <section class="doc-section" id="7-troubleshooting">
+        <div class="section-header">
+          <span class="section-number">07</span>
+          <h2>Troubleshooting</h2>
+        </div>
+        <div class="trouble-grid">
+          <div class="trouble-card">
+            <div class="trouble-symptom">
+              <span class="trouble-icon">🔗</span>
+              <code class="inline-code">UnsatisfiedLinkError: libuniffi_pinelabs.so not found</code>
+            </div>
+            <div class="trouble-cause"><strong>Cause:</strong> ABI filter missing or wrong AAR version.</div>
+            <div class="trouble-fix"><strong>Fix:</strong> Add <code class="inline-code">ndk { abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64' }</code>; confirm AAR is <code class="inline-code">0.1.0</code>.</div>
+          </div>
+          <div class="trouble-card">
+            <div class="trouble-symptom">
+              <span class="trouble-icon">📡</span>
+              <code class="inline-code">TransportUnavailable("MasterApp service not available")</code>
+            </div>
+            <div class="trouble-cause"><strong>Cause:</strong> MasterApp not installed or <code class="inline-code">&lt;queries&gt;</code> stripped from host manifest.</div>
+            <div class="trouble-fix"><strong>Fix:</strong> Install MasterApp; remove <code class="inline-code">tools:node="remove"</code> on any <code class="inline-code">&lt;queries&gt;</code> element.</div>
+          </div>
+          <div class="trouble-card">
+            <div class="trouble-symptom">
+              <span class="trouble-icon">⏱️</span>
+              <code class="inline-code">Timeout</code> on every transaction
+            </div>
+            <div class="trouble-cause"><strong>Cause:</strong> Terminal busy, PED stall, or <code class="inline-code">timeoutSecs</code> too low.</div>
+            <div class="trouble-fix"><strong>Fix:</strong> Retry; raise <code class="inline-code">timeoutSecs</code>; check terminal home screen.</div>
+          </div>
+          <div class="trouble-card">
+            <div class="trouble-symptom">
+              <span class="trouble-icon">🔒</span>
+              <code class="inline-code">TransactionFailed(detail="Batch is Locked…", terminalResponseCode="7")</code>
+            </div>
+            <div class="trouble-cause"><strong>Cause:</strong> Settlement pending.</div>
+            <div class="trouble-fix"><strong>Fix:</strong> Settle batch on terminal, then retry.</div>
+          </div>
+          <div class="trouble-card">
+            <div class="trouble-symptom">
+              <span class="trouble-icon">🏦</span>
+              <code class="inline-code">TransactionFailed</code> with other codes
+            </div>
+            <div class="trouble-cause"><strong>Cause:</strong> Real acquirer decline.</div>
+            <div class="trouble-fix"><strong>Fix:</strong> Surface <code class="inline-code">responseMessage</code> to the user.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="doc-footer">
+        <div class="doc-footer-inner">
+          <div class="footer-left">
+            <div class="brand">
+              <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
+                <rect width="32" height="32" rx="8" fill="#635bff"/>
+                <path d="M8 20l6-12 4 8 3-4 3 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="brand-name">Pinelabs SDK</span>
+            </div>
+            <p class="footer-note">Document version: <code class="inline-code">0.1.0</code> · Matches artifact: <code class="inline-code">pinelabs-sdk-0.1.0.aar</code></p>
+          </div>
+          <div class="footer-links">
+            <a href="#1-getting-started">Getting Started</a>
+            <a href="#3-api-reference">API Reference</a>
+            <a href="#4-type-reference">Types</a>
+            <a href="#5-error-reference">Errors</a>
+            <a href="#7-troubleshooting">Troubleshooting</a>
+          </div>
+        </div>
+      </footer>
+
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
 </html>

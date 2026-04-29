@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>doTransaction — Pinelabs Common SDK</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="index" class="brand">
+        <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="#635bff"/>
+          <path d="M8 20l6-12 4 8 3-4 3 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="brand-name">Pinelabs<span class="brand-sub"> SDK</span></span>
+      </a>
+      <nav class="topbar-nav">
+        <a href="index" class="topbar-link">Home</a>
+        <a href="init" class="topbar-link">init</a>
+        <a href="do-transaction" class="topbar-link">doTransaction</a>
+      </nav>
+      <div class="topbar-actions">
+        <span class="version-badge">v0.1.0</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-inner">
+        <div class="sidebar-section">
+          <p class="sidebar-label">API Reference</p>
+          <a href="index" class="sidebar-link">Overview</a>
+          <a href="init" class="sidebar-link">init</a>
+          <a href="do-transaction" class="sidebar-link active">doTransaction</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="content" id="main-content">
+
+      <section class="doc-section">
+        <div class="api-card" id="32-dotransaction">
+          <div class="api-card-header">
+            <div class="api-card-title-row">
+              <h3 class="api-name"><code>doTransaction</code></h3>
+              <div class="api-badges">
+                <span class="badge badge--stable">stable</span>
+                <span class="badge badge--since">Since 0.1.0</span>
+                <span class="badge badge--category">transaction</span>
+              </div>
+            </div>
+            <p class="api-tagline">Dispatch a Sale transaction to the connected terminal.</p>
+          </div>
+
+          <div class="api-card-body">
+            <h4>Description</h4>
+            <p><code class="inline-code">doTransaction</code> is the single entry point for payment transactions. It returns <strong>immediately</strong>; the outcome is delivered asynchronously to the supplied <code class="inline-code">TransactionListener</code>.</p>
+
+            <div class="flow-steps">
+              <div class="flow-step"><span class="flow-step-num">1</span><div>Generates a UUIDv4 <code class="inline-code">eventId</code> and invokes <code class="inline-code">listener.onStarted(eventId)</code>.</div></div>
+              <div class="flow-step"><span class="flow-step-num">2</span><div>Binds to the MasterApp service and sends the request as a JSON <code class="inline-code">Message</code> (bundle key <code class="inline-code">MASTERAPPREQUEST</code>, <code class="inline-code">what = 1001</code>).</div></div>
+              <div class="flow-step"><span class="flow-step-num">3</span><div>Waits up to <code class="inline-code">timeoutSecs</code> (set at <code class="inline-code">init</code>) for a reply on a private <code class="inline-code">Messenger</code>.</div></div>
+              <div class="flow-step"><span class="flow-step-num">4</span><div>Parses the JSON response envelope and routes to <code class="inline-code">onSuccess</code> or <code class="inline-code">onFailure</code> accordingly.</div></div>
+            </div>
+
+            <div class="callout callout--info">
+              <div class="callout-icon">ℹ️</div>
+              <div>Only <code class="inline-code">SALE</code> is supported in v0.1.0. <code class="inline-code">REFUND</code>, <code class="inline-code">VOID</code>, <code class="inline-code">PREAUTH</code>, etc. will extend <code class="inline-code">TransactionType</code> in a later minor version.</div>
+            </div>
+
+            <h4>Signatures</h4>
+            <div class="lang-tabs" data-tabs="dotx-sigs">
+              <button class="lang-tab active" data-lang="kotlin" onclick="switchTab(this,'dotx-sigs')">Kotlin</button>
+              <button class="lang-tab" data-lang="java" onclick="switchTab(this,'dotx-sigs')">Java</button>
+            </div>
+            <div class="code-block" id="dotx-sigs-kotlin" data-lang="kotlin">
+              <div class="code-block-header">
+                <span class="code-lang">Kotlin</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+<pre><code class="language-kotlin">fun PinelabsSdk.doTransaction(
+    request: TransactionRequest,
+    listener: TransactionListener
+)</code></pre>
+            </div>
+            <div class="code-block hidden" id="dotx-sigs-java" data-lang="java">
+              <div class="code-block-header">
+                <span class="code-lang">Java</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+<pre><code class="language-java">public void doTransaction(
+    TransactionRequest  request,
+    TransactionListener listener
+)</code></pre>
+            </div>
+
+            <h4>Parameters</h4>
+            <div class="table-wrap">
+              <table class="params-table">
+                <thead><tr><th>Name</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+                <tbody>
+                  <tr><td><code class="inline-code">request</code></td><td><code class="inline-code">TransactionRequest</code></td><td><span class="required">✓</span></td><td>The transaction to dispatch. Validated by the core.</td></tr>
+                  <tr><td><code class="inline-code">listener</code></td><td><code class="inline-code">TransactionListener</code></td><td><span class="required">✓</span></td><td>Callback sink for <code class="inline-code">onStarted</code> / <code class="inline-code">onSuccess</code> / <code class="inline-code">onFailure</code>.</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h4>Request fields</h4>
+            <div class="table-wrap">
+              <table class="params-table">
+                <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+                <tbody>
+                  <tr><td><code class="inline-code">amount</code></td><td><code class="inline-code">ULong</code></td><td><span class="required">✓</span></td><td>Authorization amount in paise. Must be <code class="inline-code">&gt; 0</code>.</td></tr>
+                  <tr><td><code class="inline-code">billingRefNo</code></td><td><code class="inline-code">String</code></td><td><span class="required">✓</span></td><td>Merchant-side unique reference (up to 20 chars recommended). Echoed on the response. Must be non-blank.</td></tr>
+                  <tr><td><code class="inline-code">invoiceNo</code></td><td><code class="inline-code">String</code></td><td><span class="required">✓</span></td><td>Merchant invoice identifier. Must be non-blank. The terminal may assign its own <code class="inline-code">invoiceNo</code> on the response.</td></tr>
+                  <tr><td><code class="inline-code">transactionType</code></td><td><code class="inline-code">TransactionType</code></td><td><span class="required">✓</span></td><td>Currently must be <code class="inline-code">SALE</code>.</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h4>Returns</h4>
+            <div class="return-box">
+              <code class="inline-code">Unit</code> / <code class="inline-code">void</code>. Results arrive exclusively through the listener.
+            </div>
+
+            <h4>Callback outcomes</h4>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Callback</th><th>Delivered when</th></tr></thead>
+                <tbody>
+                  <tr><td><code class="inline-code">onStarted(eventId)</code></td><td>Always, before any I/O. Persist <code class="inline-code">eventId</code> for log correlation.</td></tr>
+                  <tr><td><code class="inline-code">onSuccess(result)</code></td><td>MasterApp returned <code class="inline-code">Response.ResponseCode == 0</code>. See <code class="inline-code">TransactionResult</code>.</td></tr>
+                  <tr><td><code class="inline-code">onFailure(error)</code></td><td>Any failure mode. See Error reference.</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h4>Errors</h4>
+            <p>Reported via <code class="inline-code">onFailure(error: SdkException)</code>:</p>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Variant</th><th>Recoverable</th><th>When</th></tr></thead>
+                <tbody>
+                  <tr><td><code class="inline-code">InvalidInput</code></td><td><span class="badge badge--no">No</span></td><td><code class="inline-code">amount == 0</code>, blank <code class="inline-code">billingRefNo</code> / <code class="inline-code">invoiceNo</code>, or unsupported <code class="inline-code">transactionType</code>.</td></tr>
+                  <tr><td><code class="inline-code">TransportUnavailable</code></td><td><span class="badge badge--yes">Yes</span></td><td>MasterApp not installed, bind failed, service died, or <code class="inline-code">RemoteException</code> on send.</td></tr>
+                  <tr><td><code class="inline-code">Timeout</code></td><td><span class="badge badge--yes">Yes</span></td><td>No MasterApp reply within <code class="inline-code">timeoutSecs</code>.</td></tr>
+                  <tr><td><code class="inline-code">TransactionFailed</code></td><td><span class="badge badge--depends">depends</span></td><td>Terminal returned <code class="inline-code">Response.ResponseCode != 0</code>.</td></tr>
+                  <tr><td><code class="inline-code">Internal</code></td><td><span class="badge badge--no">No</span></td><td>Malformed response JSON or unexpected runtime condition. Please report.</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h4>Example</h4>
+            <div class="lang-tabs" data-tabs="dotx-sigs">
+              <button class="lang-tab active" data-lang="kotlin" onclick="switchTab(this,'dotx-sigs')">Kotlin</button>
+              <button class="lang-tab" data-lang="java" onclick="switchTab(this,'dotx-sigs')">Java</button>
+            </div>
+            <div class="code-block" data-lang="kotlin">
+              <div class="code-block-header">
+                <span class="code-lang">Kotlin</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+<pre><code class="language-kotlin">import com.pinelabs.sdk.PinelabsSdk
+import uniffi.pinelabs.*
+
+val request = TransactionRequest(
+    amount          = 9900uL,                          // ₹99.00
+    billingRefNo    = "TX${System.currentTimeMillis()}",
+    invoiceNo       = "INV-1001",
+    transactionType = TransactionType.SALE,
+)
+
+sdk.doTransaction(request, object : TransactionListener {
+    override fun onStarted(eventId: String) {
+        Log.i("Pinelabs", "Transaction started: $eventId")
+    }
+    override fun onSuccess(result: TransactionResult) {
+        Log.i("Pinelabs", "Approved — auth: ${result.authCode}, RRN: ${result.rrn}")
+    }
+    override fun onFailure(error: SdkException) {
+        when (error) {
+            is SdkException.TransportUnavailable -> Log.e("Pinelabs", "Terminal unavailable: ${error.detail}")
+            is SdkException.Timeout              -> Log.w("Pinelabs", "Timed out — verify transaction status")
+            is SdkException.TransactionFailed    -> Log.w("Pinelabs", "Declined (${error.terminalResponseCode}): ${error.detail}")
+            is SdkException.InvalidInput         -> Log.e("Pinelabs", "Bad request: ${error.detail}")
+            is SdkException.Internal             -> Log.e("Pinelabs", "SDK error: ${error.detail}")
+            is SdkException.NotInitialized       -> Log.e("Pinelabs", "SDK not initialised")
+        }
+    }
+})</code></pre>
+            </div>
+            <div class="code-block hidden" data-lang="java">
+              <div class="code-block-header">
+                <span class="code-lang">Java</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              </div>
+<pre><code class="language-java">import com.pinelabs.sdk.PinelabsSdk;
+import uniffi.pinelabs.*;
+
+long   amount      = 9900L;                              // ₹99.00
+String billingRef  = "TX" + System.currentTimeMillis();
+String invoiceNo   = "INV-1001";
+
+TransactionRequest request = new TransactionRequest(
+    amount,
+    billingRef,
+    invoiceNo,
+    TransactionType.SALE
+);
+
+sdk.doTransaction(request, new TransactionListener() {
+    @Override
+    public void onStarted(String eventId) {
+        Log.i("Pinelabs", "Transaction started: " + eventId);
+    }
+    @Override
+    public void onSuccess(TransactionResult result) {
+        Log.i("Pinelabs", "Approved — auth: " + result.getAuthCode() + ", RRN: " + result.getRrn());
+    }
+    @Override
+    public void onFailure(SdkException error) {
+        if (error instanceof SdkException.TransportUnavailable e) {
+            Log.e("Pinelabs", "Terminal unavailable: " + e.getDetail());
+        } else if (error instanceof SdkException.Timeout) {
+            Log.w("Pinelabs", "Timed out — verify transaction status");
+        } else if (error instanceof SdkException.TransactionFailed e) {
+            Log.w("Pinelabs", "Declined (" + e.getTerminalResponseCode() + "): " + e.getDetail());
+        } else if (error instanceof SdkException.InvalidInput e) {
+            Log.e("Pinelabs", "Bad request: " + e.getDetail());
+        } else if (error instanceof SdkException.Internal e) {
+            Log.e("Pinelabs", "SDK error: " + e.getDetail());
+        } else {
+            Log.e("Pinelabs", "Not initialised — call PinelabsSdk.init() first");
+        }
+    }
+});</code></pre>
+            </div>
+
+            <div class="see-also">
+              <strong>See also:</strong>
+              <a href="init"><code class="inline-code">init</code></a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
