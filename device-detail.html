@@ -121,13 +121,27 @@
     .related-card .meta { font-size: 12px; color: #8a8aa3; margin-top: 2px; }
 
     .not-found { padding: 80px 0; text-align: center; color: #545478; }
+
+    /* Markdown rendered content */
+    .md-body { color: #545478; line-height: 1.7; font-size: 15px; }
+    .md-body h1,.md-body h2,.md-body h3 { color: #1a1a2e; font-weight: 600; margin: 24px 0 10px; }
+    .md-body h1 { font-size: 22px; } .md-body h2 { font-size: 18px; } .md-body h3 { font-size: 15px; }
+    .md-body p { margin: 0 0 14px; }
+    .md-body ul,.md-body ol { padding-left: 24px; margin: 0 0 14px; }
+    .md-body li { margin-bottom: 4px; }
+    .md-body code { font-family: 'JetBrains Mono', monospace; background: #f0eefe; color: #635bff; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+    .md-body pre { background: #1a1a2e; border-radius: 8px; padding: 16px; overflow-x: auto; margin: 0 0 16px; }
+    .md-body pre code { background: none; color: #e0e0f0; padding: 0; }
+    .md-body table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 0 0 16px; }
+    .md-body table th { background: #f4f4fb; color: #1a1a2e; font-weight: 600; padding: 10px; border: 1px solid #e6e6ef; }
+    .md-body table td { padding: 10px; border: 1px solid #e6e6ef; color: #545478; }
   </style>
 </head>
 <body>
 
   <header class="topbar">
     <div class="topbar-inner">
-      <a href="index" class="brand">
+      <a href="index.html" class="brand">
         <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
           <rect width="32" height="32" rx="8" fill="#635bff"/>
           <path d="M8 20l6-12 4 8 3-4 3 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -135,10 +149,10 @@
         <span class="brand-name">Pinelabs<span class="brand-sub"> SDK</span></span>
       </a>
       <nav class="topbar-nav">
-        <a href="index" class="topbar-link">Home</a>
-        <a href="init" class="topbar-link">init</a>
-        <a href="do-transaction" class="topbar-link">doTransaction</a>
-        <a href="devices" class="topbar-link active">Devices</a>
+        <a href="index.html" class="topbar-link">Home</a>
+        <a href="init.html" class="topbar-link">init</a>
+        <a href="do-transaction.html" class="topbar-link">doTransaction</a>
+        <a href="devices.html" class="topbar-link active">Devices</a>
       </nav>
       <div class="topbar-actions"><span class="version-badge">v0.1.0</span></div>
     </div>
@@ -150,21 +164,21 @@
       <div class="sidebar-inner">
         <div class="sidebar-section">
           <p class="sidebar-label">Hardware</p>
-          <a href="devices" class="sidebar-link">All Supported Devices</a>
+          <a href="devices.html" class="sidebar-link">All Supported Devices</a>
         </div>
         <div class="sidebar-section" id="oem-list">
           <p class="sidebar-label">By Manufacturer</p>
-          <a href="devices#ingenico" class="sidebar-link sidebar-link--sub">Ingenico</a>
-          <a href="devices#kozen" class="sidebar-link sidebar-link--sub">Kozen</a>
-          <a href="devices#wiseasy" class="sidebar-link sidebar-link--sub">Wiseasy</a>
-          <a href="devices#pax" class="sidebar-link sidebar-link--sub">PAX</a>
-          <a href="devices#newland" class="sidebar-link sidebar-link--sub">Newland</a>
+          <a href="devices.html#ingenico" class="sidebar-link sidebar-link--sub">Ingenico</a>
+          <a href="devices.html#kozen" class="sidebar-link sidebar-link--sub">Kozen</a>
+          <a href="devices.html#wiseasy" class="sidebar-link sidebar-link--sub">Wiseasy</a>
+          <a href="devices.html#pax" class="sidebar-link sidebar-link--sub">PAX</a>
+          <a href="devices.html#newland" class="sidebar-link sidebar-link--sub">Newland</a>
         </div>
         <div class="sidebar-section">
           <p class="sidebar-label">API Reference</p>
-          <a href="index" class="sidebar-link">Overview</a>
-          <a href="init" class="sidebar-link">init</a>
-          <a href="do-transaction" class="sidebar-link">doTransaction</a>
+          <a href="index.html" class="sidebar-link">Overview</a>
+          <a href="init.html" class="sidebar-link">init</a>
+          <a href="do-transaction.html" class="sidebar-link">doTransaction</a>
         </div>
       </div>
     </aside>
@@ -178,25 +192,38 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="js/main.js"></script>
   <script>
+    // Resolve base path so fetch works on both localhost and GitHub Pages
+    function basePath() {
+      const p = location.pathname;
+      return p.substring(0, p.lastIndexOf('/') + 1);
+    }
+
     (async function () {
-      // model slug from ?model= or last URL segment
+      // Accept ?slug= (preferred) or ?model= (legacy). Fall back to last URL segment.
       const params = new URLSearchParams(location.search);
-      let slug = (params.get('model') || '').toLowerCase();
+      let slug = (params.get('slug') || params.get('model') || '').toLowerCase();
       if (!slug) {
         const parts = location.pathname.replace(/\/$/, '').split('/');
-        slug = parts[parts.length - 1] || '';
+        const last = parts[parts.length - 1] || '';
+        if (last && last !== 'device-detail.html' && last !== 'device-detail') {
+          slug = last.toLowerCase();
+        }
       }
-      if (!slug || slug === 'device-detail.html') {
+      if (!slug) {
         document.getElementById('device-root').innerHTML =
-          '<div class="not-found">No device specified. <a href="devices">View all devices →</a></div>';
+          '<div class="not-found">No device specified. <a href="devices.html">View all devices →</a></div>';
         return;
       }
 
+      const base = basePath();
+
       let data;
       try {
-        const res = await fetch('devices/data.json', { cache: 'no-cache' });
+        const res = await fetch(base + 'devices/data.json', { cache: 'no-cache' });
+        if (!res.ok) throw new Error(res.status);
         data = await res.json();
       } catch (e) {
         document.getElementById('device-root').innerHTML =
@@ -207,7 +234,7 @@
       const d = data[slug];
       if (!d) {
         document.getElementById('device-root').innerHTML =
-          `<div class="not-found">Device <code>${slug}</code> not found. <a href="devices">View all devices →</a></div>`;
+          `<div class="not-found">Device <code>${slug}</code> not found. <a href="devices.html">View all devices →</a></div>`;
         document.title = 'Device not found';
         return;
       }
@@ -216,7 +243,7 @@
 
       // Crumbs
       document.getElementById('crumbs').innerHTML =
-        `<a href="index">Docs</a> &nbsp;›&nbsp; <a href="devices">Devices</a> &nbsp;›&nbsp; <span>${d.name}</span>`;
+        `<a href="index.html">Docs</a> &nbsp;›&nbsp; <a href="devices.html">Devices</a> &nbsp;›&nbsp; <span>${d.name}</span>`;
 
       // Image with SVG fallback
       const imgFallback = svgFor(d.form);
@@ -232,7 +259,7 @@
         .filter(([k, v]) => v.oem === d.oem && k !== slug)
         .slice(0, 6)
         .map(([k, v]) => `
-          <a class="related-card" href="device-detail?slug=${k}">
+          <a class="related-card" href="device-detail.html?slug=${k}">
             <div class="name">${v.name}</div>
             <div class="meta">${v.form}</div>
           </a>`).join('');
@@ -323,7 +350,7 @@ if (Build.MODEL == "${d.buildModel}") {
         <div class="cta-card">
           <h3>Ready to integrate ${d.name}?</h3>
           <p>The Pinelabs Common SDK works identically across all supported terminals. Start with <code>init</code>, then dispatch via <code>doTransaction</code>.</p>
-          <a href="init">Read the integration guide →</a>
+          <a href="init.html">Read the integration guide →</a>
         </div>
 
         ${related ? `
@@ -334,6 +361,23 @@ if (Build.MODEL == "${d.buildModel}") {
       `;
 
       if (window.hljs) hljs.highlightAll();
+
+      // Load and render the .md file for this device
+      try {
+        const mdRes = await fetch(base + `devices/${slug}.md`, { cache: 'no-cache' });
+        if (mdRes.ok) {
+          const mdText = await mdRes.text();
+          if (mdText.trim()) {
+            const mdSection = document.createElement('section');
+            mdSection.className = 'spec-section';
+            mdSection.innerHTML = `
+              <h2>Full Device Notes</h2>
+              <div class="md-body">${marked.parse(mdText)}</div>`;
+            document.getElementById('device-root').appendChild(mdSection);
+            if (window.hljs) hljs.highlightAll();
+          }
+        }
+      } catch (_) { /* no .md file — skip silently */ }
     })();
 
     function svgFor(form) {
